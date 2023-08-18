@@ -1,7 +1,7 @@
 #!python
 import re
 
-# song@mpipz.mpg.de
+# baoxing.song@pku-iaas.edu.cn
 
 class Fasta:
     name = ""

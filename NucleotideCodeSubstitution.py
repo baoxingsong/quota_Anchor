@@ -7,7 +7,7 @@ import numpy as np
 
 import FastaFile
 
-# song@mpipz.mpg.de
+# baoxing.song@pku-iaas.edu.cn
 
 
 location = os.path.dirname(sys.argv[0])
