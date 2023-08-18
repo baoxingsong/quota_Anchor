@@ -3,7 +3,7 @@ import re
 import numpy as np
 import FastaFile
 
-# song@mpipz.mpg.de
+# baoxing.song@pku-iaas.edu.cn
 
 class Transcript:
     chromosome_name = ""
