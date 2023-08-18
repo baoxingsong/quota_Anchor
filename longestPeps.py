@@ -6,14 +6,14 @@ import GffFile
 import MyUtil
 import sys
 import numpy as np
-
+from argparse import ArgumentParser
 import math
 
-# song@mpipz.mpg.de
+# baoxing.song@pku-iaas.edu.cn
 
 _buckets = []
 
-def read_data(gffFile, fastaFile, proteinSeqs, outputFile):
+def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
     chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict = GffFile.readGff( gffFile )
     chromosome_names, fastas = FastaFile.readFastaFile( fastaFile )
     pep_names, pep_fastas = FastaFile.readFastaFile(proteinSeqs)
@@ -60,6 +60,57 @@ def read_data(gffFile, fastaFile, proteinSeqs, outputFile):
     output.close()
     return chromosome_gene_dict
 
-print ("begin to run")
-read_data(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-print ("stop running")
+
+
+if __name__ == '__main__':
+    parser = ArgumentParser(description='Prepare file for the strand and WGD aware syntenic gene identification function implemented in AnchorWave')
+    parser.add_argument("-g", "--GFF",
+                        dest="GffFile",
+                        type=str,
+                        default="",
+                        help="Genome annotation in GFF formation")
+    parser.add_argument("-f", "--fastaFile",
+                        dest="fastaFile",
+                        type=str,
+                        default="",
+                        help="Genome sequences in FASTA format")
+    parser.add_argument("-p", "--proteinSeqs",
+                        dest="proteinSeqs",
+                        type=str,
+                        default="",
+                        help="Protein sequences in FASTA format")
+
+    parser.add_argument("-o", "--output",
+                        dest="outputFile",
+                        type=str,
+                        default="",
+                        help="output file")
+
+    args = parser.parse_args()
+
+    if args.GffFile == "":
+        print("Error: please specify --GffFile", file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
+
+    if args.fastaFile == "":
+        print("Error: please specify --fastaFile", file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
+
+    if args.proteinSeqs == "":
+        print("Error: please specify --proteinSeqs", file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
+
+    if args.outputFile == "":
+        print("Error: please specify --output", file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
+
+    gffFile = args.GffFile
+    fastaFile = args.fastaFile
+    proteinSeqs = args.proteinSeqs
+    outputFile = args.outputFile
+
+    longestPeps(gffFile, fastaFile, proteinSeqs, outputFile)

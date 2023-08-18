@@ -26,8 +26,8 @@ gffread -g Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa -y sb.p.fa Sor
 
 ### Identify and extract the longest protein sequence encoded by each gene
 ```
-python3 longestPeps.py Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3 Zm-B73-REFERENCE-NAM-5.0.fa zea.p.fa maize.protein.fa
-python3 longestPeps.py Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3 Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa sb.p.fa sorghum.protein.fa
+python3 longestPeps.py -g Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3 -f Zm-B73-REFERENCE-NAM-5.0.fa -p zea.p.fa -o maize.protein.fa
+python3 longestPeps.py -g Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3 -f Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa -p sb.p.fa -o sorghum.protein.fa
 ```
 
 ### Protein sequence alignment
@@ -39,7 +39,7 @@ Conduct protein sequence alignment using BLASTp
 
 ### Put the gene strand information and the blast result into a single file
 ```
-python3 combineBlastAndStrandInformation.py Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3 Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3 sorghum.maize.blastp sorghum.maize.table
+python3 combineBlastAndStrandInformation.py -r Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3 -q Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3 -b sorghum.maize.blastp -o sorghum.maize.table
 ```
 
 This table could be visualized via the following R code:
@@ -54,17 +54,17 @@ changetoM <- function ( position ){
   paste(position, "M", sep="")
 }
 data =read.table("sorghum.maize.table")
-data$strand = data$V5==data$V10
+data$strand = data$V6==data$V12
 data[which(data$strand),]$strand = "+"
 data[which(data$strand==FALSE),]$strand = "-"
 
-data = data[which(data$V7 %in% c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")),]
+data = data[which(data$V8 %in% c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")),]
 data = data[which(data$V2 %in% c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10")),]
-data$V7 = factor(data$V7, levels=c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
+data$V8 = factor(data$V8, levels=c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
 data$V2 = factor(data$V2, levels=c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10"))
 
 
-plot = ggplot(data=data, aes(x=V8, y=V3))+geom_point(size=0.5, aes(color=V5))+facet_grid(V2~V7, scales="free", space="free" )+ theme_grey(base_size = 30) +
+plot = ggplot(data=data, aes(x=V10, y=V3))+geom_point(size=0.5, aes(color=strand))+facet_grid(V2~V8, scales="free", space="free" )+ theme_grey(base_size = 30) +
     labs(x="sorghum", y="maize")+scale_x_continuous(labels=changetoM) + scale_y_continuous(labels=changetoM) +
     theme(axis.line = element_blank(),
           panel.background = element_blank(),
