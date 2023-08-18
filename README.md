@@ -30,8 +30,17 @@ python3 longestPeps.py -g Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3 -f Zm-B73-RE
 python3 longestPeps.py -g Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3 -f Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa -p sb.p.fa -o sorghum.protein.fa
 ```
 
+
 ### Protein sequence alignment
-Conduct protein sequence alignment using BLASTp
+Conduct protein sequence alignment using DIAMOND
+```
+sed -i -e 's/\./*/g' maize.protein.fa
+sed -i -e 's/\./*/g' sorghum.protein.fa
+diamond makedb --in maize.protein.fa --db maize
+diamond blastp --db maize -q sorghum.protein.fa -k 5 -e 1e-10 -o sorghum.maize.blastp
+
+```
+Or conduct protein sequence alignment using BLASTp
 ```
 ./blast-2.2.26/bin/formatdb -p T -i maize.protein.fa -n maize.protein
 ./blast-2.2.26/bin/blastall -i sorghum.protein.fa -d maize.protein -p blastp -e 1e-10 -b 5 -v 5 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore " -o sorghum.maize.blastp
@@ -45,10 +54,6 @@ python3 combineBlastAndStrandInformation.py -r Zm-B73-REFERENCE-NAM-5.0_Zm00001e
 This table could be visualized via the following R code:
 ```
 library(ggplot2)
-library(compiler)
-enableJIT(3)
-library(ggplot2)
-library("Cairo")
 changetoM <- function ( position ){
   position=position/1000000;
   paste(position, "M", sep="")
@@ -63,7 +68,6 @@ data = data[which(data$V2 %in% c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6",
 data$V8 = factor(data$V8, levels=c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
 data$V2 = factor(data$V2, levels=c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10"))
 
-
 plot = ggplot(data=data, aes(x=V10, y=V3))+geom_point(size=0.5, aes(color=strand))+facet_grid(V2~V8, scales="free", space="free" )+ theme_grey(base_size = 30) +
     labs(x="sorghum", y="maize")+scale_x_continuous(labels=changetoM) + scale_y_continuous(labels=changetoM) +
     theme(axis.line = element_blank(),
@@ -72,7 +76,7 @@ plot = ggplot(data=data, aes(x=V10, y=V3))+geom_point(size=0.5, aes(color=strand
           axis.text.y = element_text( colour = "black"),
           legend.position='none',
           axis.text.x = element_text(angle=300, hjust=0, vjust=1, colour = "black") )
-CairoPNG("sorghum.maize.table.png" , width=2000, height=1500)
+png("sorghum.maize.table.png" , width=2000, height=1500)
 plot
 dev.off()
 ```
@@ -89,10 +93,6 @@ anchorwave pro -i sorghum.maize.table -n sorghum.maize.colinearity -R 1 -Q 2
 This file of `sorghum.maize.colinearity` could be visualized via the following R code:
 ```
 library(ggplot2)
-library(compiler)
-enableJIT(3)
-library(ggplot2)
-library("Cairo")
 changetoM <- function ( position ){
   position=position/1000000;
   paste(position, "M", sep="")
@@ -114,7 +114,7 @@ plot = ggplot(data=data, aes(x=queryStart, y=referenceStart))+geom_point(size=0.
           legend.position='none',
           axis.text.x = element_text(angle=300, hjust=0, vjust=1, colour = "black") )
 
-CairoPNG("sorghum.maize.colinearity.png" , width=2000, height=1500)
+png("sorghum.maize.colinearity.png" , width=2000, height=1500)
 plot
 dev.off()
 ```
