@@ -1,5 +1,5 @@
 # quota_Anchor
-There is the transcripts and documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
+Here are the scripts and documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
 ## Dependencies
 AnchorWave \
 [gffread](https://github.com/gpertea/gffread) \
