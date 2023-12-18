@@ -49,7 +49,7 @@ void orthologPairSortQuery(std::vector<AlignmentMatch> &pairedSimilarFragments) 
         }
         if ((a.getQueryChr() == b.getQueryChr()) && (a.getRefChr() == b.getRefChr())
             && (a.getQueryStartPos() == b.getQueryStartPos()) && (a.getScore() == b.getScore()) &&
-            a.getRefStartPos() < b.getRefStartPos()){
+                (a.getRefStartPos() < b.getRefStartPos())){
             return true;
         }
         return false;
@@ -74,7 +74,7 @@ void orthologPairSortReference(std::vector<AlignmentMatch> &pairedSimilarFragmen
         }
         if ((a.getQueryChr() == b.getQueryChr()) && (a.getRefChr() == b.getRefChr())
             && (a.getRefStartPos() == b.getRefStartPos()) && (a.getScore() == b.getScore()) &&
-            a.getRefStartPos() < b.getRefStartPos()){
+                (a.getQueryStartPos() < b.getQueryStartPos())){
             return true;
         }
         return false;

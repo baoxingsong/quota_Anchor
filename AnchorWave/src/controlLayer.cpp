@@ -1561,6 +1561,8 @@ int pro(int argc, char **argv) {
         }
 //        std::cout << "line1562" << std::endl;
         std::string line;
+//        std::ofstream logfile_input_process;
+//        logfile_input_process.open("/home/xiaodong/Desktop/check_input_process.txt");
         // prepare data in RAM begin
         while (std::getline(infile, line)) {
             std::vector<std::string> elems;
@@ -1590,17 +1592,30 @@ int pro(int argc, char **argv) {
                                         refGene, queryGene);
             orthologPair.setRefId(refId);
             orthologPair.setQueryId(queryId);
+//            logfile_input_process << "line1595" << "\t" << orthologPair.getQueryGeneName() << "\t" << orthologPair.getQueryStartPos() << "\t"
+//            << orthologPair.getQueryChr() << "\t" << orthologPair.getReferenceGeneName() << "\t" << orthologPair.getRefStartPos() << "\t"
+//            << orthologPair.getRefChr() << "\t" << orthologPair.getScore() << std::endl;
             alignmentMatchsMapT.push_back(orthologPair);
         }
         infile.close();
         // prepare data in RAM end
-        std::cout << "line1596" << std::endl;
+//        std::cout << "line1596" << std::endl;
 
+//        std::ofstream logfile;
+//        logfile.open("/home/xiaodong/Desktop/core_error.txt");
+//        std::ofstream sortfile;
+//        sortfile.open("/home/xiaodong/Desktop/sortfile.txt");
         if (delete_tandem !=0 ) {
-//            std::cout << "line1600" << std::endl;
+//            std::cout << "line1600_sort_start" << std::endl;
             // sort by querychr refchr querystart and identity/100,respectively.
             orthologPairSortQuery(alignmentMatchsMapT);
-//            std::cout << "line1603" << std::endl;
+//            for (const auto & i : alignmentMatchsMapT) {
+//                sortfile << "\t" << i.getQueryGeneName() << "\t" << i.getQueryStartPos() << "\t"
+//                         << i.getQueryChr() << "\t" << i.getQueryId() << "\t" << i.getReferenceGeneName() << "\t" << i.getRefStartPos() << "\t"
+//                         << i.getRefChr() << "\t" << i.getRefId() << "\t" << i.getScore() << std::endl;
+//            }
+//            std::cout << int(alignmentMatchsMapT.size()) << std::endl;
+//            std::cout << "line1603_sort_end" << std::endl;
             // filter ref tandem gene by threshold five. This thought comes from MCScanX.
             std::vector<AlignmentMatch>::const_iterator it1, prev_pair1;
             std::vector<AlignmentMatch> alignmentMatchsMapT_cpy1;
@@ -1611,28 +1626,34 @@ int pro(int argc, char **argv) {
             match_bin1.push_back(*prev_pair1);
             // match_bin1[0] has a maximum identity value in the match_bin by orthologPairSortQuery function.
             for (; it1 != alignmentMatchsMapT.end(); it1++) {
-//                std::cout << "line1614" << std::endl;
+//                logfile << "line1616" << "\t" << (*it1).getQueryGeneName() << std::endl;
                 if (it1->getRefChr() == prev_pair1->getRefChr() && it1->getQueryChr() == prev_pair1->getQueryChr()) {
                     if ((it1->getQueryId() != prev_pair1->getQueryId()) ||
                         (std::abs(it1->getRefId() - prev_pair1->getRefId()) > OVER_LAP_WINDOW)) {
+//                        logfile << "line1620" << "\t" << match_bin1[0].getQueryGeneName() << std::endl;
+//                        std::cout << match_bin1.size() << std::endl;
                         alignmentMatchsMapT_cpy1.push_back(match_bin1[0]);
                         match_bin1.clear();
                     }
                     match_bin1.push_back(*it1);
+//                    logfile << "line1625" << "\t" << (*it1).getQueryGeneName() << "\t" << (*it1).getQueryStartPos() << "\t"
+//                    << (*it1).getQueryChr() << "\t" << (*it1).getReferenceGeneName() << "\t" << (*it1).getRefStartPos() << "\t"
+//                    << (*it1).getRefChr() << "\t" << (*it1).getScore() << std::endl;
+//                    logfile << "line1625" << "\t" << (*it1).getQueryGeneName() << std::endl;
                 } else if (it1->getRefChr() != prev_pair1->getRefChr() ||
                            it1->getQueryChr() != prev_pair1->getQueryChr()) {
-//                    std::cout << "line1624" << std::endl;
+//                    logfile << "line1628" << "\t" << it1->getQueryChr() << "\t" << it1->getRefChr() << std::endl;
                     alignmentMatchsMapT_cpy1.push_back(match_bin1[0]);
                     match_bin1.clear();
                     prev_pair1 = it1;
-                    it1++;
                     match_bin1.push_back(*prev_pair1);
                     continue;
                 }
                 prev_pair1 = it1;
             }
-            std::cout << "line1634" << std::endl;
+//            std::cout << "line1638" << std::endl;
             alignmentMatchsMapT_cpy1.push_back(match_bin1[0]);  //the last bin
+//            std::cout << match_bin1[0].getQueryGeneName() << std::endl;
             alignmentMatchsMapT.clear();
             alignmentMatchsMapT = alignmentMatchsMapT_cpy1;
             alignmentMatchsMapT_cpy1.clear();
@@ -1661,7 +1682,6 @@ int pro(int argc, char **argv) {
                     alignmentMatchsMapT_cpy2.push_back(match_bin2[0]);
                     match_bin2.clear();
                     prev_pair2 = it2;
-                    it2++;
                     match_bin2.push_back(*prev_pair2);
                     continue;
                 }
@@ -1672,7 +1692,7 @@ int pro(int argc, char **argv) {
             alignmentMatchsMapT = alignmentMatchsMapT_cpy2;
             alignmentMatchsMapT_cpy2.clear();
         }
-        std::cout << "line1670" << std::endl;
+//        std::cout << "line1670" << std::endl;
 
 
         // begin setting index, they are necessary in the longest path approach
