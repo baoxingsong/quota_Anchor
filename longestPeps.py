@@ -13,16 +13,17 @@ import math
 
 _buckets = []
 
+
 def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
-    chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict = GffFile.readGff( gffFile )
-    chromosome_names, fastas = FastaFile.readFastaFile( fastaFile )
+    chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict = GffFile.readGff(gffFile)
+    chromosome_names, fastas = FastaFile.readFastaFile(fastaFile)
     pep_names, pep_fastas = FastaFile.readFastaFile(proteinSeqs)
     GffFile.update_sequence_information(fastas, chromosome_gene_dict)
     output = open(outputFile, 'w')
-    #get the gene with longest length
-    #delete ORF-shift transcript
-    #delete gene without transcript
-    #keep only one transcript for each gene
+    # get the gene with longest length
+    # delete ORF-shift transcript
+    # delete gene without transcript
+    # keep only one transcript for each gene
     for chromosome_name in chromosome_names:
         gene_names_to_delete = []
         if (chromosome_name in chromosome_gene_dict) and len(chromosome_gene_dict[chromosome_name])>1:
@@ -40,11 +41,11 @@ def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
                             transcript_number = transcript_number - 1
                         transcript_number = transcript_number + 1
 
-                ##delete transcript so that the there is only one transcript left for each gene
-                while len(chromosome_gene_dict[chromosome_name][gene_name].transcripts)>1:
+                # delete transcript so that the there is only one transcript left for each gene
+                while len(chromosome_gene_dict[chromosome_name][gene_name].transcripts) > 1:
                     chromosome_gene_dict[chromosome_name][gene_name].transcripts = np.delete(chromosome_gene_dict[chromosome_name][gene_name].transcripts, 1, 0)
-                #delete those genes contrains no transcript
-                if len(chromosome_gene_dict[chromosome_name][gene_name].transcripts) == 0 :
+                # delete those genes contrains no transcript
+                if len(chromosome_gene_dict[chromosome_name][gene_name].transcripts) == 0:
                     gene_names_to_delete.append(gene_name)
 
             for gene_name in gene_names_to_delete:
@@ -59,7 +60,6 @@ def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
 
     output.close()
     return chromosome_gene_dict
-
 
 
 if __name__ == '__main__':
