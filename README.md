@@ -20,8 +20,8 @@ gunzip *gz
 
 ### Extract and translate protein sequences from genome sequences and annotations
 ```
-gffread -g Zm-B73-REFERENCE-NAM-5.0.fa -y zea.p.fa Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3
-gffread -g Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa -y sb.p.fa Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3
+gffread -g Zm-B73-REFERENCE-NAM-5.0.fa -y zea.p.fa Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3 -S
+gffread -g Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa -y sb.p.fa Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3 -S
 ```
 
 ### Identify and extract the longest protein sequence encoded by each gene
@@ -34,8 +34,6 @@ python3 longestPeps.py -g Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3 -f Sorg
 ### Protein sequence alignment
 Conduct protein sequence alignment using DIAMOND
 ```
-sed -i -e 's/\./*/g' maize.protein.fa
-sed -i -e 's/\./*/g' sorghum.protein.fa
 diamond makedb --in maize.protein.fa --db maize
 diamond blastp --db maize -q sorghum.protein.fa -k 5 -e 1e-10 -o sorghum.maize.blastp
 
@@ -72,7 +70,7 @@ plot = ggplot(data=data, aes(x=V10, y=V4))+geom_point(size=0.5, aes(color=strand
     labs(x="sorghum", y="maize")+scale_x_continuous(labels=changetoM) + scale_y_continuous(labels=changetoM) +
     theme(axis.line = element_blank(),
           panel.background = element_blank(),
-          panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"),
+          panel.border = element_rect(fill=NA,color="black", linewidth=0.5, linetype="solid"),
           axis.text.y = element_text( colour = "black"),
           legend.position='none',
           axis.text.x = element_text(angle=300, hjust=0, vjust=1, colour = "black") )
@@ -87,7 +85,7 @@ dev.off()
 ### Conduct strand and WGD aware syntenic gene identification using AnchorWave
 
 ```
-anchorwave pro -i sorghum.maize.table -n sorghum.maize.colinearity -R 1 -Q 2
+anchorwave pro -i sorghum.maize.table -o sorghum.maize.colinearity -R 1 -Q 2
 ```
 
 This file of `sorghum.maize.colinearity` could be visualized via the following R code:
@@ -109,7 +107,7 @@ plot = ggplot(data=data, aes(x=queryStart, y=referenceStart))+geom_point(size=0.
     labs(x="sorghum", y="maize")+scale_x_continuous(labels=changetoM) + scale_y_continuous(labels=changetoM) +
     theme(axis.line = element_blank(),
           panel.background = element_blank(),
-          panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"),
+          panel.border = element_rect(fill=NA,color="black", linewidth=0.5, linetype="solid"),
           axis.text.y = element_text( colour = "black"),
           legend.position='none',
           axis.text.x = element_text(angle=300, hjust=0, vjust=1, colour = "black") )
