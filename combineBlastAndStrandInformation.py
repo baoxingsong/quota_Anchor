@@ -3,17 +3,18 @@ import sys
 from argparse import ArgumentParser
 # baoxing.song@pku-iaas.edu.cn
 
+
 def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile):
     target_output = open(outputFile, 'w')
-    refChromosome_gene_dict, refChromosome_gene_list, ref_GeneName_toChr_dict = GffFile.readGff( refGffFile )
-    queryChromosome_gene_dict, queryChromosome_gene_list, query_GeneName_toChr_dict = GffFile.readGff( queryGffFile )
+    refChromosome_gene_dict, refChromosome_gene_list, ref_GeneName_toChr_dict = GffFile.readGff(refGffFile)
+    queryChromosome_gene_dict, queryChromosome_gene_list, query_GeneName_toChr_dict = GffFile.readGff(queryGffFile)
 
     refGeneIndex = dict()
 
     for refChr in refChromosome_gene_list:
         i = 0
         while i < len(refChromosome_gene_list[refChr]):
-            refGeneIndex[refChromosome_gene_list[refChr][i].name] = i
+            refGeneIndex[refChromosome_gene_list[refChr][i].name] = i + 1
             i += 1
 
     queryGeneIndex = dict()
@@ -21,7 +22,7 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile):
     for queryChr in queryChromosome_gene_list:
         i = 0
         while i < len(queryChromosome_gene_list[queryChr]):
-            queryGeneIndex[queryChromosome_gene_list[queryChr][i].name] = i
+            queryGeneIndex[queryChromosome_gene_list[queryChr][i].name] = i + 1
             i += 1
 
     match_pairs = set()
@@ -30,7 +31,7 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile):
             elements = line.split()
             qseqid = elements[0]
             sseqid = elements[1]
-            pident = str(float(elements[2])/100.0)
+            pident = str(float(elements[2]))
             length = int(elements[3])
             mismatch = elements[4]
             gapopen = elements[5]
@@ -42,15 +43,15 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile):
             bitscore = float(elements[11])
             
             match_pair = sseqid + "_" + qseqid
-            if (match_pair not in match_pairs) and (bitscore>250) and (length>250):
+            if (match_pair not in match_pairs) and (bitscore > 250) and (length > 250):
                 match_pairs.add(match_pair)
                 target_output.write(sseqid + "\t" + ref_GeneName_toChr_dict[sseqid] + "\t" + str(refGeneIndex[sseqid]) + "\t"
                                     + str(refChromosome_gene_dict[ref_GeneName_toChr_dict[sseqid]][sseqid].start) + "\t"
-                                    + str(refChromosome_gene_dict[ref_GeneName_toChr_dict[sseqid]][sseqid].end) +"\t"
-                                    + refChromosome_gene_dict[ref_GeneName_toChr_dict[sseqid]][sseqid].strand +"\t"
+                                    + str(refChromosome_gene_dict[ref_GeneName_toChr_dict[sseqid]][sseqid].end) + "\t"
+                                    + refChromosome_gene_dict[ref_GeneName_toChr_dict[sseqid]][sseqid].strand + "\t"
                                     + qseqid + "\t" + query_GeneName_toChr_dict[qseqid] + "\t" + str(queryGeneIndex[qseqid]) + "\t" +
                                     str(queryChromosome_gene_dict[query_GeneName_toChr_dict[qseqid]][qseqid].start) + "\t" +
-                                    str(queryChromosome_gene_dict[query_GeneName_toChr_dict[qseqid]][qseqid].end) +"\t" +
+                                    str(queryChromosome_gene_dict[query_GeneName_toChr_dict[qseqid]][qseqid].end) + "\t" +
                                     queryChromosome_gene_dict[query_GeneName_toChr_dict[qseqid]][qseqid].strand + "\t" + pident + "\n")
 
     target_output.close()
