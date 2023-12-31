@@ -1,4 +1,4 @@
-import GffFile
+from lib import GffFile
 import sys
 from argparse import ArgumentParser
 # baoxing.song@pku-iaas.edu.cn
