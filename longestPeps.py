@@ -1,17 +1,12 @@
 #!python
 
-import NucleotideCodeSubstitution
-import FastaFile
-import GffFile
-import MyUtil
+from lib import GffFile
+from lib import FastaFile
 import sys
 import numpy as np
 from argparse import ArgumentParser
-import math
 
 # baoxing.song@pku-iaas.edu.cn
-
-_buckets = []
 
 
 def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):

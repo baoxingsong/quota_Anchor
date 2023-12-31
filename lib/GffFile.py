@@ -1,7 +1,7 @@
 #!python
 import re
 import numpy as np
-import FastaFile
+from lib import FastaFile
 
 # baoxing.song@pku-iaas.edu.cn
 
