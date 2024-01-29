@@ -12,6 +12,10 @@ argparse \
 configparser \
 BLAST or [DIAMOND](https://github.com/bbuchfink/diamond)
 ## Usage
+### Help info
+```
+python main.py -h
+```
 ### Data prepare
 ```
 wget https://download.maizegdb.org/Zm-B73-REFERENCE-NAM-5.0/Zm-B73-REFERENCE-NAM-5.0.fa.gz
