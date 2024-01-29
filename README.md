@@ -5,8 +5,35 @@ AnchorWave \
 [gffread](https://github.com/gpertea/gffread) \
 python3 \
 [NumPy](https://numpy.org/) \
+subprocess \
+plotnine \
+pandas \
+argparse \
+configparser \
 BLAST or [DIAMOND](https://github.com/bbuchfink/diamond)
-## Example
+## Usage
+### Data prepare
+```
+wget https://download.maizegdb.org/Zm-B73-REFERENCE-NAM-5.0/Zm-B73-REFERENCE-NAM-5.0.fa.gz
+wget https://download.maizegdb.org/Zm-B73-REFERENCE-NAM-5.0/Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/sorghum_bicolor/dna/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/gff3/sorghum_bicolor/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3.gz
+gunzip *gz
+```
+### Conduct strand and WGD aware syntenic gene identification using AnchorWave
+```
+python main.py col
+```
+### Visualizing tablefile which includes the gene strand information and the blast result
+```
+python main.py dotplot
+```
+### Visualizing collinearity result which conducts strand and WGD aware syntenic gene identification using AnchorWave
+```
+python main.py blast_dotplot
+```
+
+## Example（manual）
 ### Genome and annotation data preparation
 Here is an example to identify syntenic genes between maize and sorghum. The maize lineage has undergone a whole genome duplication (WGD) since its divergence with sorghum, but subsequent chromosomal fusions resulted in these species having the same chromosome number (n = 10). AnchorWave can allow up to two collinear paths for each sorghum anchor while one collinear path for each maize anchor.
 
