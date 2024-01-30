@@ -6,8 +6,8 @@ from argparse import ArgumentParser
 
 def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile):
     target_output = open(outputFile, 'w')
-    refChromosome_gene_dict, refChromosome_gene_list, ref_GeneName_toChr_dict = GffFile.readGff(refGffFile)
-    queryChromosome_gene_dict, queryChromosome_gene_list, query_GeneName_toChr_dict = GffFile.readGff(queryGffFile)
+    refChromosome_gene_dict, refChromosome_gene_list, ref_GeneName_toChr_dict, _ = GffFile.readGff(refGffFile)
+    queryChromosome_gene_dict, queryChromosome_gene_list, query_GeneName_toChr_dict, _ = GffFile.readGff(queryGffFile)
 
     refGeneIndex = dict()
 

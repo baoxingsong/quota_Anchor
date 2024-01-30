@@ -10,7 +10,8 @@ from argparse import ArgumentParser
 
 
 def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
-    chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict = GffFile.readGff(gffFile)
+    longest_trans_name = []
+    chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict, _ = GffFile.readGff(gffFile)
     chromosome_names, fastas = FastaFile.readFastaFile(fastaFile)
     pep_names, pep_fastas = FastaFile.readFastaFile(proteinSeqs)
     GffFile.update_sequence_information(fastas, chromosome_gene_dict)
@@ -52,9 +53,10 @@ def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
                 output.write(">" + gene_name + "\n")
                 output.write(pep_fastas[chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name].seq)
                 output.write("\n")
+                longest_trans_name.append(chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name)
 
     output.close()
-    return chromosome_gene_dict
+    return chromosome_gene_dict, longest_trans_name
 
 
 if __name__ == '__main__':

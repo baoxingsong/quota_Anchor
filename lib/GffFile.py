@@ -175,7 +175,7 @@ def readGff(gffFilePath):
         gene_list = np.sort(gene_list)
         chromosome_gene_list[chromosome_name] = gene_list
 
-    return chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict
+    return chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict, fake_transcript_gene_map
 
 
 def update_sequence_information_onechromosome(fastas, chromosome_gene_dict, chromosome_name):
