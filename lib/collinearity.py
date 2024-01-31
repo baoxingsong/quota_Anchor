@@ -1,6 +1,5 @@
 import subprocess
-import longestPeps
-import combineBlastAndStrandInformation
+from lib import longestPeps, combineBlastAndStrandInformation
 
 
 class Collinearity:

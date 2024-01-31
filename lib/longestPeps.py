@@ -1,7 +1,6 @@
 #!python
 
-from lib import GffFile
-from lib import FastaFile
+from lib import GffFile, FastaFile
 import sys
 import numpy as np
 from argparse import ArgumentParser
