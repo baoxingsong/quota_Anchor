@@ -41,6 +41,14 @@ python main.py dotplot
 ```
 python main.py blast_dotplot
 ```
+### Get merged protein file and merged cds file as input of ks
+```
+python main.py pre_ks
+```
+### Collinearity gene pair ks and ka
+```
+python main.py ks
+```
 
 ## Example（manual）
 ### Genome and annotation data preparation
