@@ -24,9 +24,14 @@ wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/sorghum_bi
 wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/gff3/sorghum_bicolor/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3.gz
 gunzip *gz
 ```
-### Conduct strand and WGD aware syntenic gene identification using AnchorWave
+### Modify config file
+### Conduct strand and WGD aware syntenic gene identification using AnchorWave(using Diamond alignment)
 ```
 python main.py col
+```
+### Conduct strand and WGD aware syntenic gene identification using AnchorWave(using blastp alignment)
+```
+python main.py blast_col
 ```
 ### Visualizing tablefile which includes the gene strand information and the blast result
 ```
