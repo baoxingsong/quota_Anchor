@@ -12,6 +12,14 @@ def run_coll():
     collinearity.Collinearity(config_par, config_soft).run_all_processes()
 
 
+def run_blast_coll():
+    config_par = configparser.ConfigParser()
+    config_par.read('./config_file/collinearity.conf')
+    config_soft = configparser.ConfigParser()
+    config_soft.read('./config_file/software_path.ini')
+    collinearity.Collinearity(config_par, config_soft).run_all_processes_blastp()
+
+
 def run_dotplot():
     config_par = configparser.ConfigParser()
     config_par.read('./config_file/dotplot.conf')
@@ -32,6 +40,9 @@ if __name__ == '__main__':
     # produce collinearity file
     parser_sub1 = subparsers1.add_parser('col', help='get gene collinearity file by AnchorWave pro command')
     parser_sub1.set_defaults(func=run_coll)
+    # produce collinearity file(blast makedb)
+    parser_sub1 = subparsers1.add_parser('blast_col', help='blastp make database and alignment, get gene collinearity file by AnchorWave pro command')
+    parser_sub1.set_defaults(func=run_blast_coll)
     # collinearity dotplot
     parser_sub1 = subparsers1.add_parser('dotplot', help='dot plot by AnchorWave pro command')
     parser_sub1.set_defaults(func=run_dotplot)
