@@ -1,14 +1,10 @@
 # This script is modified from WGDI's ks.py
 
 import subprocess
-
 import pandas as pd
 import os
-# from io import StringIO
-
 import numpy as np
 from Bio import SeqIO
-# from Bio.Align.Applications import MafftCommandline, MuscleCommandline
 from Bio.Phylo.PAML import yn00
 
 
@@ -56,6 +52,7 @@ class Ks:
         self.cds_file = config_pra['ks']['cds_file']
         self.pep_file = config_pra['ks']['pep_file']
         self.ks_file = config_pra['ks']['ks_file']
+        self.type = config_pra['ks']['type']
 
     def pair_kaks(self, k):
         self.align()
@@ -71,7 +68,7 @@ class Ks:
 
     def align(self):
         if self.align_software == 'mafft':
-            command_line = [self.mafft, "--auto", self.pair_pep_file]
+            command_line = [self.mafft, "--quiet", "--auto", self.pair_pep_file]
             try:
                 with open(self.prot_align_file, 'w') as output_file:
                     subprocess.run(command_line, stdout=output_file, check=True)
@@ -82,10 +79,10 @@ class Ks:
             try:
                 subprocess.run(command_line, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except subprocess.CalledProcessError as e:
-                print("class_Ks's function run_gff_read_get_cds failed: ", e)
+                print("class_Ks's function align failed: ", e)
 
     def run_pal2nal(self):
-        command_line = ['perl', self.pal2nal, self.prot_align_file, self.pair_cds_file, '-output', 'paml', '-nogap']
+        command_line = [self.pal2nal, self.prot_align_file, self.pair_cds_file, '-output', 'paml', '-nogap']
         try:
             with open(self.mrtrans, 'w') as output_file:
                 subprocess.run(command_line, stdout=output_file, check=True)
@@ -101,8 +98,8 @@ class Ks:
         yn.set_options(icode=0, commonf3x4=0, weighting=0, verbose=1)
         try:
             run_result = yn.run(command=self.yn00)
-        except:
-            print("class ks function run_yn00 failed")
+        except Exception as e:
+            print("class ks function run_yn00 failed", e)
             run_result = None
         return run_result
 
@@ -114,23 +111,32 @@ class Ks:
         if os.path.exists(self.ks_file):
             ks = pd.read_csv(self.ks_file, sep='\t')
             ks = ks.drop_duplicates()
-            # kscopy = ks.copy()
-            # names = ks.columns.tolist()
-            # names[0], names[1] = names[1], names[0]
-            # kscopy.columns = names
-            # ks = pd.concat([ks, kscopy])
+            kscopy = ks.copy()
+            names = ks.columns.tolist()
+            names[0], names[1] = names[1], names[0]
+            kscopy.columns = names
+            ks = pd.concat([ks, kscopy])
             ks['id'] = ks['id1']+','+ks['id2']
+            # df_pairs.index length equal to len(df_pairs)
+            # query_ref intersect1d query_ref and ref_query in the interspecific, ks = pd.concat([ks, kscopy]) is useless
+            # when len(df_pairs.index) "fake_less than" len(ks['id'].to_numpy()) this is useless
+            # when coll have five duplicate and ks have one duplicate, don't add
+            # when coll have more pair than ks , this maybe useful
+            # intra specific, add A B or B A
             df_pairs.drop(np.intersect1d(df_pairs.index,
                                          ks['id'].to_numpy()), inplace=True)
             ks_file = open(self.ks_file, 'a+')
         else:
+            # maybe have duplicate and length equal to len(df_pairs) in the interspecific
+            # maybe don't have duplicate and length don't equal to len(df_pairs) in the intraspecific
+            # only retain A B or B A
             ks_file = open(self.ks_file, 'w')
             ks_file.write(
                 '\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])+'\n')
         df_pairs = df_pairs[(df_pairs[0].isin(cds.keys())) & (df_pairs[1].isin(
             cds.keys())) & (df_pairs[0].isin(pep.keys())) & (df_pairs[1].isin(pep.keys()))]
         pairs = df_pairs[[0, 1]].to_numpy()
-        if len(pairs) > 0 and pairs[0][0][:3] == pairs[0][1][:3]:
+        if len(pairs) > 0 and self.type == 'intra':
             allpairs = []
             pair_hash = {}
             for k in pairs:
@@ -151,7 +157,7 @@ class Ks:
             SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
             SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
             kaks = self.pair_kaks(['gene1', 'gene2'])
-            if kaks is None:
+            if not kaks:
                 continue
             ks_file.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
         ks_file.close()

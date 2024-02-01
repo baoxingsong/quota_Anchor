@@ -48,5 +48,3 @@ class Prepare:
         longestCds.longest_cds(self.ref_gff_file, self.ref_genome_seq, self.raw_ref_prot, self.output_ref_cds_seq, self.out_ref_cds)
         cat_cds_pep(self.cds1, self.cds2, self.cds_file)
         cat_cds_pep(self.pep1, self.pep2, self.pep_file)
-
-
