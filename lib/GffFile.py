@@ -1,4 +1,3 @@
-#!python
 import re
 import numpy as np
 from lib import FastaFile

@@ -5,19 +5,19 @@ import numpy as np
 
 class Dotplot:
     def __init__(self, config_pra):
-        self.input_file = config_pra['collinearity_dotplot']['input_file']
-        self.special_query_chr = config_pra['collinearity_dotplot']['special_query_chr']
-        self.special_ref_chr = config_pra['collinearity_dotplot']['special_ref_chr']
-        self.query_name = config_pra['collinearity_dotplot']['query_name']
-        self.ref_name = config_pra['collinearity_dotplot']['ref_name']
-        self.figure = config_pra['collinearity_dotplot']['figure']
+        self.input_file = config_pra['dotplot']['input_file']
+        self.special_query_chr = config_pra['dotplot']['special_query_chr']
+        self.special_ref_chr = config_pra['dotplot']['special_ref_chr']
+        self.query_name = config_pra['dotplot']['query_name']
+        self.ref_name = config_pra['dotplot']['ref_name']
+        self.figure = config_pra['dotplot']['figure']
 
     def run_coll_dotplot(self):
         dict1 = {"x": "queryStart", "y": "referenceStart"}
         dict2 = {"color": "strand"}
         query_chr = self.special_query_chr.split(sep=",")
         ref_chr = self.special_ref_chr.split(sep=",")
-        coll_df = pd.read_csv(self.input_file, header=0, sep="\t", comment="#")
+        coll_df = pd.read_csv(self.input_file, header=0, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
@@ -47,22 +47,12 @@ class Dotplot:
         plot1.save(str(self.query_name) + "_" + str(self.ref_name) + "_" + "collinearity" + "." + str(self.figure),
                    width=1500, height=1200, units="mm", limitsize=False)
 
-
-class BlastDotplot:
-    def __init__(self, config_pra):
-        self.input_file = config_pra['blast_dotplot']['input_file']
-        self.special_query_chr = config_pra['blast_dotplot']['special_query_chr']
-        self.special_ref_chr = config_pra['blast_dotplot']['special_ref_chr']
-        self.query_name = config_pra['blast_dotplot']['query_name']
-        self.ref_name = config_pra['blast_dotplot']['ref_name']
-        self.figure = config_pra['blast_dotplot']['figure']
-
     def run_blast_dotplot(self):
         dict1 = {"x": "queryStart", "y": "referenceStart"}
         dict2 = {"color": "strand"}
         query_chr = self.special_query_chr.split(sep=",")
         ref_chr = self.special_ref_chr.split(sep=",")
-        coll_df = pd.read_csv(self.input_file, header=None, sep="\t", comment="#")
+        coll_df = pd.read_csv(self.input_file, header=None, sep="\t", comment="#", low_memory=False)
         coll_df.columns = ["refGene", "refChr", "refId", "referenceStart", "referenceEnd", "refStrand",
                            "queryGene",	"queryChr", "queryId", "queryStart", "queryEnd", "queryStrand", "identity"]
         coll_df["strand"] = np.where(coll_df["refStrand"] == coll_df["queryStrand"], '+', '-')
@@ -94,3 +84,11 @@ class BlastDotplot:
         plot1 = plot + my_theme + theme_grey(base_size=40) + labs(x=self.query_name, y=self.ref_name)
         plot1.save(str(self.query_name) + "_" + str(self.ref_name) + "_" + "table" + "." + str(self.figure),
                    width=1500, height=1200, units="mm", limitsize=False)
+
+    def run(self):
+        with open(self.input_file, 'r') as file:
+            first_line = file.readline()
+        if first_line.startswith("#"):
+            self.run_coll_dotplot()
+        else:
+            self.run_blast_dotplot()

@@ -1,4 +1,3 @@
-#!python
 import re
 
 # baoxing.song@pku-iaas.edu.cn
