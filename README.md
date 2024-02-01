@@ -25,21 +25,17 @@ wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/gff3/sorghum_bic
 gunzip *gz
 ```
 ### Modify config file
-### Conduct strand and WGD aware syntenic gene identification using AnchorWave(using Diamond alignment)
+### Get longest protein and AnchorWave pro(collinearity) input file
+```
+python main.py pre_col
+```
+### Conduct strand and WGD aware syntenic gene identification using AnchorWave
 ```
 python main.py col
 ```
-### Conduct strand and WGD aware syntenic gene identification using AnchorWave(using blastp alignment)
-```
-python main.py blast_col
-```
-### Visualizing tablefile which includes the gene strand information and the blast result
+### Visualizing 
 ```
 python main.py dotplot
-```
-### Visualizing collinearity result which conducts strand and WGD aware syntenic gene identification using AnchorWave
-```
-python main.py blast_dotplot
 ```
 ### Get merged protein file and merged cds file as input of ks
 ```
