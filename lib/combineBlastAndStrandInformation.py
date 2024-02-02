@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 # baoxing.song@pku-iaas.edu.cn
 
 
-def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile):
+def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_score, align_length):
     target_output = open(outputFile, 'w')
     refChromosome_gene_dict, refChromosome_gene_list, ref_GeneName_toChr_dict, _ = GffFile.readGff(refGffFile)
     queryChromosome_gene_dict, queryChromosome_gene_list, query_GeneName_toChr_dict, _ = GffFile.readGff(queryGffFile)
@@ -43,7 +43,7 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile):
             bitscore = float(elements[11])
             
             match_pair = sseqid + "_" + qseqid
-            if (match_pair not in match_pairs) and (bitscore > 250) and (length > 250):
+            if (match_pair not in match_pairs) and (bitscore > bit_score) and (length > align_length):
                 match_pairs.add(match_pair)
                 target_output.write(sseqid + "\t" + ref_GeneName_toChr_dict[sseqid] + "\t" + str(refGeneIndex[sseqid]) + "\t"
                                     + str(refChromosome_gene_dict[ref_GeneName_toChr_dict[sseqid]][sseqid].start) + "\t"
@@ -81,6 +81,18 @@ if __name__ == '__main__':
                         default="",
                         help="output file")
 
+    parser.add_argument("-s", "--bitscore",
+                        dest="bitscore",
+                        type=int,
+                        default=250,
+                        help="BLAST result bitscore minimum")
+
+    parser.add_argument("-l", "--align_length",
+                        dest="align_length",
+                        type=int,
+                        default=250,
+                        help="BLAST result align_length minimum")
+
     args = parser.parse_args()
 
     if args.refGffFile == "":
@@ -107,4 +119,6 @@ if __name__ == '__main__':
     queryGffFile = args.queryGffFile
     blastpresult = args.blastpresult
     outputFile = args.outputFile
-    anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile)
+    bitscore = args.bitscore
+    align_length = args.align_length
+    anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bitscore, align_length)
