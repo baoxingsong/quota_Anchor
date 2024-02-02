@@ -43,7 +43,7 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_sco
             bitscore = float(elements[11])
             
             match_pair = sseqid + "_" + qseqid
-            if (match_pair not in match_pairs) and (bitscore > bit_score) and (length > align_length):
+            if (match_pair not in match_pairs) and (bitscore > float(bit_score)) and (length > float(align_length)):
                 match_pairs.add(match_pair)
                 target_output.write(sseqid + "\t" + ref_GeneName_toChr_dict[sseqid] + "\t" + str(refGeneIndex[sseqid]) + "\t"
                                     + str(refChromosome_gene_dict[ref_GeneName_toChr_dict[sseqid]][sseqid].start) + "\t"
