@@ -40,6 +40,8 @@ class Prepare:
             self.outfmt = config_pra['blastp']['outfmt']
 
         self.out_file = config_pra['combineBlastAndStrand']['out_file']
+        self.bitscore = config_pra['combineBlastAndStrand']['bitscore']
+        self.align_length = config_pra['combineBlastAndStrand']['align_length']
 
     def run_gff_read_get_protein(self, fasta, gff, output_protein_file):
         command_line = [self.gffread, '-g', fasta, '-y', output_protein_file, gff, self.S]
@@ -90,4 +92,5 @@ class Prepare:
             self.mkblastdb(self.out_ref_longest_pep_name, self.blast_database, self.dtype)
             self.run_blastp(self.blast_database, self.out_query_longest_pep_name, self.blast_result, self.e_value, self.num_thread, self.outfmt)
 
-        combineBlastAndStrandInformation.anchorwave_quota(self.ref_gff_file, self.query_gff_file, self.blast_result, self.out_file)
+        combineBlastAndStrandInformation.anchorwave_quota(self.ref_gff_file, self.query_gff_file, self.blast_result, self.out_file, self.bitscore
+                                                          , self.align_length)
