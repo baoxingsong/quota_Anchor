@@ -2,12 +2,21 @@ import subprocess
 from lib import longestCds
 
 
-def cat_cds_pep(cds_pep1, cds_pep2, merge_file):
-    try:
-        with open(merge_file, 'w') as output_file:
-            subprocess.run(["cat", cds_pep1, cds_pep2], stdout=output_file, check=True)
-    except subprocess.CalledProcessError as e:
-        print("script ks' s function cat_cds_pep failed: ", e)
+# def merge_cds_pep(cds_pep1, cds_pep2, merge_file):
+#
+#     try:
+#         with open(merge_file, 'w') as output_file:
+#             subprocess.run(["cat", cds_pep1, cds_pep2], stdout=output_file, check=True)
+#     except subprocess.CalledProcessError as e:
+#         print("script ks' s function cat_cds_pep failed: ", e)
+
+
+def merge_cds_pep(cds_pep1, cds_pep2, merge_file):
+    with open(cds_pep1, 'r') as f1, open(cds_pep2, 'r') as f2:
+        content1 = f1.read()
+        content2 = f2.read()
+    with open(merge_file, 'w') as output_file:
+        output_file.write(content1 + content2)
 
 
 class Prepare:
@@ -46,5 +55,5 @@ class Prepare:
         self.run_gff_read_get_cds(self.ref_genome_seq, self.ref_gff_file, self.output_ref_cds_seq)
         longestCds.longest_cds(self.query_gff_file, self.query_genome_seq, self.raw_query_prot, self.output_query_cds_seq, self.out_query_cds)
         longestCds.longest_cds(self.ref_gff_file, self.ref_genome_seq, self.raw_ref_prot, self.output_ref_cds_seq, self.out_ref_cds)
-        cat_cds_pep(self.cds1, self.cds2, self.cds_file)
-        cat_cds_pep(self.pep1, self.pep2, self.pep_file)
+        merge_cds_pep(self.cds1, self.cds2, self.cds_file)
+        merge_cds_pep(self.pep1, self.pep2, self.pep_file)

@@ -1,11 +1,11 @@
 import configparser
 import argparse
-from lib import pre_collinearity, collinearity, dotplot, prepare_ks, ks
+from lib import pre_collinearity, collinearity, dotplot, prepare_ks, ks, blockinfo
 
 
 def run_pre_coll():
     config_par = configparser.ConfigParser()
-    config_par.read('./config_file/collinearity.conf')
+    config_par.read('./config_file/pre_collinearity.conf')
     config_soft = configparser.ConfigParser()
     config_soft.read('./config_file/software_path.ini')
     pre_collinearity.Prepare(config_par, config_soft).run_all_process()
@@ -41,6 +41,12 @@ def run_ks():
     ks.Ks(config_par, config_soft).sub_run()
 
 
+def run_block_info():
+    config_par = configparser.ConfigParser()
+    config_par.read('./config_file/block_info.conf')
+    blockinfo.BlockInfo(config_par).run()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='collinearity gene analysis')
 
@@ -61,6 +67,9 @@ if __name__ == '__main__':
     # synonymous mutation and non-synonymous mutation
     parser_sub1 = subparsers1.add_parser('ks', help='get ks and ka information')
     parser_sub1.set_defaults(func=run_ks)
+    # summary block information
+    parser_sub1 = subparsers1.add_parser('block_info', help='summary block information')
+    parser_sub1.set_defaults(func=run_block_info)
 
     args = parser.parse_args()
     if hasattr(args, 'func'):
