@@ -16,7 +16,7 @@ def read_collinearity(collinearity):
             if line.startswith('#'):
                 block_len.append(int(line.split()[2].split(sep="N=")[1]))
     # read anchorWave output collinearity file as a dataframe, every line of the result occurs once different from wgdi.
-    collinearity_df = pd.read_table(collinearity, comment="#", header=0)
+    collinearity_df = pd.read_table(collinearity, comment="#", header=0, low_memory=False)
 
     # get two gene lists
     ref_gene_list = list(collinearity_df.loc[:, "refGene"])  # zea mays (ref) collinearity gene list
@@ -39,9 +39,11 @@ class Ks:
         self.pair_pep_file = 'pair.pep'
         self.pair_cds_file = 'pair.cds'
 
-        self.muscle = config_soft['software']['muscle']
-        self.mafft = config_soft['software']['mafft']
         self.align_software = config_pra['ks']['align_software']
+        if self.align_software == "muscle":
+            self.muscle = config_soft['software']['muscle']
+        if self.align_software == "mafft":
+            self.mafft = config_soft['software']['mafft']
         self.yn00 = config_soft['software']['yn00']
         self.pal2nal = config_soft['software']['pal2nal']
 
@@ -109,7 +111,7 @@ class Ks:
         # query_to_ref index = "query+ref"
         df_pairs, _ = read_collinearity(self.collinearity)
         if os.path.exists(self.ks_file):
-            ks = pd.read_csv(self.ks_file, sep='\t')
+            ks = pd.read_csv(self.ks_file, sep='\t', low_memory=False)
             ks = ks.drop_duplicates()
             kscopy = ks.copy()
             names = ks.columns.tolist()
