@@ -19,8 +19,8 @@ def read_collinearity(collinearity):
     collinearity_df = pd.read_table(collinearity, comment="#", header=0, low_memory=False)
 
     # get two gene lists
-    ref_gene_list = list(collinearity_df.loc[:, "refGene"])  # zea mays (ref) collinearity gene list
-    query_gene_list = list(collinearity_df.loc[:, "queryGene"])  # sorghum (query) collinearity gene list
+    ref_gene_list = list(collinearity_df.loc[:, "refGene"])  # (ref) collinearity gene list
+    query_gene_list = list(collinearity_df.loc[:, "queryGene"])  # (query) collinearity gene list
     assert (len(ref_gene_list) == len(query_gene_list))
     # ref_to_query = dict(zip(ref_gene_list, query_gene_list))
     query_to_ref = list(zip(query_gene_list, ref_gene_list))

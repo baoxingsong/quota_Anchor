@@ -137,7 +137,7 @@ class BlockInfo:
         table_df, map2 = read_table_file(self.table_file)
         blast = self.blast_homo(self.blast_file, self.repeat_number)
         # print("line139")
-        with (open(self.collinearity) as f):
+        with open(self.collinearity) as f:
             _ = next(f)
             _ = next(f)
             for line in f:
@@ -205,7 +205,7 @@ class BlockInfo:
             homo4 = list(homo4)
             homo5 = list(homo5)
 
-        data = [index_list, chr1, chr2, start1, end1, start2, end2, block_len, ks_median, ks_average, homo1, homo2,
+        data = [index_list, chr1, chr2, start1, end1, start2, end2, block_len, ks_median_list, ks_average_list, homo1, homo2,
                 homo3, homo4, homo5, block1, block2, ks, tandem_list]
         columns = ['id', 'chr1', 'chr2', 'start1', 'end1', 'start2', 'end2', 'length', 'ks_median', 'ks_average',
                    'homo1', 'homo2', 'homo3', 'homo4', 'homo5', 'block1', 'block2', 'ks', 'tandem_ratio']
