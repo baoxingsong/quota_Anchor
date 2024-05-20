@@ -338,11 +338,11 @@ class ClassGene:
         for gn_file in gene_file:
             df = pd.read_csv(gn_file, sep="\t", header=0, index_col=None)
             df.sort_values(by=df.columns[1], inplace=True)
-            df.to_csv(gn_file, header=True, index=False)
+            df.to_csv(gn_file, header=True, index=False, sep='\t')
         for pr_file in pair_file:
             df = pd.read_csv(pr_file, sep="\t", header=0, index_col=None)
             df.sort_values(by=df.columns[1], inplace=True)
-            df.to_csv(pr_file, header=True, index=False)
+            df.to_csv(pr_file, header=True, index=False, sep='\t')
 
     def run(self):
         self.file_jg(self.qy_table, self.gff, self.qy_col_fl, self.qy_rf_col, self.out_dir)
@@ -683,11 +683,11 @@ class ClassGeneUnique:
         for gn_file in gene_file:
             df = pd.read_csv(gn_file, sep="\t", header=0, index_col=None)
             df.sort_values(by=df.columns[1], inplace=True)
-            df.to_csv(gn_file, header=True, index=False)
+            df.to_csv(gn_file, header=True, index=False, sep='\t')
         for pr_file in pair_file:
             df = pd.read_csv(pr_file, sep="\t", header=0, index_col=None)
             df.sort_values(by=df.columns[1], inplace=True)
-            df.to_csv(pr_file, header=True, index=False)
+            df.to_csv(pr_file, header=True, index=False, sep='\t')
 
     def run(self):
         self.file_jg(self.qy_table, self.gff, self.qy_col_fl, self.qy_rf_col, self.out_dir)
