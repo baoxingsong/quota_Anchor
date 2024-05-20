@@ -59,7 +59,7 @@ wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/gff3/sorghum_bic
 gunzip *gz
 ```
 ### Modify config file(lib/pre_collinearity.conf) and running pre_collineaity(maize vs sorghum)
-This includes four stepsn \
+This includes four steps \
 1.Extract and translate protein sequences from genome sequences and annotations \
 2. Identify and extract the longest protein sequence encoded by each gene \
 3. protein sequence alignment using DIAMOND Or conduct protein sequence alignment using BLASTp \
@@ -237,7 +237,7 @@ collinearity.conf file
 ```
 [AnchorWave]
 # The R value indicates the maximum number of occurrences of a gene in the collinearity file, and Q means the same as R.
-R = 2
+R = 1
 Q = 1
 maximum_gap_size = 10
 delete_tandem = 0
@@ -247,6 +247,7 @@ output_coll_name = maize.maize.collinearity
 ```
 ### Gene classification
 modify config file (classification_gene.conf) and running classification analysis.
+maize genes is classified as tandem, proxiaml, transposed, dispersed and singleton gene.
 ```
 [classification]
 # query is target species
