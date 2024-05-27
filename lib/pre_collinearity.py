@@ -6,8 +6,6 @@ from lib import longestPeps, combineBlastAndStrandInformation
 class Prepare:
     def __init__(self, config_pra, config_soft):
         self.config_pra = config_pra
-        print(config_soft)
-        print(config_pra)
 
         self.gffread = config_soft['software']['gffread']
 

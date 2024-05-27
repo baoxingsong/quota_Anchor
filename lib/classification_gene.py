@@ -71,32 +71,18 @@ class ClassGene:
         self.seg_anc = int(config_pra["classification"]["seg_anc"])
         # self.type = int(config_pra["classification"]["type"])
 
-        if self.out_dir.endswith("/"):
-            self.wgd_gp_file = self.out_dir + self.out_prefix + "." + "wgd.pairs"
-            self.wgd_gn_file = self.out_dir + self.out_prefix + "." + "wgd.genes"
-            self.tm_gp_file = self.out_dir + self.out_prefix + "." + "tandem.pairs"
-            self.tm_gn_file = self.out_dir + self.out_prefix + "." + "tandem.genes"
-            self.pm_gp_file = self.out_dir + self.out_prefix + "." + "proximal.pairs"
-            self.pm_gn_file = self.out_dir + self.out_prefix + "." + "proximal.genes"
-            self.trp_gp_file = self.out_dir + self.out_prefix + "." + "transposed.pairs"
-            self.trp_gn_file = self.out_dir + self.out_prefix + "." + "transposed.genes"
-            self.dp_gp_file = self.out_dir + self.out_prefix + "." + "dispersed.pairs"
-            self.dp_gn_file = self.out_dir + self.out_prefix + "." + "dispersed.genes"
-            self.si_gn_file = self.out_dir + self.out_prefix + "." + "singleton.genes"
-            self.stats_file = self.out_dir + self.out_prefix + "." + "stats"
-        else:
-            self.wgd_gp_file = self.out_dir + "/" + self.out_prefix + "." + "wgd.pairs"
-            self.wgd_gn_file = self.out_dir + "/" + self.out_prefix + "." + "wgd.genes"
-            self.tm_gp_file = self.out_dir + "/" + self.out_prefix + "." + "tandem.pairs"
-            self.tm_gn_file = self.out_dir + "/" + self.out_prefix + "." + "tandem.genes"
-            self.pm_gp_file = self.out_dir + "/" + self.out_prefix + "." + "proximal.pairs"
-            self.pm_gn_file = self.out_dir + "/" + self.out_prefix + "." + "proximal.genes"
-            self.trp_gp_file = self.out_dir + "/" + self.out_prefix + "." + "transposed.pairs"
-            self.trp_gn_file = self.out_dir + "/" + self.out_prefix + "." + "transposed.genes"
-            self.dp_gp_file = self.out_dir + "/" + self.out_prefix + "." + "dispersed.pairs"
-            self.dp_gn_file = self.out_dir + "/" + self.out_prefix + "." + "dispersed.genes"
-            self.si_gn_file = self.out_dir + "/" + self.out_prefix + "." + "singleton.genes"
-            self.stats_file = self.out_dir + "/" + self.out_prefix + "." + "stats"
+        self.wgd_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}.wgd.pairs")
+        self.wgd_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}.wgd.genes")
+        self.tm_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}.tandem.pairs")
+        self.tm_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}.tandem.genes")
+        self.pm_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}.proximal.pairs")
+        self.pm_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}.proximal.genes")
+        self.trp_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}.transposed.pairs")
+        self.trp_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}.transposed.genes")
+        self.dp_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}.dispersed.pairs")
+        self.dp_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}.dispersed.genes")
+        self.si_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}.singleton.genes")
+        self.stats_file = os.path.join(self.out_dir, f"{self.out_prefix}.stats")
 
     def file_jg(self, qy_table, gff, qy_col_fl, qy_rf_col, out_dir):
         try:
@@ -496,32 +482,18 @@ class ClassGeneUnique:
         self.seg_anc = int(config_pra["classification"]["seg_anc"])
         # self.type = int(config_pra["classification"]["type"])
 
-        if self.out_dir.endswith("/"):
-            self.wgd_gp_file = self.out_dir + self.out_prefix + "-unique" + "." + "wgd.pairs"
-            self.wgd_gn_file = self.out_dir + self.out_prefix + "-unique" + "." + "wgd.genes"
-            self.tm_gp_file = self.out_dir + self.out_prefix + "-unique" + "." + "tandem.pairs"
-            self.tm_gn_file = self.out_dir + self.out_prefix + "-unique" + "." + "tandem.genes"
-            self.pm_gp_file = self.out_dir + self.out_prefix + "-unique" + "." + "proximal.pairs"
-            self.pm_gn_file = self.out_dir + self.out_prefix + "-unique" + "." + "proximal.genes"
-            self.trp_gp_file = self.out_dir + self.out_prefix + "-unique" + "." + "transposed.pairs"
-            self.trp_gn_file = self.out_dir + self.out_prefix + "-unique" + "." + "transposed.genes"
-            self.dp_gp_file = self.out_dir + self.out_prefix + "-unique" + "." + "dispersed.pairs"
-            self.dp_gn_file = self.out_dir + self.out_prefix + "-unique" + "." + "dispersed.genes"
-            self.si_gn_file = self.out_dir + self.out_prefix + "." + "singleton.genes"
-            self.stats_file = self.out_dir + self.out_prefix + "-unique" + "." + "stats"
-        else:
-            self.wgd_gp_file = self.out_dir + "/" + self.out_prefix + "." + "wgd.pairs"
-            self.wgd_gn_file = self.out_dir + "/" + self.out_prefix + "." + "wgd.genes"
-            self.tm_gp_file = self.out_dir + "/" + self.out_prefix + "." + "tandem.pairs"
-            self.tm_gn_file = self.out_dir + "/" + self.out_prefix + "." + "tandem.genes"
-            self.pm_gp_file = self.out_dir + "/" + self.out_prefix + "." + "proximal.pairs"
-            self.pm_gn_file = self.out_dir + "/" + self.out_prefix + "." + "proximal.genes"
-            self.trp_gp_file = self.out_dir + "/" + self.out_prefix + "." + "transposed.pairs"
-            self.trp_gn_file = self.out_dir + "/" + self.out_prefix + "." + "transposed.genes"
-            self.dp_gp_file = self.out_dir + "/" + self.out_prefix + "." + "dispersed.pairs"
-            self.dp_gn_file = self.out_dir + "/" + self.out_prefix + "." + "dispersed.genes"
-            self.si_gn_file = self.out_dir + "/" + self.out_prefix + "." + "singleton.genes"
-            self.stats_file = self.out_dir + "/" + self.out_prefix + "-unique" + "." + "stats"
+        self.wgd_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.wgd.pairs")
+        self.wgd_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.wgd.genes")
+        self.tm_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.tandem.pairs")
+        self.tm_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.tandem.genes")
+        self.pm_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.proximal.pairs")
+        self.pm_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.proximal.genes")
+        self.trp_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.transposed.pairs")
+        self.trp_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.transposed.genes")
+        self.dp_gp_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.dispersed.pairs")
+        self.dp_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.dispersed.genes")
+        self.si_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.singleton.genes")
+        self.stats_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.stats")
 
     def file_jg(self, qy_blast, gff, qy_col_fl, qy_rf_col, out_dir):
         try:
