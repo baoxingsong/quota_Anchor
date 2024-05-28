@@ -1,5 +1,4 @@
-# TODO
-from lib import GffFile
+from . import GffFile
 import sys
 from argparse import ArgumentParser
 # baoxing.song@pku-iaas.edu.cn

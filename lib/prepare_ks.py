@@ -1,6 +1,5 @@
 import subprocess
-# TODO
-from lib import longestCds
+from . import longestCds
 
 
 # def merge_cds_pep(cds_pep1, cds_pep2, merge_file):
