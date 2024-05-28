@@ -1,8 +1,8 @@
-# TODO
-from lib import GffFile, FastaFile
+from . import GffFile, FastaFile
 import sys
 import numpy as np
 from argparse import ArgumentParser
+
 
 # baoxing.song@pku-iaas.edu.cn
 

@@ -1,6 +1,5 @@
 import sys
-# TODO
-from lib import GffFile, longestPeps
+from . import GffFile, longestPeps
 from Bio import SeqIO
 
 
