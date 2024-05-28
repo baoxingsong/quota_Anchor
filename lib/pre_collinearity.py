@@ -1,6 +1,5 @@
 import subprocess
-# TODO
-from lib import longestPeps, combineBlastAndStrandInformation
+from . import longestPeps, combineBlastAndStrandInformation
 
 
 class Prepare:

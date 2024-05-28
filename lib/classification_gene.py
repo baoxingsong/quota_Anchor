@@ -1,7 +1,6 @@
 import os
 import pandas as pd
-# TODO
-from lib import GffFile
+from . import GffFile
 
 
 def file_exist(path):
