@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import os
 from lib import pre_collinearity, collinearity, dotplot, prepare_ks, ks, blockinfo, ks_peaks, peaksfit, ksfigure, \
-     classification_gene, orthogroup, number_gn_visualization
+     classification_gene, orthogroup3, number_gn_visualization
 
 
 base_dir = Path(__file__).resolve().parent
@@ -102,11 +102,25 @@ def run_class_gene():
         classification_gene.ClassGene(config_par).run()
 
 
-def run_group():
+# def run_group():
+#     global base_dir
+#     config_par = configparser.ConfigParser()
+#     config_par.read(os.path.join(base_dir, 'config_file/orthogroup.conf'))
+#     orthogroup.Group(config_par).run()
+
+
+# def run_group2():
+#     global base_dir
+#     config_par = configparser.ConfigParser()
+#     config_par.read(os.path.join(base_dir, 'config_file/orthogroup2.conf'))
+#     orthogroup2.Group(config_par).run()
+
+
+def run_group3():
     global base_dir
     config_par = configparser.ConfigParser()
-    config_par.read(os.path.join(base_dir, 'config_file/orthogroup.conf'))
-    orthogroup.Group(config_par).run()
+    config_par.read(os.path.join(base_dir, 'config_file/orthogroup3.conf'))
+    orthogroup3.Group(config_par).run()
 
 
 def run_clv():
@@ -164,8 +178,12 @@ if __name__ == '__main__':
     # class gene
     parser_sub1 = subparsers1.add_parser('class_gene', help='class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
     parser_sub1.set_defaults(func=run_class_gene)
-    parser_sub1 = subparsers1.add_parser('group', help='orthogroup based collinearity')
-    parser_sub1.set_defaults(func=run_group)
+    # parser_sub1 = subparsers1.add_parser('group', help='orthogroup based collinearity')
+    # parser_sub1.set_defaults(func=run_group)
+    # parser_sub1 = subparsers1.add_parser('group2', help='orthogroup based collinearity')
+    # parser_sub1.set_defaults(func=run_group2)
+    parser_sub1 = subparsers1.add_parser('group3', help='orthogroup based collinearity')
+    parser_sub1.set_defaults(func=run_group3)
     parser_sub1 = subparsers1.add_parser('clv', help='class gene number visualization')
     parser_sub1.set_defaults(func=run_clv)
 #    parser_sub1 = subparsers1.add_parser('class_gene_2', help='class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
