@@ -18,12 +18,12 @@ def dir_exist(path):
 
 
 def read_blast_gff(blast, gff):
-    chromosome_gene_dict, chromosome_gene_list, geneName_tochr_dict, _ = GffFile.readGff(gff)
-    geneIndex = dict()
+    chromosome_gene_dict, chromosome_gene_list, gene_name_chr_dict, _ = GffFile.readGff(gff)
+    gene_index = dict()
     for ch in chromosome_gene_list:
         i = 0
         while i < len(chromosome_gene_list[ch]):
-            geneIndex[chromosome_gene_list[ch][i].name] = i + 1
+            gene_index[chromosome_gene_list[ch][i].name] = i + 1
             i += 1
     data_info = []
     match_pairs = set()
@@ -35,26 +35,26 @@ def read_blast_gff(blast, gff):
             if qseqid == sseqid:
                 continue
             pident = str(float(elements[2]))
-            length = int(elements[3])
-            mismatch = elements[4]
-            gapopen = elements[5]
-            qstart = elements[6]
-            qend = elements[7]
-            sstart = elements[8]
-            send = elements[9]
-            evalue = elements[10]
+            # length = int(elements[3])
+            # mismatch = elements[4]
+            # gapopen = elements[5]
+            # qstart = elements[6]
+            # qend = elements[7]
+            # sstart = elements[8]
+            # send = elements[9]
+            # evalue = elements[10]
             bitscore = float(elements[11])
             match_pair = sseqid + "_" + qseqid
             if match_pair not in match_pairs:
                 match_pairs.add(match_pair)
-                data_info.append([sseqid, geneName_tochr_dict[sseqid],  str(geneIndex[sseqid]),
-                                  str(chromosome_gene_dict[geneName_tochr_dict[sseqid]][sseqid].start),
-                                  str(chromosome_gene_dict[geneName_tochr_dict[sseqid]][sseqid].end),
-                                  chromosome_gene_dict[geneName_tochr_dict[sseqid]][sseqid].strand,
-                                  qseqid, geneName_tochr_dict[qseqid], str(geneIndex[qseqid]),
-                                  str(chromosome_gene_dict[geneName_tochr_dict[qseqid]][qseqid].start),
-                                  str(chromosome_gene_dict[geneName_tochr_dict[qseqid]][qseqid].end),
-                                  chromosome_gene_dict[geneName_tochr_dict[qseqid]][qseqid].strand, bitscore, pident])
+                data_info.append([sseqid, gene_name_chr_dict[sseqid],  str(gene_index[sseqid]),
+                                  str(chromosome_gene_dict[gene_name_chr_dict[sseqid]][sseqid].start),
+                                  str(chromosome_gene_dict[gene_name_chr_dict[sseqid]][sseqid].end),
+                                  chromosome_gene_dict[gene_name_chr_dict[sseqid]][sseqid].strand,
+                                  qseqid, gene_name_chr_dict[qseqid], str(gene_index[qseqid]),
+                                  str(chromosome_gene_dict[gene_name_chr_dict[qseqid]][qseqid].start),
+                                  str(chromosome_gene_dict[gene_name_chr_dict[qseqid]][qseqid].end),
+                                  chromosome_gene_dict[gene_name_chr_dict[qseqid]][qseqid].strand, bitscore, pident])
     return data_info
 
 
@@ -83,7 +83,8 @@ class ClassGene:
         self.si_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}.singleton.genes")
         self.stats_file = os.path.join(self.out_dir, f"{self.out_prefix}.stats")
 
-    def file_jg(self, qy_table, gff, qy_col_fl, qy_rf_col, out_dir):
+    @staticmethod
+    def file_jg(qy_table, gff, qy_col_fl, qy_rf_col, out_dir):
         try:
             file_exist(qy_table)
             file_exist(gff)
@@ -97,7 +98,8 @@ class ClassGene:
             exit(1)
         dir_exist(out_dir)
 
-    def wgd_pair(self, qy_col_fl, wgd_gp_file, wgd_gn_file, out_prefix):
+    @staticmethod
+    def wgd_pair(qy_col_fl, wgd_gp_file, wgd_gn_file, out_prefix):
         wgd_gn_lt = []
         wgd_pr_lt = []
         wgd_gp_number = 0
@@ -135,7 +137,8 @@ class ClassGene:
         wgd_gp_file.close()
         return wgd_gn_lt, wgd_pr_lt, wgd_md, wgd_gp_number, wgd_gn_number
 
-    def tm_ad_wgd_pr(self, data, tm_gp_file, tm_gn_file, out_prefix, wgd_gn_lt, wgd_pr_lt):
+    @staticmethod
+    def tm_ad_wgd_pr(data, tm_gp_file, tm_gn_file, out_prefix, wgd_gn_lt, wgd_pr_lt):
         tm_gn_lt = []
         tm_gp_lt = []
         tm_gp_number = 0
@@ -194,7 +197,8 @@ class ClassGene:
         tm_gp_file.close()
         return homo_gn_md, tm_gp_lt, tm_gp_number, tm_gn_number
 
-    def pm_ad_wgd_pr(self, data, pm_gp_file, pm_gn_file, out_prefix, wgd_pr_lt, pm_threshold, homo_gn_md):
+    @staticmethod
+    def pm_ad_wgd_pr(data, pm_gp_file, pm_gn_file, out_prefix, wgd_pr_lt, pm_threshold, homo_gn_md):
         pm_gn_lt = []
         pm_gp_lt = []
         pm_gp_number = 0
@@ -259,7 +263,8 @@ class ClassGene:
         pm_gp_file.close()
         return homo_gn_md, pm_gp_lt, pm_gp_number, pm_gn_number
 
-    def trp_ad_wgd_pr(self, wgd_gn_lt, qy_rf_col, data, trp_gp_file, trp_gn_file, out_prefix, seg_anc, pm_threshold, homo_gn_md):
+    @staticmethod
+    def trp_ad_wgd_pr(wgd_gn_lt, qy_rf_col, data, trp_gp_file, trp_gn_file, out_prefix, seg_anc, pm_threshold, homo_gn_md):
         trp_gn_lt = []
         trp_gp_lt = []
         trp_gp_number = 0
@@ -368,7 +373,8 @@ class ClassGene:
         trp_gp_file.close()
         return homo_gn_md, trp_gp_lt, trp_gp_number, trp_gn_number, idt_dict
 
-    def dip_ad_pr(self, data, dip_gp_file, dip_gn_file, out_prefix, homo_gn_md, used_gp_lt, idt_dict):
+    @staticmethod
+    def dip_ad_pr(data, dip_gp_file, dip_gn_file, out_prefix, homo_gn_md, used_gp_lt, idt_dict):
         dp_gp_lt = []
         dp_gn_lt = []
         dp_gp_number = 0
@@ -399,36 +405,41 @@ class ClassGene:
                                   + str(dp_rd_lt[9]) + "\t" + str(dp_rd_lt[0]) + "\t" + str(out_prefix)
                                   + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
                 dp_gp_number += 1
-                if homo_gn_md[str(dp_rd_lt[0])] not in [1, 2, 3, 4] and str(dp_rd_lt[0]) not in dp_gn_lt:
-                    dp_gn_lt.append(str(dp_rd_lt[0]))
-                    dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
-                    dp_gn_number += 1
-                if homo_gn_md[str(dp_rd_lt[6])] not in [1, 2, 3, 4] and str(dp_rd_lt[6]) not in dp_gn_lt:
-                    dp_gn_lt.append(str(dp_rd_lt[6]))
-                    dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
-                    dp_gn_number += 1
+            if homo_gn_md[str(dp_rd_lt[0])] not in [1, 2, 3, 4] and str(dp_rd_lt[0]) not in dp_gn_lt:
+                dp_gn_lt.append(str(dp_rd_lt[0]))
+                dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
+                dp_gn_number += 1
+            if homo_gn_md[str(dp_rd_lt[6])] not in [1, 2, 3, 4] and str(dp_rd_lt[6]) not in dp_gn_lt:
+                dp_gn_lt.append(str(dp_rd_lt[6]))
+                dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
+                dp_gn_number += 1
         dip_gp_file.close()
         dip_gn_file.close()
         return dp_gn_lt, dp_gp_number, dp_gn_number
 
-    def merge_mode(self, homo_gn_md, wgd_md):
+    @staticmethod
+    def merge_mode(homo_gn_md, wgd_md):
         homo_gn_md.update(wgd_md)
         return homo_gn_md
 
-    def singleton(self, gff, homo_gn_md, out_file, out_prefix):
+    @staticmethod
+    def singleton(gff, homo_gn_md, out_file, out_prefix):
         chr_gn_dict, chr_gn_list, gn_chr_dict, _ = GffFile.readGff(gff)
         ot_file = open(out_file, 'w')
         ot_file.write("GeneId" + "\t" + "Location" + "\n")
         single_number = 0
+        index = 0
         for ch in chr_gn_list:
             for gn in chr_gn_list[ch]:
+                index += 1
                 if gn.name not in homo_gn_md:
                     ot_file.write(str(gn.name) + "\t" + str(out_prefix) + "-" + str(ch) + ":" + str(chr_gn_dict[ch][gn.name].start) + "\n")
                     single_number += 1
         ot_file.close()
         return single_number
 
-    def sort_file(self, gene_file, pair_file):
+    @staticmethod
+    def sort_file(gene_file, pair_file):
         for gn_file in gene_file:
             df = pd.read_csv(gn_file, sep="\t", header=0, index_col=None)
             df.sort_values(by=df.columns[1], inplace=True)
@@ -494,7 +505,8 @@ class ClassGeneUnique:
         self.si_gn_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.singleton.genes")
         self.stats_file = os.path.join(self.out_dir, f"{self.out_prefix}-unique.stats")
 
-    def file_jg(self, qy_blast, gff, qy_col_fl, qy_rf_col, out_dir):
+    @staticmethod
+    def file_jg(qy_blast, gff, qy_col_fl, qy_rf_col, out_dir):
         try:
             file_exist(qy_blast)
             file_exist(gff)
@@ -508,7 +520,8 @@ class ClassGeneUnique:
             exit(1)
         dir_exist(out_dir)
 
-    def wgd_pair(self, qy_col_fl, wgd_gp_file, wgd_gn_file, out_prefix):
+    @staticmethod
+    def wgd_pair(qy_col_fl, wgd_gp_file, wgd_gn_file, out_prefix):
         wgd_gn_lt = []
         wgd_pr_lt = []
         wgd_gp_number = 0
@@ -546,7 +559,8 @@ class ClassGeneUnique:
         wgd_gp_file.close()
         return wgd_gn_lt, wgd_pr_lt, wgd_md, wgd_gp_number, wgd_gn_number
 
-    def tm_ad_wgd_pr(self, data, tm_gp_file, tm_gn_file, out_prefix, wgd_gn_lt):
+    @staticmethod
+    def tm_ad_wgd_pr(data, tm_gp_file, tm_gn_file, out_prefix, wgd_gn_lt):
         tm_gn_lt = []
         tm_gp_lt = []
         tm_gp_number = 0
@@ -607,7 +621,8 @@ class ClassGeneUnique:
         tm_gp_file.close()
         return homo_gn_md, tm_gp_lt, tm_gp_number, tm_gn_number
 
-    def pm_ad_wgd_pr(self, data, pm_gp_file, pm_gn_file, out_prefix, pm_threshold, homo_gn_md):
+    @staticmethod
+    def pm_ad_wgd_pr(data, pm_gp_file, pm_gn_file, out_prefix, pm_threshold, homo_gn_md):
         pm_gn_lt = []
         pm_gp_lt = []
         pm_gp_number = 0
@@ -672,7 +687,8 @@ class ClassGeneUnique:
         pm_gp_file.close()
         return homo_gn_md, pm_gp_lt, pm_gp_number, pm_gn_number
 
-    def trp_ad_wgd_pr(self, wgd_gn_lt, qy_rf_col, data, trp_gp_file, trp_gn_file, out_prefix, seg_anc, pm_threshold, homo_gn_md):
+    @staticmethod
+    def trp_ad_wgd_pr(wgd_gn_lt, qy_rf_col, data, trp_gp_file, trp_gn_file, out_prefix, seg_anc, pm_threshold, homo_gn_md):
         trp_gn_lt = []
         trp_gp_lt = []
         trp_gp_number = 0
@@ -735,7 +751,8 @@ class ClassGeneUnique:
                             pre_df.append([str(qy_rd_lt[0]), str(qy_rd_lt[6]), float(qy_rd_lt[12])])
                     if qy_rd_lt[6] not in anc and qy_rd_lt[0] in anc and homo_gn_md[qy_rd_lt[6]] not in [1, 2, 3] and homo_gn_md[qy_rd_lt[0]] not in [1, 2, 3]:
                         if str(qy_rd_lt[6]) + '\t' + str(qy_rd_lt[0]) in idt_dict and str(qy_rd_lt[0]) + "\t" + str(qy_rd_lt[6]) in idt_dict:
-                            avg_bs = (float(idt_dict[str(qy_rd_lt[6]) + '\t' + str(qy_rd_lt[0])]) + float(idt_dict[str(qy_rd_lt[0]) + '\t' + str(qy_rd_lt[6])])) / 2
+                            avg_bs = (float(idt_dict[str(qy_rd_lt[6]) + '\t' + str(qy_rd_lt[0])])
+                                      + float(idt_dict[str(qy_rd_lt[0]) + '\t' + str(qy_rd_lt[6])])) / 2
                             pre_df.append([str(qy_rd_lt[6]), str(qy_rd_lt[0]), avg_bs])
                         elif str(qy_rd_lt[6]) + '\t' + str(qy_rd_lt[0]) in idt_dict:
                             pre_df.append([str(qy_rd_lt[6]), str(qy_rd_lt[0]), float(idt_dict[str(qy_rd_lt[6]) + '\t' + str(qy_rd_lt[0])])])
@@ -779,7 +796,8 @@ class ClassGeneUnique:
         trp_gp_file.close()
         return homo_gn_md, trp_gp_lt, trp_gp_number, trp_gn_number, idt_dict
 
-    def dip_ad_pr(self, data, dip_gp_file, dip_gn_file, out_prefix, homo_gn_md, idt_dict):
+    @staticmethod
+    def dip_ad_pr(data, dip_gp_file, dip_gn_file, out_prefix, homo_gn_md, idt_dict):
         dp_gp_lt = []
         dp_gn_lt = []
         dp_gp_number = 0
@@ -810,23 +828,25 @@ class ClassGeneUnique:
                                   + str(dp_rd_lt[9]) + "\t" + str(dp_rd_lt[0]) + "\t" + str(out_prefix)
                                   + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
                 dp_gp_number += 1
-                if str(dp_rd_lt[0]) not in dp_gn_lt:
-                    dp_gn_lt.append(str(dp_rd_lt[0]))
-                    dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
-                    dp_gn_number += 1
-                if str(dp_rd_lt[6]) not in dp_gn_lt:
-                    dp_gn_lt.append(str(dp_rd_lt[6]))
-                    dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
-                    dp_gn_number += 1
+            if str(dp_rd_lt[0]) not in dp_gn_lt:
+                dp_gn_lt.append(str(dp_rd_lt[0]))
+                dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
+                dp_gn_number += 1
+            if str(dp_rd_lt[6]) not in dp_gn_lt:
+                dp_gn_lt.append(str(dp_rd_lt[6]))
+                dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
+                dp_gn_number += 1
         dip_gp_file.close()
         dip_gn_file.close()
         return dp_gn_lt, dp_gp_number, dp_gn_number
 
-    def merge_mode(self, homo_gn_md, wgd_md):
+    @staticmethod
+    def merge_mode(homo_gn_md, wgd_md):
         homo_gn_md.update(wgd_md)
         return homo_gn_md
 
-    def singleton(self, gff, homo_gn_md, out_file, out_prefix):
+    @staticmethod
+    def singleton(gff, homo_gn_md, out_file, out_prefix):
         chr_gn_dict, chr_gn_list, gn_chr_dict, _ = GffFile.readGff(gff)
         single_number = 0
         ot_file = open(out_file, 'w')
@@ -839,7 +859,8 @@ class ClassGeneUnique:
         ot_file.close()
         return single_number
 
-    def sort_file(self, gene_file, pair_file):
+    @staticmethod
+    def sort_file(gene_file, pair_file):
         for gn_file in gene_file:
             df = pd.read_csv(gn_file, sep="\t", header=0, index_col=None)
             df.sort_values(by=df.columns[1], inplace=True)
@@ -853,6 +874,7 @@ class ClassGeneUnique:
         self.file_jg(self.qy_blast, self.gff, self.qy_col_fl, self.qy_rf_col, self.out_dir)
         wgd_gn_lt, wgd_pr_lt, wgd_md, wgd_gp_number, wgd_gn_number = self.wgd_pair(self.qy_col_fl, self.wgd_gp_file, self.wgd_gn_file, self.out_prefix)
         data = read_blast_gff(self.qy_blast, self.gff)
+
         homo_gn_md, tm_gp_lt, tm_gp_number, tm_gn_number = self.tm_ad_wgd_pr(data, self.tm_gp_file, self.tm_gn_file, self.out_prefix, wgd_gn_lt)
         homo_gn_md = self.merge_mode(homo_gn_md, wgd_md)
         homo_gn_md, pm_gp_lt, pm_gp_number, pm_gn_number = self.pm_ad_wgd_pr(data, self.pm_gp_file, self.pm_gn_file, self.out_prefix,
