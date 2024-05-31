@@ -19,7 +19,7 @@ class ClsVis:
         return df
 
     def plot(self, df):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 6.18))
         tp = [ele for ele in df.index]
         length = len(tp)
         counts = [df.loc[tp[i], "Number"] for i in range(length)]
@@ -27,15 +27,18 @@ class ClsVis:
         # bar_labels = ['red', 'blue', '_red', 'orange']
         # bar_colors = ['tab:red', 'tab:blue', 'tab:red', 'tab:orange']
 
-        ax.bar(tp, counts, label=tp, color=color_list[:length])
+        bars = ax.bar(tp, counts, label=tp, color=color_list[:length])
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height}', ha='center', va='bottom')
         if self.ylab == "" or self.ylab == "None" or self.ylab == "none":
-            print(123)
             self.ylab = "Number"
         ax.set_ylabel(str(self.ylab))
         if self.title == "" or self.title == "None" or self.title == "none":
             self.title = "Different gene types of species"
         ax.set_title(str(self.title))
-        ax.legend(title='Gene Type')
+        plt.xticks(rotation=300)
+        plt.tight_layout()
         plt.savefig(self.output)
         plt.show()
 

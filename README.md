@@ -27,15 +27,16 @@ git clone https://github.com/baoxingsong/quota_Anchor.git
 python main.py -h
 ```
 ```
-usage: main.py [-h] {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene} ...
+usage: quotaAnchor [-h] [-v] {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene,group3,clv} ...
 
 collinearity gene analysis
 
 options:
   -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
 
 gene collinearity analysis:
-  {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene}
+  {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene,group3,clv}
     pre_col             get longest protein and AnchorWave pro(collinearity) input file
     col                 get gene collinearity file by AnchorWave pro command
     dotplot             collinearity dotplot or blast dotplot
@@ -46,6 +47,8 @@ gene collinearity analysis:
     pf                  ks probability density function curve fitting
     kf                  ks distribution figure
     class_gene          class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons
+    group3              orthogroup based collinearity
+    clv                 class gene number visualization
 ```
 ## Example
 ### Genome and annotation data preparation
