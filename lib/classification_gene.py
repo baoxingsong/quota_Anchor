@@ -405,14 +405,14 @@ class ClassGene:
                                   + str(dp_rd_lt[9]) + "\t" + str(dp_rd_lt[0]) + "\t" + str(out_prefix)
                                   + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
                 dp_gp_number += 1
-            if homo_gn_md[str(dp_rd_lt[0])] not in [1, 2, 3, 4] and str(dp_rd_lt[0]) not in dp_gn_lt:
-                dp_gn_lt.append(str(dp_rd_lt[0]))
-                dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
-                dp_gn_number += 1
-            if homo_gn_md[str(dp_rd_lt[6])] not in [1, 2, 3, 4] and str(dp_rd_lt[6]) not in dp_gn_lt:
-                dp_gn_lt.append(str(dp_rd_lt[6]))
-                dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
-                dp_gn_number += 1
+                if homo_gn_md[str(dp_rd_lt[0])] not in [1, 2, 3, 4] and str(dp_rd_lt[0]) not in dp_gn_lt:
+                    dp_gn_lt.append(str(dp_rd_lt[0]))
+                    dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
+                    dp_gn_number += 1
+                if homo_gn_md[str(dp_rd_lt[6])] not in [1, 2, 3, 4] and str(dp_rd_lt[6]) not in dp_gn_lt:
+                    dp_gn_lt.append(str(dp_rd_lt[6]))
+                    dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
+                    dp_gn_number += 1
         dip_gp_file.close()
         dip_gn_file.close()
         return dp_gn_lt, dp_gp_number, dp_gn_number
@@ -828,14 +828,14 @@ class ClassGeneUnique:
                                   + str(dp_rd_lt[9]) + "\t" + str(dp_rd_lt[0]) + "\t" + str(out_prefix)
                                   + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
                 dp_gp_number += 1
-            if str(dp_rd_lt[0]) not in dp_gn_lt:
-                dp_gn_lt.append(str(dp_rd_lt[0]))
-                dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
-                dp_gn_number += 1
-            if str(dp_rd_lt[6]) not in dp_gn_lt:
-                dp_gn_lt.append(str(dp_rd_lt[6]))
-                dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
-                dp_gn_number += 1
+                if str(dp_rd_lt[0]) not in dp_gn_lt:
+                    dp_gn_lt.append(str(dp_rd_lt[0]))
+                    dip_gn_file.write(str(dp_rd_lt[0]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[1]) + ":" + str(dp_rd_lt[3]) + "\n")
+                    dp_gn_number += 1
+                if str(dp_rd_lt[6]) not in dp_gn_lt:
+                    dp_gn_lt.append(str(dp_rd_lt[6]))
+                    dip_gn_file.write(str(dp_rd_lt[6]) + "\t" + str(out_prefix) + "-" + str(dp_rd_lt[7]) + ":" + str(dp_rd_lt[9]) + "\n")
+                    dp_gn_number += 1
         dip_gp_file.close()
         dip_gn_file.close()
         return dp_gn_lt, dp_gp_number, dp_gn_number

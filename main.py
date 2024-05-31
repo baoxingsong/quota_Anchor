@@ -138,8 +138,8 @@ def run_clv():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='collinearity gene analysis')
-
+    parser = argparse.ArgumentParser(description='collinearity gene analysis', prog="quotaAnchor")
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1_053024_beta')
     subparsers1 = parser.add_subparsers(title='gene collinearity analysis', dest='analysis')
 
     # get the longest protein and AnchorWave pro input file
