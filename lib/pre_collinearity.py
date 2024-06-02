@@ -1,5 +1,7 @@
 import subprocess
 from . import longestPeps, combineBlastAndStrandInformation
+import os
+import sys
 
 
 class Prepare:
@@ -44,6 +46,18 @@ class Prepare:
         self.bitscore = config_pra['combineBlastAndStrand']['bitscore']
         self.align_length = config_pra['combineBlastAndStrand']['align_length']
 
+    @staticmethod
+    def file_empty(file_path):
+        if os.path.isfile(file_path):
+            if os.path.getsize(file_path) > 0:
+                pass
+            else:
+                sys.exit(1)
+        else:
+            error_message = f"{file_path} don't exist"
+            print(error_message)
+            raise FileNotFoundError(error_message)
+
     def run_gff_read_get_protein(self, fasta, gff, output_protein_file):
         command_line = [self.gffread, '-g', fasta, '-y', output_protein_file, gff, self.S]
         try:
@@ -81,12 +95,21 @@ class Prepare:
             print(f'Error running blastp: {e}')
 
     def run_all_process(self):
+        self.file_empty(self.query_genome_seq)
+        self.file_empty(self.query_gff_file)
         self.run_gff_read_get_protein(self.query_genome_seq, self.query_gff_file, self.output_query_pep_seq)
+        self.file_empty(self.output_query_pep_seq)
+
+        self.file_empty(self.ref_genome_seq)
+        self.file_empty(self.ref_gff_file)
         self.run_gff_read_get_protein(self.ref_genome_seq, self.ref_gff_file, self.output_ref_pep_seq)
+        self.file_empty(self.output_ref_pep_seq)
 
         longestPeps.longestPeps(self.query_gff_file, self.query_genome_seq, self.output_query_pep_seq,
                                 self.out_query_longest_pep_name)
+        self.file_empty(self.out_query_longest_pep_name)
         longestPeps.longestPeps(self.ref_gff_file, self.ref_genome_seq, self.output_ref_pep_seq, self.out_ref_longest_pep_name)
+        self.file_empty(self.out_ref_longest_pep_name)
 
         if self.config_pra['align']['align'] == "diamond":
             self.diamond_make_db(self.out_ref_longest_pep_name, self.database_name)
@@ -99,3 +122,4 @@ class Prepare:
 
         combineBlastAndStrandInformation.anchorwave_quota(self.ref_gff_file, self.query_gff_file, self.blast_result,
                                                           self.out_file, self.bitscore, self.align_length)
+        self.file_empty(self.out_file)

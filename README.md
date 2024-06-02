@@ -20,16 +20,16 @@ You should modify config_file/software_path.ini parameter
 You can simple by the following code get this software.
 ```
 git clone https://github.com/baoxingsong/quota_Anchor.git
+cd quota_Anchor
+mv quota_Anchor /your/system/path/
 ```
 ## Usage
 ### Help info
 ```
-python main.py -h
+quota_Anchor -h
 ```
 ```
-usage: quota_Anchor [-h] [-v]
-                    {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene,group3,clv}
-                    ...
+usage: quota_Anchor [-h] [-v] {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene,group3,group4,clv} ...
 
 collinearity gene analysis
 
@@ -38,21 +38,19 @@ options:
   -v, --version         show program's version number and exit
 
 gene collinearity analysis:
-  {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene,group3,clv}
-    pre_col             get longest protein and AnchorWave pro(collinearity)
-                        input file
+  {pre_col,col,dotplot,pre_ks,ks,block_info,kp,pf,kf,class_gene,group3,group4,clv}
+    pre_col             get longest protein and AnchorWave pro(collinearity) input file
     col                 get gene collinearity file by AnchorWave pro command
     dotplot             collinearity dotplot or blast dotplot
     pre_ks              get longest cds
     ks                  get ks and ka information
     block_info          summary block information
-    kp                  ks(total, average, median) probability density
-                        function curve
+    kp                  ks(total, average, median) probability density function curve
     pf                  ks probability density function curve fitting
     kf                  ks distribution figure
-    class_gene          class gene as tandem, proximal, transposed,
-                        wgd/segmental, dispersed, singletons
+    class_gene          class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons
     group3              orthogroup based collinearity
+    group4              orthogroup based collinearity
     clv                 class gene number visualization
 ```
 ## Example
@@ -113,7 +111,7 @@ bitscore = 100
 align_length = 100
 ```
 ```
-python main.py pre_col
+quota_Anchor pre_col -c pre_collinearity.conf
 ```
 ### Collinearity analysis(maize vs sorghum)
 modify config file and running colllinearity analysis.
@@ -129,7 +127,7 @@ input_file_name = sorghum.maize.table
 output_coll_name = sorghum.maize.collinearity
 ```
 ```
-python main.py col
+quota_Anchor col -c collinearity.conf
 ```
 ### Visualzing by R code
 The table could be visualized via the following R code:
@@ -272,5 +270,5 @@ type = 1
 proximal_max_distance = 10
 ```
 ```
-python main.py class_gene
+quota_Anchor class_gene -c classification_gene.conf
 ```
