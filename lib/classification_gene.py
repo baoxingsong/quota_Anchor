@@ -91,6 +91,8 @@ class ClassGene:
             file_exist(qy_col_fl)
             qy_rf_lt = qy_rf_col.split(',')
             for file in qy_rf_lt:
+                if len(file) == 0:
+                    continue
                 file = file.strip()
                 file_exist(file)
         except FileNotFoundError as e:
