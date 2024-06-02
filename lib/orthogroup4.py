@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 
 class Group:
@@ -9,8 +10,20 @@ class Group:
         self.output = config_par['group']['output']
         self.use_blast = config_par['group']['use_blast_pair']
         if self.use_blast in {"0", "FALSE", "False", "false"}:
-            self.query_pair_file = config_par['group']['query_pair_file']
-            self.ref_pair_file = config_par['group']['ref_pair_file']
+            self.query_pair_file_dir = config_par['group']['query_pair_file_dir']
+            self.query_pair_file_prefix = config_par['group']['query_pair_file_prefix']
+            self.ref_pair_file_dir = config_par['group']['ref_pair_file_dir']
+            self.ref_pair_file_prefix = config_par['group']['ref_pair_file_prefix']
+
+    @staticmethod
+    def split_conf(conf):
+        new_conf = []
+        split_lt = conf.split(",")
+        for ele in split_lt:
+            if len(ele) == 0:
+                continue
+            new_conf.append(ele.strip())
+        return new_conf
 
     # get query_ref pair as element in a list and a dict query_tab_ref : bitscore
     @staticmethod
@@ -30,16 +43,23 @@ class Group:
 
     @staticmethod
     def read_pair_get_map(pair_file):
-        file_list = pair_file.split(',')
         mapping_list = []
-        for file in file_list:
-            file = file.strip()
+        for file in pair_file:
             with open(file) as f:
                 _ = next(f)
                 for line in f:
                     lt = line.split()
                     mapping_list.append([lt[0], lt[2]])
         return mapping_list
+
+    def get_ref_list(self, collinearity):
+        query_ref_collinearity_list = self.split_conf(collinearity)
+        ref_list = []
+        for col in query_ref_collinearity_list:
+            df_col = pd.read_csv(col, sep='\t', comment="#", index_col=None, header=0)
+            df_column = df_col['refGene'].tolist()
+            ref_list.extend(df_column)
+        return ref_list
 
     @staticmethod
     def align_collinearity(collinearity):
@@ -57,12 +77,10 @@ class Group:
                 ref_query_dict[query_ref[query]] = [query]
             else:
                 ref_query_dict[query_ref[query]].append(query)
-        ref_list = list(ref_query_dict.keys())
-        return ref_query_dict, query_ref, query_list, ref_list
+        return ref_query_dict, query_ref, query_list
 
     @staticmethod
-    def group(mapping_list, ref_mapping_list, ref_query_dict, query_ref, output, blt_lt, ref_blt_lt, query_list, ref_list):
-        output = open(output, 'w')
+    def query_group(mapping_list, ref_query_dict, query_ref, blt_lt, query_list):
         pre_df = []
         for query_lt in ref_query_dict.values():
             for query in query_lt:
@@ -70,7 +88,7 @@ class Group:
                     if query in pr and pr[1-pr.index(query)] not in query_list:
                         pre_df.append([query_ref[query], query, pr[1-pr.index(query)]])
         df = pd.DataFrame(pre_df)
-        print(df)
+        # print(df)
         # df = df.drop_duplicates()
         df[0] = df[0].astype('str')
         df[1] = df[1].astype('str')
@@ -83,7 +101,7 @@ class Group:
             score = []
             sub_group_list = []
             for sub_key, sub_group in group.groupby(by=df.columns[0]):
-                # sub_key is sorghum gene
+                # sub_key is oryza gene
                 sub_group_list.append(sub_group)
             if len(sub_group_list) == 1:
                 continue
@@ -102,7 +120,6 @@ class Group:
                         else:
                             pr_bs = blt_lt[lt[1] + '\t' + lt[0]]
                         grp_score_lt.append(pr_bs)
-                    assert len(grp_score_lt) <= 2
                     average = sum(grp_score_lt) / len(grp_score_lt)
                     i = 1
                     while i <= len(grp_score_lt):
@@ -118,20 +135,24 @@ class Group:
         for row in df.itertuples(index=False, name=None):
             ref_query_dict[row[0]].append(row[2])
         # group number determine and mazie gene has been phased
+        return ref_query_dict
+
+    @staticmethod
+    def ref_group(ref_list, ref_mapping_list, ref_blt_lt, ref_query_dict):
         pre_ref_df = []
-        for ref in ref_query_dict:
+        for ref in ref_list:
             for pr in ref_mapping_list:
-                if ref in pr and pr[1-pr.index(ref)] not in ref_list:
-                    pre_ref_df.append([ref, pr[1-pr.index(ref)]])
+                if ref in pr and pr[1 - pr.index(ref)] not in ref_list:
+                    pre_ref_df.append([ref, pr[1 - pr.index(ref)]])
         ref_df = pd.DataFrame(pre_ref_df)
         ref_df[0] = ref_df[0].astype('str')
         ref_df[1] = ref_df[1].astype('str')
 
-        duplicated_df = ref_df[ref_df.duplicated(subset=df.columns[1], keep=False)].copy()
-        duplicated_df.sort_values(by=df.columns[1], inplace=True)
+        duplicated_df = ref_df[ref_df.duplicated(subset=ref_df.columns[1], keep=False)].copy()
+        duplicated_df.sort_values(by=ref_df.columns[1], inplace=True)
         duplicated_df.reset_index(drop=True, inplace=True)
         dupl_list = []
-        for key, group in duplicated_df.groupby(by=df.columns[1]):
+        for key, group in duplicated_df.groupby(by=ref_df.columns[1]):
             score = []
             to_bs_lt = group.values.tolist()
             for lt in to_bs_lt:
@@ -146,11 +167,16 @@ class Group:
             group.sort_values(by=group.columns[2], ascending=False)
             ft_lt = group.iloc[0, 0:2].tolist()
             dupl_list.append(ft_lt)
-        ref_df.drop_duplicates(subset=df.columns[1], keep=False, inplace=True)
+        ref_df.drop_duplicates(subset=ref_df.columns[1], keep=False, inplace=True)
         ref_dup_df = pd.DataFrame(dupl_list)
         ref_df = pd.concat([ref_df, ref_dup_df])
         for row in ref_df.itertuples(index=False, name=None):
             ref_query_dict[row[0]].append(row[1])
+        return ref_query_dict
+
+    @staticmethod
+    def write_out(output, ref_query_dict):
+        output = open(output, "w")
         idx = 0
         for ref in ref_query_dict:
             group_number = str(idx).zfill(7)
@@ -160,18 +186,52 @@ class Group:
         output.close()
 
     def run(self):
-        if self.use_blast in {"0", "FALSE", "False", "false"}:
-            blt_lt, mapping_list = self.read_blast_get_bs(self.query_blast)
-            ref_blt_lt, ref_mapping_list = self.read_blast_get_bs(self.ref_blast)
-
-            ref_query_dict, query_ref, query_list, ref_list = self.align_collinearity(self.query_ref_collinearity)
-            self.group(mapping_list, ref_mapping_list, ref_query_dict, query_ref, self.output, blt_lt, ref_blt_lt, query_list, ref_list)
         if self.use_blast in {"1", "TRUE", "True", "true"}:
-            blt_lt, _ = self.read_blast_get_bs(self.query_blast)
-            mapping_list = self.read_pair_get_map(self.query_pair_file)
+            query_blast_list = self.split_conf(self.query_blast)
+            query_ref_collinearity_list = self.split_conf(self.query_ref_collinearity)
+            output_ref_query_dict = {}
+            ref_list = self.get_ref_list(self.query_ref_collinearity)
+            ref_blt_lt, ref_mapping_list = self.read_blast_get_bs(self.ref_blast)
+            for i in range(len(query_blast_list)):
+                blt_lt, mapping_list = self.read_blast_get_bs(query_blast_list[i])
+                ref_query_dict, query_ref, query_list = self.align_collinearity(query_ref_collinearity_list[i])
+                ref_query_dict = self.query_group(mapping_list, ref_query_dict, query_ref, blt_lt, query_list)
+                for key, value in ref_query_dict.items():
+                    if key in output_ref_query_dict:
+                        output_ref_query_dict[key].extend(value)
+                    else:
+                        output_ref_query_dict[key] = value.copy()
+            ref_query_dict = self.ref_group(ref_list, ref_mapping_list, ref_blt_lt, output_ref_query_dict)
+            self.write_out(self.output, ref_query_dict)
 
+        if self.use_blast in {"0", "FALSE", "False", "false"}:
+            # maize sorghum
+            query_pair_file_prefix_list = self.split_conf(self.query_pair_file_prefix)
+            query_blast_list = self.split_conf(self.query_blast)
+            query_ref_collinearity_list = self.split_conf(self.query_ref_collinearity)
+
+            ref_list = self.get_ref_list(self.query_ref_collinearity)
+            output_ref_query_dict = {}
+            ref_pair_file_path = []
+            suffix = [".wgd.pairs", ".tandem.pairs", ".proximal.pairs", ".transposed.pairs", ".dispersed.pairs"]
+            for suf in suffix:
+                ref_pair_file_path.append(os.path.join(self.ref_pair_file_dir, self.ref_pair_file_prefix + suf))
+            for i in range(len(query_pair_file_prefix_list)):
+                query_pair_file_path = []
+                for suf in suffix:
+                    query_pair_file_path.append(os.path.join(self.query_pair_file_dir, query_pair_file_prefix_list[i] + suf))
+
+                blt_lt, _ = self.read_blast_get_bs(query_blast_list[i])
+                mapping_list = self.read_pair_get_map(query_pair_file_path)
+
+                ref_query_dict, query_ref, query_list = self.align_collinearity(query_ref_collinearity_list[i])
+                ref_query_dict = self.query_group(mapping_list, ref_query_dict, query_ref, blt_lt, query_list)
+                for key, value in ref_query_dict.items():
+                    if key in output_ref_query_dict:
+                        output_ref_query_dict[key].extend(value)
+                    else:
+                        output_ref_query_dict[key] = value.copy()
             ref_blt_lt, _ = self.read_blast_get_bs(self.ref_blast)
-            ref_mapping_list = self.read_pair_get_map(self.ref_pair_file)
-
-            ref_query_dict, query_ref, query_list, ref_list = self.align_collinearity(self.query_ref_collinearity)
-            self.group(mapping_list, ref_mapping_list, ref_query_dict, query_ref, self.output, blt_lt, ref_blt_lt, query_list, ref_list)
+            ref_mapping_list = self.read_pair_get_map(ref_pair_file_path)
+            ref_query_dict = self.ref_group(ref_list, ref_mapping_list, ref_blt_lt, output_ref_query_dict)
+            self.write_out(self.output, ref_query_dict)
