@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import os
 from .lib import pre_collinearity, collinearity, dotplot, prepare_ks, ks, blockinfo, ks_peaks, peaksfit, ksfigure, \
-     classification_gene, orthogroup3, number_gn_visualization, orthogroup4
+     classification_gene, orthogroup3, number_gn_visualization, orthogroup4, duplicate_pair_ks
 
 
 base_dir = Path(__file__).resolve().parent
@@ -52,8 +52,8 @@ def run_ks(parameter):
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
     config_soft = configparser.ConfigParser()
-    config_soft.read(parameter.conf)
-    ks.Ks(config_par, config_soft).sub_run()
+    config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
+    ks.Ks(config_par, config_soft).first_layer_run()
 
 
 def run_block_info(parameter):
@@ -139,6 +139,15 @@ def run_clv(parameter):
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
     number_gn_visualization.ClsVis(config_par).run()
+
+
+def run_dup(parameter):
+    # global base_dir
+    config_par = configparser.ConfigParser()
+    config_par.read(parameter.conf)
+    config_soft = configparser.ConfigParser()
+    config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
+    duplicate_pair_ks.DuplicateKs(config_par, config_soft).run()
 # def run_class_gene_2():
 #     config_par = configparser.ConfigParser()
 #     config_par.read('./config_file/classification_gene_2.conf')
@@ -149,7 +158,7 @@ def run_clv(parameter):
 
 
 parser = argparse.ArgumentParser(description='collinearity gene analysis', prog="quota_Anchor")
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1_053024_beta')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
 
 subparsers = parser.add_subparsers(title='gene collinearity analysis', dest='analysis')
 # get the longest protein and AnchorWave pro input file
@@ -211,6 +220,9 @@ parser_sub_l.add_argument('-c', '--conf', dest='conf', help="command configure f
 parser_sub_m = subparsers.add_parser('clv', help='class gene number visualization')
 parser_sub_m.set_defaults(func=run_clv)
 parser_sub_m.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
+parser_sub_n = subparsers.add_parser('dupks', help='class gene number visualization')
+parser_sub_n.set_defaults(func=run_dup)
+parser_sub_n.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
 #    parser_sub1 = subparsers1.add_parser('class_gene_2', help='class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
 #    parser_sub1.set_defaults(func=run_class_gene_2)
 
