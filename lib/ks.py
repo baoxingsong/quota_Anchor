@@ -26,9 +26,12 @@
 import subprocess
 import pandas as pd
 import os
+import shutil
 import numpy as np
 from Bio import SeqIO
 from Bio.Phylo.PAML import yn00
+from multiprocessing import Pool, cpu_count
+from tqdm import trange
 
 
 def read_collinearity(collinearity):
@@ -70,14 +73,17 @@ class Ks:
         self.yn00 = config_soft['software']['yn00']
         self.pal2nal = config_soft['software']['pal2nal']
 
-        self.output_query_cds_seq = config_pra['gffread']['output_query_cds_seq']
-        self.output_ref_cds_seq = config_pra['gffread']['output_ref_cds_seq']
-
         self.collinearity = config_pra['ks']['collinearity']
         self.cds_file = config_pra['ks']['cds_file']
         self.pep_file = config_pra['ks']['pep_file']
         self.ks_file = config_pra['ks']['ks_file']
         self.type = config_pra['ks']['type']
+        self.work_dir = os.getcwd()
+
+        if cpu_count() > 32:
+            self.process = 12
+        else:
+            self.process = cpu_count()-1
 
     def pair_kaks(self, k):
         self.align()
@@ -128,36 +134,42 @@ class Ks:
             run_result = None
         return run_result
 
-    def sub_run(self):
+    @staticmethod
+    def print_error(value):
+        print("Process pool error, the cause of the error is :", value)
+
+    def first_layer_run(self):
+        if os.path.exists("tmp"):
+            shutil.rmtree('tmp')
+            os.mkdir('tmp')
+        else:
+            os.mkdir("tmp")
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
         # query_to_ref index = "query+ref"
         df_pairs, _ = read_collinearity(self.collinearity)
-        if os.path.exists(self.ks_file):
-            ks = pd.read_csv(self.ks_file, sep='\t', low_memory=False)
-            ks = ks.drop_duplicates()
-            kscopy = ks.copy()
-            names = ks.columns.tolist()
-            names[0], names[1] = names[1], names[0]
-            kscopy.columns = names
-            ks = pd.concat([ks, kscopy])
-            ks['id'] = ks['id1']+','+ks['id2']
-            # df_pairs.index length equal to len(df_pairs)
-            # query_ref intersect1d query_ref and ref_query in the interspecific, ks = pd.concat([ks, kscopy]) is useless
-            # when len(df_pairs.index) "fake_less than" len(ks['id'].to_numpy()) this is useless
-            # when coll have five duplicate and ks have one duplicate, don't add
-            # when coll have more pair than ks , this maybe useful
-            # intra specific, add A B or B A
-            df_pairs.drop(np.intersect1d(df_pairs.index,
-                                         ks['id'].to_numpy()), inplace=True)
-            ks_file = open(self.ks_file, 'a+')
-        else:
-            # maybe have duplicate and length equal to len(df_pairs) in the interspecific
-            # maybe don't have duplicate and length don't equal to len(df_pairs) in the intraspecific
-            # only retain A B or B A
-            ks_file = open(self.ks_file, 'w')
-            ks_file.write(
-                '\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])+'\n')
+        # if os.path.exists(self.ks_file):
+        #     ks = pd.read_csv(self.ks_file, sep='\t', low_memory=False)
+        #     ks = ks.drop_duplicates()
+        #     kscopy = ks.copy()
+        #     names = ks.columns.tolist()
+        #     names[0], names[1] = names[1], names[0]
+        #     kscopy.columns = names
+        #     ks = pd.concat([ks, kscopy])
+        #     ks['id'] = ks['id1']+','+ks['id2']
+        #     # df_pairs.index length equal to len(df_pairs)
+        #     # query_ref intersect1d query_ref and ref_query in the interspecific, ks = pd.concat([ks, kscopy]) is useless
+        #     # when len(df_pairs.index) "fake_less than" len(ks['id'].to_numpy()) this is useless
+        #     # when coll have five duplicate and ks have one duplicate, don't add
+        #     # when coll have more pair than ks , this maybe useful
+        #     # intra specific, add A B or B A
+        #     df_pairs.drop(np.intersect1d(df_pairs.index,
+        #                                  ks['id'].to_numpy()), inplace=True)
+        #     ks_file = open(self.ks_file, 'a+')
+        # else:
+        # maybe have duplicate and length equal to len(df_pairs) in the interspecific
+        # maybe don't have duplicate and length don't equal to len(df_pairs) in the intraspecific
+        # only retain A B or B A
         df_pairs = df_pairs[(df_pairs[0].isin(cds.keys())) & (df_pairs[1].isin(
             cds.keys())) & (df_pairs[0].isin(pep.keys())) & (df_pairs[1].isin(pep.keys()))]
         pairs = df_pairs[[0, 1]].to_numpy()
@@ -174,18 +186,51 @@ class Ks:
                     pair_hash[k[1]+','+k[0]] = 1
                     allpairs.append(k)
             pairs = allpairs
-        for k in pairs:
-            cds_gene1, cds_gene2 = cds[k[0]], cds[k[1]]
-            cds_gene1.id, cds_gene2.id = 'gene1', 'gene2'
-            pep_gene1, pep_gene2 = pep[k[0]], pep[k[1]]
-            pep_gene1.id, pep_gene2.id = 'gene1', 'gene2'
-            SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
-            SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
-            kaks = self.pair_kaks(['gene1', 'gene2'])
-            if not kaks:
-                continue
-            ks_file.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
-        ks_file.close()
+        n = int(np.ceil(len(pairs) / float(self.process)))
+        os.chdir(os.path.join(self.work_dir, 'tmp'))
+        pool = Pool(int(self.process))
+        for i in range(int(self.process)):
+            if os.path.exists('process_' + str(i)):
+                pass
+            else:
+                os.mkdir('process_' + str(i))
+            if i < int(self.process) - 1:
+                sub_pr = pairs[i * n:i * n + n]
+            else:
+                sub_pr = pairs[i * n:]
+            pool.apply_async(self.secondary_layer_run, args=(sub_pr, i, cds, pep), error_callback=self.print_error)
+        pool.close()
+        pool.join()
+        shutil.rmtree(os.path.join(self.work_dir, 'tmp'))
+
+    def secondary_layer_run(self, pairs, i, cds, pep):
+        os.chdir(self.work_dir)
+        if os.path.exists(self.ks_file):
+            ks_file_handle = open(self.ks_file, 'a+')
+        else:
+            ks_file_handle = open(self.ks_file, 'w')
+            ks_file_handle.write(
+                '\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])+'\n')
+        os.chdir(os.path.join(self.work_dir, 'tmp', 'process_' + str(i)))
+        if i == int(self.process) - 1:
+            for i in trange(len(pairs)):
+                k = pairs[i]
+                SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
+                SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
+                kaks = self.pair_kaks(k)
+                if not kaks:
+                    continue
+                ks_file_handle.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
+            ks_file_handle.close()
+        else:
+            for k in pairs:
+                SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
+                SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
+                kaks = self.pair_kaks(k)
+                if not kaks:
+                    continue
+                ks_file_handle.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
+            ks_file_handle.close()
         for file in (self.pair_pep_file, self.pair_cds_file, self.mrtrans, self.pair_yn, self.prot_align_file,
                      '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
             try:
