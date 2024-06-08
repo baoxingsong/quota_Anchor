@@ -23,6 +23,7 @@ class Circle:
         self.query_length = config_pra['circle']['query_length']
         self.ref_prefix = config_pra['circle']['ref_prefix']
         self.qry_prefix = config_pra['circle']['query_prefix']
+        self.font_size = config_pra['circle']['font_size']
         self.savefig = config_pra['circle']['savefig']
 
     @staticmethod
@@ -247,7 +248,7 @@ class Circle:
             label_x = self.outer_radius * 1.04 * np.cos((chr_radian_pos[i][0] + chr_radian_pos[i][1]) / 2)
             label_y = self.outer_radius * 1.04 * np.sin((chr_radian_pos[i][0] + chr_radian_pos[i][1]) / 2)
             angle = self.text_rotation(chr_pos[i][0], chr_pos[i][1], total_length)
-            plt.text(label_x, label_y, ch, horizontalalignment="center", verticalalignment="center", fontsize=7, color='black', rotation=angle)
+            plt.text(label_x, label_y, ch, horizontalalignment="center", verticalalignment="center", fontsize=self.font_size, color='black', rotation=angle)
             i += 1
         data, gene_pos_dict, ref_chr_list, query_chr_list = self.read_collinearity(self.qry_prefix, self.ref_prefix, self.collinearity, chr_list, chr_to_start)
 
