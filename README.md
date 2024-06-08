@@ -198,21 +198,38 @@ dev.off()
 ### Collinearity circle figure
 ```
 [circle]
+[circle]
 collinearity = zm_sb.collinearity
-ref_fai = Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa.fai
-query_fai = Zm-B73-REFERENCE-NAM-5.0.fa.fai
+ref_length = sb_length.txt
+query_length = zm_length.txt
 ref_prefix = sb-
 query_prefix = zm-
-# By default, the first column of the lines starting with chr or Chr or CHR in the fai file are extracted for plotting.
-select_fai_chr_startswith = number,CHR,chr,Chr
 savefig = zm_sb.circle.png
 ```
 ```
 quota_Anchor circle -c circle.conf
 ```
-When you perform pre_col command, gffread will generate fai files.
 <p align="center">
 <img src="./plots/zm_sb.circle.png" width="800px" background-color="#ffffff" />
+</p>
+
+### Collinearity line figure
+```
+[line]
+collinearity = zm_sb.collinearity
+ref_length = sb_length.txt
+query_length = zm_length.txt
+ref_prefix = sorghum
+query_prefix = maize
+text_font_size = 8
+savefig = zm_sb.line.png
+```
+```
+quota_Anchor line -c line.conf
+```
+When you perform pre_col command, gffread will generate fai files.
+<p align="center">
+<img src="./plots/zm_sb.line.png" width="800px" background-color="#ffffff" />
 </p>
 
 ### Collineaity analysis(maize vs maize )
