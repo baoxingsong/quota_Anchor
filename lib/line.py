@@ -177,7 +177,7 @@ class Line:
             query_start_x = query_start_list[i] / total_length
             query_end_x = query_end_list[i] / total_length
             x, y = self.plot_line_chr(query_start_x, query_end_x, self.width, self.query_height)
-            plt.fill(x, y, facecolor='white', alpha=.7)
+            plt.fill(x, y, facecolor='white', alpha=0.7)
             label_x = (query_start_x + query_end_x) / 2
             label_y = self.query_height + self.width / 2
             plt.text(label_x, label_y, query_chr_list[i][len(self.qry_prefix):], ha="center", va="center", fontsize=self.font_size, color='black')
@@ -222,7 +222,7 @@ class Line:
             pos4_coord_x = pos4 / total_length
 
             x, y = self.plot_colliearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x)
-            plt.fill(x, y, facecolor=color, alpha=0.5)
+            plt.fill(x, y, facecolor=color, alpha=0.7)
             i += 1
         plt.axis('off')
         # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
