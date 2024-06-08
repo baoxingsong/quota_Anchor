@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import os
 from .lib import pre_collinearity, collinearity, dotplot, prepare_ks, ks, blockinfo, ks_peaks, peaksfit, ksfigure, \
-     classification_gene, orthogroup3, number_gn_visualization, orthogroup4, duplicate_pair_ks, circle
+     classification_gene, orthogroup3, number_gn_visualization, orthogroup4, duplicate_pair_ks, circle, line, get_chr_length
 
 
 base_dir = Path(__file__).resolve().parent
@@ -148,6 +148,20 @@ def run_circle(parameter):
     circle.Circle(config_par).run()
 
 
+def run_lens(parameter):
+    # global base_dir
+    config_par = configparser.ConfigParser()
+    config_par.read(parameter.conf)
+    get_chr_length.Lens(config_par).run()
+
+
+def run_line(parameter):
+    # global base_dir
+    config_par = configparser.ConfigParser()
+    config_par.read(parameter.conf)
+    line.Line(config_par).run()
+
+
 def run_dup(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
@@ -230,9 +244,15 @@ parser_sub_m.add_argument('-c', '--conf', dest='conf', help="command configure f
 parser_sub_n = subparsers.add_parser('dupks', help='class gene number visualization')
 parser_sub_n.set_defaults(func=run_dup)
 parser_sub_n.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
-parser_sub_n = subparsers.add_parser('circle', help='AnchorWave pro command collinearity visualization')
-parser_sub_n.set_defaults(func=run_circle)
-parser_sub_n.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
+parser_sub_o = subparsers.add_parser('circle', help='AnchorWave pro command collinearity visualization')
+parser_sub_o.set_defaults(func=run_circle)
+parser_sub_o.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
+parser_sub_p_pre = subparsers.add_parser('get_chr_length', help='chromosome length and name info from fai file')
+parser_sub_p_pre.set_defaults(func=run_lens)
+parser_sub_p_pre.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
+parser_sub_p = subparsers.add_parser('line', help='AnchorWave pro command collinearity visualization')
+parser_sub_p.set_defaults(func=run_line)
+parser_sub_p.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
 #    parser_sub1 = subparsers1.add_parser('class_gene_2', help='class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
 #    parser_sub1.set_defaults(func=run_class_gene_2)
 
