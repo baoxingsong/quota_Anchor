@@ -16,15 +16,14 @@ class Line:
         # gaps between chromosome, chr:gap = 4: 1
         self.gap_ratio = 6
         self.ref_height = 0.3
+        self.height_gap = 0.3
         self.query_height = 0.6
-        self.width = 0.02
-        self.dpi = 1000
+        self.width = 0.015
+        self.dpi = 1500
         # self.block_gep = 200
         self.collinearity = config_pra['line']['collinearity']
-        self.ref_length = config_pra['line']['ref_length']
-        self.query_length = config_pra['line']['query_length']
-        self.ref_prefix = config_pra['line']['ref_prefix']
-        self.qry_prefix = config_pra['line']['query_prefix']
+        self.length_file = config_pra['line']['length_file']
+        self.prefix = config_pra['line']['prefix']
         self.font_size = int(config_pra['line']['text_font_size'])
         self.savefig = config_pra['line']['savefig']
 
@@ -86,10 +85,10 @@ class Line:
 
         return x, y
 
-    def plot_colliearity_region(self, pos1, pos2, pos3, pos4):
+    def plot_colliearity_region(self, pos1, pos2, pos3, pos4, query_height, ref_height):
         ratio = 0.2
-        ref_mar = self.ref_height + self.width * 1.1
-        query_mar = self.query_height - self.width * 0.1
+        ref_mar = ref_height + self.width * 1.1
+        query_mar = query_height - self.width * 0.1
         x, y = [], []
         # p1->p3(ref_block)
         x.append(pos1)
@@ -127,16 +126,7 @@ class Line:
 
         return x, y
 
-    def run(self):
-        ref_length = pd.read_csv(self.ref_length, sep='\t', header=0)
-        ref_length['chr'] = ref_length['chr'].astype(str)
-        ref_length['chr'] = self.ref_prefix + ref_length['chr']
-        ref_length['length'] = ref_length['length'].astype(int)
-
-        query_length = pd.read_csv(self.query_length, sep='\t', header=0)
-        query_length['chr'] = query_length['chr'].astype(str)
-        query_length['chr'] = self.qry_prefix + query_length['chr']
-        query_length['length'] = query_length['length'].astype(int)
+    def sub_run(self, collinearity, prefix, ref_length, query_length, total_length, query_height, ref_height, loop, last_loop):
         ref_chr_list = ref_length['chr'].tolist()
         query_chr_list = query_length['chr'].tolist()
         chr_color_dict = {}
@@ -147,46 +137,51 @@ class Line:
             chr_color_dict[ch] = color_dict
             i += 1
         # figure geometry info
-        plt.rcParams['font.family'] = "Times New Roman"
-        fig, ax = plt.subplots(figsize=(10, 10), facecolor='black')
-        ax.set_aspect('equal')
-        total_chr_length = max(query_length['length'].sum(), ref_length['length'].sum())
-        total_length = total_chr_length + total_chr_length / self.gap_ratio
-
         ref_gap_length = (total_length - ref_length['length'].sum()) / (len(ref_chr_list) + 1)
         ref_start_list, ref_end_list, ref_chr_to_start = self.line_get_pos_list(ref_length, ref_gap_length)
         # relative length 1
         label_x = -0.1
-        label_y = self.ref_height + self.width / 2
-        plt.text(label_x, label_y, self.ref_prefix, ha="center", va="center", fontsize=self.font_size, color='white')
+        label_y = ref_height + self.width / 2
+        plt.text(label_x, label_y, prefix[0], ha="center", va="center", fontsize=self.font_size, color='white')
         for i in range(len(ref_chr_list)):
             ref_start_x = ref_start_list[i] / total_length
             ref_end_x = ref_end_list[i] / total_length
-            x, y = self.plot_line_chr(ref_start_x, ref_end_x, self.width, self.ref_height)
+            x, y = self.plot_line_chr(ref_start_x, ref_end_x, self.width, ref_height)
             plt.fill(x, y, facecolor='white', alpha=.7)
             label_x = (ref_start_x + ref_end_x) / 2
-            label_y = self.ref_height + self.width / 2
-            plt.text(label_x, label_y, ref_chr_list[i][len(self.ref_prefix):], ha="center", va="center", fontsize=self.font_size, color='black')
+            label_y = ref_height + self.width / 2
+            plt.text(label_x, label_y, ref_chr_list[i][len(prefix[0]):], ha="center", va="center", fontsize=self.font_size, color='black')
 
         query_gap_length = (total_length - query_length['length'].sum()) / (len(query_chr_list) + 1)
         query_start_list, query_end_list, query_chr_to_start = self.line_get_pos_list(query_length, query_gap_length)
-        label_x = -0.1
-        label_y = self.query_height + self.width / 2
-        plt.text(label_x, label_y, self.qry_prefix, ha="center", va="center", fontsize=self.font_size, color='white')
-        for i in range(len(query_chr_list)):
-            query_start_x = query_start_list[i] / total_length
-            query_end_x = query_end_list[i] / total_length
-            x, y = self.plot_line_chr(query_start_x, query_end_x, self.width, self.query_height)
-            plt.fill(x, y, facecolor='white', alpha=0.7)
-            label_x = (query_start_x + query_end_x) / 2
-            label_y = self.query_height + self.width / 2
-            plt.text(label_x, label_y, query_chr_list[i][len(self.qry_prefix):], ha="center", va="center", fontsize=self.font_size, color='black')
+        print(last_loop)
+        print(loop)
+        if loop == last_loop:
+            label_x = -0.1
+            label_y = query_height + self.width / 2
+            # print(prefix[1])
+            # print(label_x)
+            # print(label_y)
+            plt.text(label_x, label_y, prefix[1], ha="center", va="center", fontsize=self.font_size, color='white')
+            for i in range(len(query_chr_list)):
+                query_start_x = query_start_list[i] / total_length
+                query_end_x = query_end_list[i] / total_length
+                x, y = self.plot_line_chr(query_start_x, query_end_x, self.width, query_height)
+                plt.fill(x, y, facecolor='white', alpha=0.7)
+                label_x = (query_start_x + query_end_x) / 2
+                label_y = query_height + self.width / 2
+                plt.text(label_x, label_y, query_chr_list[i][len(prefix[1]):], ha="center", va="center", fontsize=self.font_size, color='black')
+        # print(ref_chr_list)
+        # print(query_chr_list)
         chr_list = list(OrderedDict.fromkeys(query_chr_list + ref_chr_list))
         chr_to_start = {}
         chr_to_start.update(query_chr_to_start)
         chr_to_start.update(ref_chr_to_start)
-
-        data, gn_to_pos, rf_blk_chr, qry_blk_chr = circle.Circle.read_collinearity(self.qry_prefix, self.ref_prefix, self.collinearity, chr_list, chr_to_start)
+        # print(prefix)
+        # print(collinearity)
+        # print(chr_list)
+        # print(chr_to_start)
+        data, gn_to_pos, rf_blk_chr, qry_blk_chr = circle.Circle.read_collinearity(prefix[1], prefix[0], collinearity, chr_list, chr_to_start)
         intra = []
         intra_chr_list = []
         i = 0
@@ -207,7 +202,7 @@ class Line:
                 pos3_coord_x = pos3 / total_length
                 pos4_coord_x = pos4 / total_length
 
-                x, y = self.plot_colliearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x)
+                x, y = self.plot_colliearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height)
                 plt.fill(x, y, facecolor=color, alpha=0.7)
                 i += 1
         i = 0
@@ -221,10 +216,87 @@ class Line:
             pos3_coord_x = pos3 / total_length
             pos4_coord_x = pos4 / total_length
 
-            x, y = self.plot_colliearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x)
+            x, y = self.plot_colliearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height)
             plt.fill(x, y, facecolor=color, alpha=0.7)
             i += 1
+
+    def run(self):
+        # split collinearity in order to loop
+        collinearity_file_list = self.collinearity.split(",")
+        strip_collinearity_file_list = []
+        for col in collinearity_file_list:
+            if len(col) == 0:
+                continue
+            col = col.strip()
+            strip_collinearity_file_list.append(col)
+
+        # split prefix in order to pair
+        prefix = self.prefix.split(",")
+        strip_prefix = []
+        new_prefix = []
+        for prx in prefix:
+            if len(prx) == 0:
+                continue
+            prx = prx.strip()
+            strip_prefix.append(prx)
+        for i in range(len(strip_collinearity_file_list)):
+            new_prefix.append([strip_prefix[i], strip_prefix[i + 1]])
+
+        # split length get dataframe
+        length_file_list = self.length_file.split(",")
+        strip_length_file_list_df = []
+        new_length_file_list_df = []
+        i = 0
+        for le in length_file_list:
+            le = le.strip()
+            if len(le) == 0:
+                continue
+            length = pd.read_csv(le, sep='\t', header=0)
+            # print(length)
+            length['chr'] = length['chr'].astype(str)
+            length['chr'] = strip_prefix[i] + length['chr']
+            length['length'] = length['length'].astype(int)
+            strip_length_file_list_df.append(length)
+            i += 1
+        # print(strip_length_file_list_df)
+        for i in range(len(strip_collinearity_file_list)):
+            new_length_file_list_df.append([strip_length_file_list_df[i], strip_length_file_list_df[i+1]])
+
+        # get maximum chr total length
+        length_list = []
+        for df in strip_length_file_list_df:
+            length_list.append(df['length'].sum())
+        total_chr_length = max(length_list)
+        total_length = total_chr_length + total_chr_length / self.gap_ratio
+
+        zipped_three_pair = list(zip(strip_collinearity_file_list, new_prefix, new_length_file_list_df))
+        # print(zipped_three_pair)
+        plt.rcParams['font.family'] = "Times New Roman"
+        fig, ax = plt.subplots(figsize=(10, 10), facecolor='black')
+        ax.set_aspect('equal')
+
+        query_height = self.query_height
+        ref_height = self.ref_height
+        last_loop = len(zipped_three_pair) - 1
+        print(zipped_three_pair)
+        i = 0
+        for col, prefix, length in zipped_three_pair:
+            # print(length)
+            # print(last_loop)
+            # print(i)
+            # print(ref_height)
+            # print(query_height)
+
+            self.sub_run(col, prefix, length[0], length[1], total_length, query_height, ref_height, i, last_loop)
+            query_height = query_height + self.height_gap
+
+            ref_height = ref_height + self.height_gap
+            # print(ref_height)
+            # print(query_height)
+            # sys.exit(1)
+            i += 1
+
         plt.axis('off')
-        # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
+        # # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
         plt.savefig(self.savefig, dpi=int(self.dpi), bbox_inches='tight')
         sys.exit(0)

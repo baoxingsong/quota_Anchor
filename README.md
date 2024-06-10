@@ -198,7 +198,6 @@ dev.off()
 ### Collinearity circle figure
 ```
 [circle]
-[circle]
 collinearity = zm_sb.collinearity
 ref_length = sb_length.txt
 query_length = zm_length.txt
@@ -216,20 +215,18 @@ quota_Anchor circle -c circle.conf
 ### Collinearity line figure
 ```
 [line]
-collinearity = zm_sb.collinearity
-ref_length = sb_length.txt
-query_length = zm_length.txt
-ref_prefix = sorghum
-query_prefix = maize
-text_font_size = 8
-savefig = zm_sb.line.png
+collinearity = sb_os.collinearity, zm_sb.collinearity, sv_zm.collinearity
+# from bottom to top (ref:os, query:sorghum, ref:sorghum:query:maize, ref:maize:query:setaria)
+length_file = os_length.txt, sb_length.txt, zm_length.txt, sv_length.txt
+prefix = oryza, sorghum, maize, setaria
+text_font_size = 7
+savefig = os_sb_zm_sv.line.png
 ```
 ```
 quota_Anchor line -c line.conf
 ```
-When you perform pre_col command, gffread will generate fai files.
 <p align="center">
-<img src="./plots/zm_sb.line.png" width="800px" background-color="#ffffff" />
+<img src="./plots/os_sb_zm_sv.line.png" width="800px" background-color="#ffffff" />
 </p>
 
 ### Collineaity analysis(maize vs maize )
