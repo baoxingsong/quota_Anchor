@@ -12,6 +12,19 @@ class Dotplot:
         self.query_name = config_pra['dotplot']['query_name']
         self.ref_name = config_pra['dotplot']['ref_name']
         self.filename = config_pra['dotplot']['filename']
+        self.my_theme = theme(
+                panel_background=element_rect(fill='white'),
+                panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
+                axis_ticks_major_x=element_line(size=4),
+                axis_ticks_major_y=element_line(size=4),
+                legend_text=element_text(size=50, ha='center'),
+                legend_title=element_text(size=50, ha='center'),
+                axis_text_x=element_text(rotation=-60, hjust=0, vjust=1)
+            )
+
+    @staticmethod
+    def major_formatter(breaks):
+        return [f'{int(b)}M' for b in breaks]
 
     def run_coll_dotplot(self):
         dict2 = {"color": "strand"}
@@ -22,31 +35,18 @@ class Dotplot:
         coll_df["refChr"] = coll_df["refChr"].astype(str)
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
+        custom_colors = {"+": "red", "-": "blue"}
         if self.type == 'order':
-            coll_df['queryId'] = coll_df['queryId'].apply(lambda x: x / 1000)
-            coll_df['refId'] = coll_df['refId'].apply(lambda x: x / 1000)
             dict1 = {"x": "queryId", "y": "refId"}
             plot = (ggplot(coll_df, aes(**dict1)) +
                     facet_grid('refChr~queryChr', scales="free", space="free") +
-                    geom_point(aes(**dict2), size=1) +
+                    geom_point(aes(**dict2), size=2, alpha=1) +
+                    scale_color_manual(values=custom_colors) +
                     scale_x_continuous() +
                     scale_y_continuous())
 
-            my_theme = theme(
-                axis_line=element_blank(),
-                panel_background=element_rect(fill='white'),
-                panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
-                # axis_text_y=element_text(color="black"),
-                legend_position=element_blank(),
-                axis_ticks_major_x=True,
-                axis_ticks_major_y=True,
-                axis_title_x=str(self.query_name) + "(unit:k)",
-                axis_title_y=str(self.ref_name) + "(unit:k)",
-                axis_text=element_text(size=2),
-                axis_text_x=element_text(rotation=200.0, ha='center', va='bottom', color="red")
-            )
-
-            plot1 = plot + my_theme + theme_grey(base_size=40) + labs(x=f'{self.query_name} (Unit:K)', y=f'{self.ref_name} (Unit:K)')
+            plot1 = plot + theme_grey(base_size=50) + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
+            plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})}) + self.my_theme
             plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
         else:
             coll_df['queryStart'] = coll_df['queryStart'].apply(lambda x: x / 1000000)
@@ -54,25 +54,13 @@ class Dotplot:
             dict1 = {"x": "queryStart", "y": "referenceStart"}
             plot = (ggplot(coll_df, aes(**dict1)) +
                     facet_grid('refChr~queryChr', scales="free", space="free") +
-                    geom_point(aes(**dict2), size=1) +
-                    scale_x_continuous() +
-                    scale_y_continuous())
+                    geom_point(aes(**dict2), size=2, alpha=1) +
+                    scale_color_manual(values=custom_colors) +
+                    scale_x_continuous(labels=self.major_formatter) +
+                    scale_y_continuous(labels=self.major_formatter))
 
-            my_theme = theme(
-                axis_line=element_blank(),
-                panel_background=element_rect(fill='white'),
-                panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
-                axis_text_y=element_text(color="black"),
-                legend_position=element_blank(),
-                axis_ticks_major_x=True,
-                axis_ticks_major_y=True,
-                axis_title_x=str(self.query_name) + "(unit:k)",
-                axis_title_y=str(self.ref_name) + "(unit:k)",
-                axis_text=element_text(size=2),
-                axis_text_x=element_text(rotation=200.0, ha='center', va='bottom', color="red")
-            )
-
-            plot1 = plot + my_theme + theme_grey(base_size=40) + labs(x=f'{self.query_name} (Unit:M)', y=f'{self.ref_name} (Unit:M)')
+            plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
+            plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
             plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
 
     def run_blast_dotplot(self):
@@ -87,32 +75,21 @@ class Dotplot:
         coll_df["refChr"] = coll_df["refChr"].astype(str)
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
+        custom_colors = {"+": "red", "-": "blue"}
         if self.type == "order":
             dict1 = {"x": "queryId", "y": "refId"}
-            coll_df['refId'] = coll_df['refId'].apply(lambda x: x / 1000)
-            coll_df['queryId'] = coll_df['queryId'].apply(lambda x: x / 1000)
+            # coll_df['refId'] = coll_df['refId'].apply(lambda x: x / 1000)
+            # coll_df['queryId'] = coll_df['queryId'].apply(lambda x: x / 1000)
 
             plot = (ggplot(coll_df, aes(**dict1)) +
                     facet_grid('refChr~queryChr', scales="free", space="free") +
-                    geom_point(aes(**dict2), size=1) +
+                    geom_point(aes(**dict2), size=1, alpha=0.5) +
+                    scale_color_manual(values=custom_colors) +
                     scale_x_continuous() +
                     scale_y_continuous())
 
-            my_theme = theme(
-                axis_line=element_blank(),
-                panel_background=element_rect(fill='white'),
-                panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
-                axis_text_y=element_text(color="black"),
-                legend_position=element_blank(),
-                axis_ticks_major_x=True,
-                axis_ticks_major_y=True,
-                # axis_title_x=str(self.query_name) + "(unit:K)",
-                # axis_title_y=str(self.ref_name) + "(unit:K)",
-                axis_text=element_text(size=2),
-                axis_text_x=element_text(rotation=200.0, ha='center', va='bottom', color="red")
-            )
-
-            plot1 = plot + my_theme + theme_grey(base_size=40) + labs(x=f'{self.query_name} (Unit:K)', y=f'{self.ref_name} (Unit:M)')
+            plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
+            plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
             plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
         else:
             coll_df['queryStart'] = coll_df['queryStart'].apply(lambda x: x / 1000000)
@@ -120,25 +97,13 @@ class Dotplot:
             dict1 = {"x": "queryStart", "y": "referenceStart"}
             plot = (ggplot(coll_df, aes(**dict1)) +
                     facet_grid('refChr~queryChr', scales="free", space="free") +
-                    geom_point(aes(**dict2), size=1) +
-                    scale_x_continuous() +
-                    scale_y_continuous())
+                    geom_point(aes(**dict2), size=0.8, alpha=0.2) +
+                    scale_color_manual(values=custom_colors) +
+                    scale_x_continuous(labels=self.major_formatter) +
+                    scale_y_continuous(labels=self.major_formatter))
 
-            my_theme = theme(
-                axis_line=element_blank(),
-                panel_background=element_rect(fill='white'),
-                panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
-                axis_text_y=element_text(color="black"),
-                legend_position=element_blank(),
-                axis_ticks_major_x=True,
-                axis_ticks_major_y=True,
-                axis_title_x=str(self.query_name) + "(unit:M)",
-                axis_title_y=str(self.ref_name) + "(unit:M)",
-                axis_text=element_text(size=2),
-                axis_text_x=element_text(rotation=200.0, ha='center', va='bottom', color="red")
-            )
-
-            plot1 = plot + my_theme + theme_grey(base_size=40) + labs(x=f'{self.query_name} (Unit:M)', y=f'{self.ref_name} (Unit:M)')
+            plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
+            plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
             plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
 
     def run(self):
