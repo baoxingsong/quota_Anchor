@@ -6,8 +6,10 @@ import numpy as np
 class Dotplot:
     def __init__(self, config_pra):
         self.input_file = config_pra['dotplot']['input_file']
-        self.special_query_chr = config_pra['dotplot']['special_query_chr']
-        self.special_ref_chr = config_pra['dotplot']['special_ref_chr']
+        self.query_length = config_pra['dotplot']['query_length']
+        self.ref_length = config_pra['dotplot']['ref_length']
+        self.f_width = int(config_pra['dotplot']['plotnine_figure_width'])
+        self.f_height = int(config_pra['dotplot']['plotnine_figure_height'])
         self.type = config_pra['dotplot']['type']
         self.query_name = config_pra['dotplot']['query_name']
         self.ref_name = config_pra['dotplot']['ref_name']
@@ -26,15 +28,24 @@ class Dotplot:
     def major_formatter(breaks):
         return [f'{int(b)}M' for b in breaks]
 
+    @staticmethod
+    def read_length(conf):
+        df = pd.read_csv(conf, sep="\t", header=0, index_col=None)
+        df['chr'] = df['chr'].astype(str)
+        chr_list = df['chr']
+        return chr_list
+
     def run_coll_dotplot(self):
         dict2 = {"color": "strand"}
-        query_chr = self.special_query_chr.split(sep=",")
-        ref_chr = self.special_ref_chr.split(sep=",")
+        query_chr = self.read_length(self.query_length)
+        ref_chr = self.read_length(self.ref_length)
         coll_df = pd.read_csv(self.input_file, header=0, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
+        coll_df['queryChr'] = pd.Categorical(coll_df['queryChr'], categories=query_chr, ordered=True)
+        coll_df['refChr'] = pd.Categorical(coll_df['refChr'], categories=ref_chr, ordered=True)
         custom_colors = {"+": "red", "-": "blue"}
         if self.type == 'order':
             dict1 = {"x": "queryId", "y": "refId"}
@@ -47,7 +58,7 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})}) + self.my_theme
-            plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
+            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
         else:
             coll_df['queryStart'] = coll_df['queryStart'].apply(lambda x: x / 1000000)
             coll_df['referenceStart'] = coll_df['referenceStart'].apply(lambda x: x / 1000000)
@@ -61,12 +72,12 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
-            plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
+            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
 
     def run_blast_dotplot(self):
         dict2 = {"color": "strand"}
-        query_chr = self.special_query_chr.split(sep=",")
-        ref_chr = self.special_ref_chr.split(sep=",")
+        query_chr = self.read_length(self.query_length)
+        ref_chr = self.read_length(self.ref_length)
         coll_df = pd.read_csv(self.input_file, header=None, sep="\t", comment="#", low_memory=False)
         coll_df.columns = ["refGene", "refChr", "refId", "referenceStart", "referenceEnd", "refStrand",
                            "queryGene",	"queryChr", "queryId", "queryStart", "queryEnd", "queryStrand", "identity"]
@@ -75,6 +86,8 @@ class Dotplot:
         coll_df["refChr"] = coll_df["refChr"].astype(str)
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
+        coll_df['queryChr'] = pd.Categorical(coll_df['queryChr'], categories=query_chr, ordered=True)
+        coll_df['refChr'] = pd.Categorical(coll_df['refChr'], categories=ref_chr, ordered=True)
         custom_colors = {"+": "red", "-": "blue"}
         if self.type == "order":
             dict1 = {"x": "queryId", "y": "refId"}
@@ -90,7 +103,7 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
-            plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
+            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
         else:
             coll_df['queryStart'] = coll_df['queryStart'].apply(lambda x: x / 1000000)
             coll_df['referenceStart'] = coll_df['referenceStart'].apply(lambda x: x / 1000000)
@@ -104,7 +117,7 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
-            plot1.save(str(self.filename), width=1500, height=1200, units="mm", limitsize=False)
+            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
 
     def run(self):
         with open(self.input_file, 'r') as file:
