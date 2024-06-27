@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import os
 from .lib import pre_collinearity, collinearity, dotplot, prepare_ks, ks, blockinfo, ks_peaks, peaksfit, ksfigure, \
-     classification_gene, orthogroup3, number_gn_visualization, orthogroup4, duplicate_pair_ks, circle, line, get_chr_length, line_2
+     classification_gene, number_gn_visualization, orthogroup4, duplicate_pair_ks, circle, line, get_chr_length
 
 
 base_dir = Path(__file__).resolve().parent
@@ -120,11 +120,11 @@ def run_class_gene(parameter):
 #     orthogroup2.Group(config_par).run()
 
 
-def run_group3(parameter):
-    # global base_dir
-    config_par = configparser.ConfigParser()
-    config_par.read(parameter.conf)
-    orthogroup3.Group(config_par).run()
+# def run_group3(parameter):
+#     # global base_dir
+#     config_par = configparser.ConfigParser()
+#     config_par.read(parameter.conf)
+#     orthogroup3.Group(config_par).run()
 
 
 def run_group4(parameter):
@@ -162,11 +162,11 @@ def run_line(parameter):
     line.Line(config_par).run()
 
 
-def run_line_2(parameter):
-    # global base_dir
-    config_par = configparser.ConfigParser()
-    config_par.read(parameter.conf)
-    line_2.Line(config_par).run()
+# def run_line_2(parameter):
+#     # global base_dir
+#     config_par = configparser.ConfigParser()
+#     config_par.read(parameter.conf)
+#     line_2.Line(config_par).run()
 
 
 def run_dup(parameter):
@@ -239,9 +239,9 @@ parser_sub_j.add_argument('-c', '--conf', dest='conf', help="command configure f
 # parser_sub1.set_defaults(func=run_group)
 # parser_sub1 = subparsers1.add_parser('group2', help='orthogroup based collinearity')
 # parser_sub1.set_defaults(func=run_group2)
-parser_sub_k = subparsers.add_parser('group3', help='orthogroup based collinearity')
-parser_sub_k.set_defaults(func=run_group3)
-parser_sub_k.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
+# parser_sub_k = subparsers.add_parser('group3', help='orthogroup based collinearity')
+# parser_sub_k.set_defaults(func=run_group3)
+# parser_sub_k.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
 parser_sub_l = subparsers.add_parser('group4', help='orthogroup based collinearity')
 parser_sub_l.set_defaults(func=run_group4)
 parser_sub_l.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
@@ -260,9 +260,9 @@ parser_sub_p_pre.add_argument('-c', '--conf', dest='conf', help="command configu
 parser_sub_p = subparsers.add_parser('line', help='AnchorWave pro command collinearity visualization')
 parser_sub_p.set_defaults(func=run_line)
 parser_sub_p.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
-parser_sub_p_2 = subparsers.add_parser('line_2', help='AnchorWave pro command collinearity visualization')
-parser_sub_p_2.set_defaults(func=run_line_2)
-parser_sub_p_2.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
+# parser_sub_p_2 = subparsers.add_parser('line_2', help='AnchorWave pro command collinearity visualization')
+# parser_sub_p_2.set_defaults(func=run_line_2)
+# parser_sub_p_2.add_argument('-c', '--conf', dest='conf', help="command configure file", metavar="")
 #    parser_sub1 = subparsers1.add_parser('class_gene_2', help='class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
 #    parser_sub1.set_defaults(func=run_class_gene_2)
 
