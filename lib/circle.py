@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from math import pi
 import sys
+from . import base
 
 
 class Circle:
@@ -97,6 +98,7 @@ class Circle:
         # print(x, y)
         return x, y
 
+    # don't modify this function
     @staticmethod
     def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_start):
         # left -> ref;  right -> query
@@ -106,7 +108,13 @@ class Circle:
         gene_pos_dict = {}
         block_index = 0
         block = []
+        # print(qry_prefix)
+        # print(ref_prefix)
+        # print(collinearity)
+        # print(chr_list)
+        # print(chr_to_start)
         with open(collinearity) as f:
+            print(collinearity)
             _ = next(f)
             _ = next(f)
             flag = True
@@ -134,6 +142,7 @@ class Circle:
                     else:
                         continue
             data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
+            print("parse", collinearity, "success")
         return data, gene_pos_dict, ref_chr_list, query_chr_list
 
     @staticmethod
@@ -144,7 +153,8 @@ class Circle:
             fvalue.append(y)
         return fvalue
 
-    def plot_closed_region(self, pos1_radian, pos2_radian, pos3_radian, pos4_radian, radius):
+    @staticmethod
+    def plot_closed_region(pos1_radian, pos2_radian, pos3_radian, pos4_radian, radius):
         ratio = 0.382
         # pos1 -> pos3(ref region)
         t = np.arange(pos1_radian, pos3_radian, pi / 720)
@@ -159,9 +169,9 @@ class Circle:
         pos4_y = radius * np.sin(pos4_radian)
         t = np.arange(0, 1.01, 0.01)
         p0, p1, p2, p3 = pos3_x, pos3_x * ratio, pos4_x * ratio, pos4_x
-        x1 = self.bezier3(p0, p1, p2, p3, t)
+        x1 = base.bezier3(p0, p1, p2, p3, t)
         p0, p1, p2, p3 = pos3_y, pos3_y * ratio, pos4_y * ratio, pos4_y
-        y1 = self.bezier3(p0, p1, p2, p3, t)
+        y1 = base.bezier3(p0, p1, p2, p3, t)
         x = x + x1
         y = y + y1
 
@@ -184,9 +194,9 @@ class Circle:
         pos1_y = radius * np.sin(pos1_radian)
         t = np.arange(0, 1.01, 0.01)
         p0, p1, p2, p3 = pos2_x, pos2_x * ratio, pos1_x * ratio, pos1_x
-        x1 = self.bezier3(p0, p1, p2, p3, t)
+        x1 = base.bezier3(p0, p1, p2, p3, t)
         p0, p1, p2, p3 = pos2_y, pos2_y * ratio, pos1_y * ratio, pos1_y
-        y1 = self.bezier3(p0, p1, p2, p3, t)
+        y1 = base.bezier3(p0, p1, p2, p3, t)
         x += x1
         y += y1
         x.append(x[0])
@@ -244,13 +254,13 @@ class Circle:
             x, y = self.plot_circle_chr(chr_radian_pos[i][0], chr_radian_pos[i][1], self.inner_radius, self.outer_radius, self.ring_width, ring_radian)
             color = chr_color_dict[ch]['chr']
             plt.fill(x, y, facecolor=color, alpha=.7)
-
+            # plt.plot(x, y, color='black')
             label_x = self.outer_radius * 1.04 * np.cos((chr_radian_pos[i][0] + chr_radian_pos[i][1]) / 2)
             label_y = self.outer_radius * 1.04 * np.sin((chr_radian_pos[i][0] + chr_radian_pos[i][1]) / 2)
             angle = self.text_rotation(chr_pos[i][0], chr_pos[i][1], total_length)
-            plt.text(label_x, label_y, ch, horizontalalignment="center", verticalalignment="center", fontsize=self.font_size, color='black', rotation=angle)
+            plt.text(label_x, label_y, ch, ha="center", va="center", fontsize=self.font_size, color='black', rotation=angle)
             i += 1
-        data, gene_pos_dict, ref_chr_list, query_chr_list = self.read_collinearity(self.qry_prefix, self.ref_prefix, self.collinearity, chr_list, chr_to_start)
+        data, gene_pos_dict, ref_chr_list, query_chr_list = base.read_collinearity(self.qry_prefix, self.ref_prefix, self.collinearity, chr_list, chr_to_start)
 
         i = 0
         intra = []
