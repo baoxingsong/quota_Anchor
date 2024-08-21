@@ -22,7 +22,7 @@ setup(
     url="https://github.com/baoxingsong/quota_Anchor",
     packages=["lib", "plots", "config_file"],
     package_dir={
-        "": ".",
+        "quota_anchor": "./quota_anchor",
         "lib": "./quota_anchor/lib",
         "plots": "./quota_anchor/plots",
         "config_file": "./quota_anchor/config_file",
