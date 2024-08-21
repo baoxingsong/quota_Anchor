@@ -21,8 +21,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/baoxingsong/quota_Anchor",
     packages=find_packages(),
-    package_data={'quota_Anchor': ['config_file/*']},
-    python_requires=">=3, <4",
+    package_data={'quota_anchor': ['config_file/*']},
+    python_requires=">=3.12, <4",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Comparative genomics/Evolution researcher",
