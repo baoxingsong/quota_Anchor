@@ -24,6 +24,9 @@ setup(
     package_dir={
         "quota_anchor": "./quota_anchor",
     },
+    package_data={
+        'quota_anchor': ['config_file/*', 'plots/*', 'lib/*'],
+    },
     include_package_data=True,
     python_requires=">=3.12, <4",
     classifiers=[
