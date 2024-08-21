@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import pathlib
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
@@ -20,9 +20,9 @@ setup(
     long_description=long_des,
     long_description_content_type="text/markdown",
     url="https://github.com/baoxingsong/quota_Anchor",
-    packages=["quota_anchor"],
+    packages=find_packages(include=['quota_anchor', 'quota_anchor.*']),
     package_data={
-        'quota_anchor': ['config_file/*', 'plots/*', 'lib/*'],
+        'quota_anchor': ['config_file/*', 'plots/*'],
     },
     include_package_data=True,
     python_requires=">=3, <4",
