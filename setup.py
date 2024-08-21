@@ -28,7 +28,7 @@ setup(
         'quota_anchor': ['config_file/*', 'plots/*', 'lib/*'],
     },
     include_package_data=True,
-    python_requires=">=3.12, <4",
+    python_requires=">=3, <4",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Comparative genomics/Evolution researcher",
