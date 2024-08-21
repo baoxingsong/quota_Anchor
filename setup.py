@@ -32,7 +32,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'quota_Anchor = quota_Anchor.main:main',
+            'quota_Anchor = quota_anchor.main:main',
         ]
     },
     zip_safe=True,
