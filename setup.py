@@ -20,7 +20,7 @@ setup(
     long_description=long_des,
     long_description_content_type="text/markdown",
     url="https://github.com/baoxingsong/quota_Anchor",
-    packages=["lib", "plots", "config_file"],
+    packages=["quota_anchor", "lib", "plots", "config_file"],
     package_dir={
         "quota_anchor": "./quota_anchor",
         "lib": "./quota_anchor/lib",
