@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from setuptools import setup, find_packages
+from setuptools import setup
 import pathlib
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
@@ -23,9 +23,9 @@ setup(
     packages=["lib", "plot", "config_file"],
     package_dir={
         "": ".",
-        "lib": "./lib",
-        "plot": "./plot",
-        "config_file": "./config_file",
+        "lib": "./quota_anchor/lib",
+        "plot": "./quota_anchor/plot",
+        "config_file": "./quota_anchor/config_file",
     },
     package_data={'': ['*.conf', '*.ini', '*.csv', '*png']},
     include_package_data=True,
