@@ -21,6 +21,9 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/baoxingsong/quota_Anchor",
     packages=['quota_anchor', 'quota_anchor.lib', 'quota_anchor.config_file', 'quota_anchor.plots'],
+    package_data={
+        'quota_anchor': ['plots/*', 'config_file/*'],
+    },
     include_package_data=True,
     python_requires=">=3, <4",
     classifiers=[
