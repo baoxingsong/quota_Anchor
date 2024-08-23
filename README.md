@@ -1,4 +1,4 @@
-# quota_Anchor
+# quota_Anchor( Proustian monstrosity)
 Here are the scripts and documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave. We currently provide three visualization methods for syntenic results.
 ## Installation
 You can simple by the following command get this software in a independent conda envirment. This is a beta version, so we haven't uploaded it to bioconda yet.
@@ -31,7 +31,7 @@ gene collinearity analysis:
 ## Example
 Here is an example to identify syntenic genes between maize and sorghum. The maize lineage has undergone a whole genome duplication (WGD) since its divergence with sorghum, but subsequent chromosomal fusions resulted in these species having the same chromosome number (n = 10). AnchorWave can allow up to two collinear paths for each sorghum anchor while one collinear path for each maize anchor.
 ### Make some folders rather than a folder may be more clearer
-Working directory structure are as follows.
+Working directory structure are as follows. We may give you an option to create this directory later, but you will need to do it yourself now.
 ```
 ├── length_file
 │   └── get_length.conf
@@ -64,7 +64,117 @@ This includes four steps(implemented in "quota_Anchor pre_col")
 3. Protein sequence alignment using DIAMOND or conduct protein sequence alignment using BLASTp
 4. Put the gene strand information and the blast result into a single file
 
-Put the following information into the sb_zm/config_file/pre_collinearity.conf file
+<table border="2" align=center>
+	<tr>
+		<th colspan="1" style="text-align: center;">Header</th>
+		<th colspan="1" style="text-align: center;">Parameter</th>
+    <th colspan="1" style="text-align: center;">Description</th>
+	</tr>
+	<tr>
+		<td width="10%" rowspan="7" align =center>[gffread]</td>
+		<td width="10%" align =center>ref_genome_seq</td>
+		<td align =center >Please provide e path to your reference FASTA file</td>
+	</tr>
+	<tr>
+		<td align =center>ref_gff_file</td>
+		<td align =center >Please provide a path to your reference GFF file</td>
+	</tr>
+	<tr>
+		<td align =center>output_ref_pep_seq</td>
+		<td align =center >Please type a filename for the reference protein sequence file that the software will generate</td>
+	</tr>
+	<tr>
+		<td align =center>query_genome_seq</td>
+		<td align =center >Please provide a path to your Query FASTA file</td>
+	</tr>
+  	<tr>
+		<td align =center>query_gff_file</td>
+		<td align =center >Please provide a path to your Query GFF file</td>
+	</tr>
+  	<tr>
+		<td align =center>output_query_pep_seq</td>
+		<td align =center >Please type a filename for a query protein sequence file that the software will generate</td>
+	</tr>
+  	<tr>
+		<td align =center>use_S_parameter</td>
+		<td align =center >When using gffread -y option, whether the -S parameter is used, which means using '*' instead of '.' as the stop codon for translation(<font color=red>Not recommended to modify, default:True</font>)</td>
+	<tr>
+		<td width="10%" rowspan="2" align =center>[longest_pep]</td>
+		<td width="10%" align =center>out_ref_longest_pep_name</td>
+		<td align =center >Please type a filename for longest protein sequence file that software will generate</td>
+	</tr>
+	<tr>
+		<td align =center>out_query_longest_pep_name</td>
+		<td align =center >Please type a filename for longest protein sequence file that software will generate</td>
+	</tr>
+  	<tr>
+		<td width="10%" rowspan="1" align =center>[align]</td>
+		<td width="10%" align =center>align</td>
+		<td align =center >Protein sequence alignment using DIAMOND or  BLASTp(please type: <font color=red>diamond or blastp</font>)</td>
+	</tr>
+  	</tr>
+  	<tr>
+		<td width="10%" rowspan="4" align =center>[diamond]</td>
+		<td width="10%" align =center>database_name</td>
+		<td align =center >Please type a diamond-blastp database Path/Name that software will generate</td>
+	</tr>
+	<tr>
+		<td align =center>output_blast_result</td>
+		<td align =center >Please type a diamond-blastp result Path that software will generate</td>
+	</tr>
+  	<tr>
+		<td align =center>max_target_seqs</td>
+		<td align =center >Maximum number of target sequences to report alignments for diamond-blastp</td>
+	</tr>
+  	<tr>
+		<td align =center>evalue</td>
+		<td align =center > Maximum e-value to report alignments</td>
+	</tr>
+  <tr>
+		<td width="10%" rowspan="7" align =center>[blastp]</td>
+		<td width="10%" align =center>database_name</td>
+		<td align =center >Please type a blastp database Path/Name that software will generate</td>
+	</tr>
+	<tr>
+		<td align =center>dtype</td>
+		<td align =center >Database date type(please type:<font color=red>prot</font>)</td>
+	</tr>
+	<tr>
+		<td align =center>output_blast_result</td>
+		<td align =center >Please type a blastp result Path that software will generate</td>
+	</tr>
+	<tr>
+		<td align =center>evalue</td>
+		<td align =center >Maximum e-value to report alignments</td>
+	</tr>
+  	<tr>
+		<td align =center>max_target_seqs</td>
+		<td align =center >Maximum number of target sequences to report alignments for diamond-blastp</td>
+	</tr>
+  	<tr>
+		<td align =center>thread</td>
+		<td align =center >Number of CPU threads</td>
+	</tr>
+  	<tr>
+		<td align =center>outfmt</td>
+		<td align =center >	Please type <font color=red>6</font>(BLAST tabular)</td>
+	<tr>
+  <tr>
+		<td width="10%" rowspan="3" align =center>[combineBlastAndStrand]</td>
+		<td width="10%" align =center>out_file</td>
+		<td align =center >Please type a filename for a longest protein sequence file that software will generate</td>
+	</tr>
+  	<tr>
+		<td align =center>bitscore</td>
+		<td align =center >Number of CPU threads</td>
+	</tr>
+  	<tr>
+		<td align =center>align_length</td>
+		<td align =center >	Please type <font color=red>6</font>(BLAST tabular)</td>
+	<tr>
+</table>
+
+Put the following information into the sb_zm/config_file/pre_collinearity.conf file.
 ```
 [gffread]
 ref_genome_seq = ../raw_data/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa
@@ -105,11 +215,35 @@ out_file = sb_zm.table
 bitscore = 100 
 align_length = 0  
 ```
+
 You can run this command in the sb_zm directory.
 ```
 quota_Anchor pre_col -c ./config_file/pre_collinearity.conf
 ```
 ### Collinearity analysis(maize vs sorghum)
+<table>
+ <tr>
+		<td width="10%" rowspan="5" align =center>[AnchorWave]</td>
+		<td width="10%" align =center>R</td>
+		<td align =center >The R value indicates the maximum number of occurrences of a reference gene in the collinearity file</td>
+	</tr>
+	<tr>
+		<td align =center>Q</td>
+		<td align =center >The Q value indicates the maximum number of occurrences of a query gene in the collinearity file</td>
+	</tr>
+	<tr>
+		<td align =center>maximum_gap_size</td>
+		<td align =center >maximum gap size for chain</td>
+	</tr>
+  	<tr>
+		<td align =center>input_file_name</td>
+		<td align =center >quotaAnchor pre_col command module output file path(Please type <font color=red>combineBlastAndStrand.out_file 's value</font>)</td>
+	</tr>
+  	<tr>
+		<td align =center>output_coll_name</td>
+		<td align =center >Please type a syntenic result filename that software will generate</td>
+	<tr>
+</table>
 Put the following information into the sb_zm/config_file/collinearity.conf file and running colllinearity analysis.
 ```
 [AnchorWave]
@@ -195,6 +329,26 @@ dev.off()
 </p>
 
 ### Get chromosome length info
+<table>
+ <tr>
+		<td width="10%" rowspan="4" align =center>[length]</td>
+		<td width="10%" align =center>fai_file</td>
+		<td align =center > species1.fai, species2.fai, species3.fai, species4.fai </td>
+	</tr>
+	<tr>
+		<td align =center>gff_file</td>
+		<td align =center >species1.gff3, species2.gff3, species3.gff3, species4.gff3</td>
+	</tr>
+	<tr>
+		<td align =center>select_fai_chr_startswith</td>
+		<td align =center >number,CHR,chr,Chr:number,CHR,chr,Chr:number,CHR,chr,Chr:number,CHR,chr,Chr</td>
+	</tr>
+  	<tr>
+		<td align =center>length_file</td>
+		<td align =center >this module will output species1.txt, species2.txt, species3.txt, species4.txt</td>
+</table>
+
+
 Put the following information into the sb_zm/length_file/get_length.conf file
 ```
 # In the process of quotaAnchor pre_col, you can get fai file. 
@@ -212,10 +366,10 @@ Put the following information into the sb_zm/length_file/get_length.conf file
 #chr8    182411202       3536
 #chr9    163004744       2988
 #chr10   152435371       2705
-# select_fai_chr_startswith parameter, 
-# number: software select chromosome name start with number.
-# chr: software select chromosome name start with chr string.
-# Chr: software select chromosome name start with Chr string.
+# select_fai_chr_startswith parameter: 
+# number: software selects chromosome name starting with number then count the chromosome length.
+# chr: software selects chromosome name starting with chr string then count the chromosome length.
+# Chr: software selects chromosome name starting with Chr string then count the chromosome length.
 [length]
 fai_file = ../raw_data/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna.toplevel.fa.fai, ../raw_data/Zm-B73-REFERENCE-NAM-5.0.fa.fai
 gff_file = ../raw_data/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3, ../raw_data/Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3
@@ -225,8 +379,41 @@ length_file = sb_length.txt, zm_length.txt
 ```
 
 ### Visualzing by quota_Anchor
+<table>
+ <tr>
+		<td width="10%" rowspan="7" align =center>[circle]</td>
+		<td width="10%" align =center>collinearity</td>
+		<td align =center > Gene collinearity file </td>
+	</tr>
+	<tr>
+		<td align =center>ref_length</td>
+		<td align =center >Reference length file</td>
+	</tr>
+	<tr>
+		<td align =center>query_length</td>
+		<td align =center >Query length file</td>
+	</tr>
+  	<tr>
+		<td align =center>ref_prefix</td>
+		<td align =center >Reference chromosome prefix(two letters are better)</td>
+    	</tr>
+        	<tr>
+		<td align =center>query_prefix</td>
+		<td align =center >Query chromosome prefix(two letters are better)</td>
+    	</tr>
+      <tr>
+		<td align =center>font_size</td>
+		<td align =center >Text font size(you can enter /you/conda/path/envs/envs_name/lib/python3.12/site-packages/quota_anchor/ modify circle.py 's other parameter)</td>
+        	</tr>
+      <tr>
+		<td align =center>savefig</td>
+		<td align =center >number,CHR,chr,Chr:number,CHR,chr,Chr:number,CHR,chr,Chr:number,CHR,chr,Chr</td>
+</table>
+
+
 Put the following information into the sb_zm/length_file/circle.conf file
 ```
+# support two species
 [circle]
 collinearity = sb_zm.table.collinearity
 ref_length = ../length_file/sb_length.txt
@@ -244,8 +431,37 @@ quota_Anchor circle -c circle.conf
 </p>
 
 ### Visualzing by quota_Anchor
+<table>
+ <tr>
+		<td width="10%" rowspan="7" align =center>[line]</td>
+		<td width="10%" align =center>collinearity</td>
+		<td align =center > Gene collinearity file, e.g. species1_species2.collinearity, species2_species3.collinearity, species3_species4.collinearity </td>
+	</tr>
+	<tr>
+		<td align =center>length_file</td>
+		<td align =center >Species length file, e.g. species1_length.txt, species2_length.txt, species3_length.txt, species4_length.txt</td>
+	</tr>
+	<tr>
+		<td align =center>prefix</td>
+		<td align =center >Species prefix, e.g. species1, species2, species3, species4</td>
+	</tr>
+  	<tr>
+		<td align =center>remove_chromosome_prefix</td>
+		<td align =center >Remove chromosome prefix in the result plot (default: chr,CHR,Chr)</td>
+    	</tr>
+        	<tr>
+		<td align =center>text_font_size</td>
+		<td align =center >Text font size</td>
+    	</tr>
+      <tr>
+		<td align =center>savefig</td>
+		<td align =center >Save file name</td>
+</table>
+
+
 Put the following information into the sb_zm/length_file/line.conf file
 ```
+#Figure from bottom to top (ref:species1, query:species2, ref:species2,query:species3, ref:species3,query:species4 ....)
 [line]
 collinearity = sb_zm.table.collinearity
 length_file = ../length_file/sb_length.txt, ../length_file/zm_length.txt
@@ -259,4 +475,58 @@ quota_Anchor line -c line.conf
 ```
 <p align="center">
 <img src="./quota_anchor/plots/sb_zm.line.png" width="800px" background-color="#ffffff" />
+</p>
+
+### Visualzing by quota_Anchor
+Put the following information into the sb_zm/length_file/dotplot.conf file
+```
+# set(width=1500, heigth=1200) works well[for maize(query) vs sorghum_bicolor(ref)]
+[dotplot]
+input_file = sb_zm.table
+ref_length = ../length_file/sb_length.txt
+query_length = ../length_file/zm_length.txt
+type = order
+query_name = Maize
+ref_name = Sorghum bicolor
+plotnine_figure_width=1500 
+plotnine_figure_height=1200
+filename= sb_zm.order.table.png
+```
+<p align="center">
+<img src="./quota_anchor/plots/sb_zm.table.order.png" width="800px" background-color="#ffffff" />
+</p>
+
+### Visualzing by quota_Anchor
+Put the following information into the sb_zm/length_file/dotplot.conf file
+```
+# set(width=1500, heigth=1200) works well[for maize(query) vs sorghum_bicolor(ref)]
+[dotplot]
+input_file = sb_zm.table.collinearity
+ref_length = ../length_file/sb_length.txt
+query_length = ../length_file/zm_length.txt
+type = order
+query_name = Maize
+ref_name = Sorghum bicolor
+plotnine_figure_width=1500 
+plotnine_figure_height=1200
+filename= sb_zm.table.collinearity.png
+```
+<p align="center">
+<img src="./quota_anchor/plots/sb_zm.table.collinearity.png" width="800px" background-color="#ffffff" />
+</p>
+
+### Visualzing by quota_Anchor
+Put the following information into the sb_zm/length_file/line.conf file
+```
+# Figure from bottom to top (ref:species1, query:species2, ref:species2,query:species3, ref:species3,query:species4)
+[line]
+collinearity = oryza.sorghum.table.collinearity, sorghum.maize.table.collinearity, zm_sv/maize.setaria.table.collinearity
+length_file = os_length.txt, sb_length.txt, zm_length.txt, sv_length.txt
+prefix = Oryza setaria, Sorghum bicolor, Maize, Setaria viridis
+remove_chromosome_prefix = chr,CHR,Chr
+text_font_size = 7
+savefig = os_sb_zm_sv.line.png
+```
+<p align="center">
+<img src="./quota_anchor/plots/os_sb_zm_sv.line.png" width="800px" background-color="#ffffff" />
 </p>
