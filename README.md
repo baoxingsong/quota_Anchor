@@ -166,11 +166,11 @@ This includes four steps(implemented in "quota_Anchor pre_col")
 	</tr>
   	<tr>
 		<td align =center>bitscore</td>
-		<td align =center >Number of CPU threads</td>
+		<td align =center >Filter by blast minimum bitscore<font color=red>(default:100)</font></td>
 	</tr>
   	<tr>
 		<td align =center>align_length</td>
-		<td align =center >	Please type <font color=red>6</font>(BLAST tabular)</td>
+		<td align =center >Filter by blast minimum alignment length<font color=red>(default:0)</font></td>
 	<tr>
 </table>
 
