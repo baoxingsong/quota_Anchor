@@ -285,24 +285,4 @@ tandem_dis = 5
 input_file_name = maize.maize.table
 output_coll_name = maize.maize.collinearity
 ```
-### Gene classification
-modify config file (classification_gene.conf) and running classification analysis.
-maize genes is classified as tandem, proxiaml, transposed, dispersed and singleton gene.
-```
-[classification]
-# query is target species
-query_table = maize.maize.table
-query_gff_file = Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gff3
-query_query_collinearity = maize_maize.collinearity
-query_ref_collinearity = sorghum.maize.collinearity
-out_directory = /you/out/directory
-out_prefix = maize
-# 1 or 0(are wgd/segmental duplicates ancestral loci or not? default: 1, yes)
-seg_anc = 1
-# is each duplicate gene type unique after all of the duplicated gene pairs were classified into different gene duplication types? (1 or 0) 
-type = 1
-proximal_max_distance = 10
-```
-```
-quota_Anchor class_gene -c classification_gene.conf
-```
+
