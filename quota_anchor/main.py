@@ -92,11 +92,11 @@ parser_sub_o = subparsers.add_parser('circle', help='Collinearity result visuali
 parser_sub_o.set_defaults(func=run_circle)
 parser_sub_o.add_argument('-c', '--conf', dest='conf', help="configure file", metavar="")
 # collinearity line plot
-parser_sub_p_2 = subparsers.add_parser('line_2', help='Collinearity visualization')
+parser_sub_p_2 = subparsers.add_parser('line_2', help='Collinearity result visualization')
 parser_sub_p_2.set_defaults(func=run_line_2)
 parser_sub_p_2.add_argument('-c', '--conf', dest='conf', help="configure file", metavar="")
 # collinearity AnchorWave proali anchors plot
-parser_sub_p_3 = subparsers.add_parser('line_proali', help='Anchors file from AnchorWave proali visualization')
+parser_sub_p_3 = subparsers.add_parser('line_proali', help='Anchors file from AnchorWave proali to visualization')
 parser_sub_p_3.set_defaults(func=run_line_3)
 parser_sub_p_3.add_argument('-c', '--conf', dest='conf', help="configure file", metavar="")
 
