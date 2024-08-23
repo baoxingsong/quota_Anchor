@@ -244,6 +244,8 @@ quota_Anchor pre_col -c ./config_file/pre_collinearity.conf
 		<td align =center >Please type a syntenic result filename that software will generate</td>
 	<tr>
 </table>
+
+
 Put the following information into the sb_zm/config_file/collinearity.conf file and running colllinearity analysis.
 ```
 [AnchorWave]
@@ -345,7 +347,7 @@ dev.off()
 	</tr>
   	<tr>
 		<td align =center>length_file</td>
-		<td align =center >this module will output species1.txt, species2.txt, species3.txt, species4.txt</td>
+		<td align =center >This module will output species1.txt, species2.txt, species3.txt, species4.txt</td>
 </table>
 
 
@@ -387,19 +389,19 @@ length_file = sb_length.txt, zm_length.txt
 	</tr>
 	<tr>
 		<td align =center>ref_length</td>
-		<td align =center >Reference length file</td>
+		<td align =center >Reference Species length file</td>
 	</tr>
 	<tr>
 		<td align =center>query_length</td>
-		<td align =center >Query length file</td>
+		<td align =center >Query Species length file</td>
 	</tr>
   	<tr>
 		<td align =center>ref_prefix</td>
-		<td align =center >Reference chromosome prefix(two letters are better)</td>
+		<td align =center >Reference Species chromosome prefix(two letters are better)</td>
     	</tr>
         	<tr>
 		<td align =center>query_prefix</td>
-		<td align =center >Query chromosome prefix(two letters are better)</td>
+		<td align =center >Query Species chromosome prefix(two letters are better)</td>
     	</tr>
       <tr>
 		<td align =center>font_size</td>
@@ -407,7 +409,7 @@ length_file = sb_length.txt, zm_length.txt
         	</tr>
       <tr>
 		<td align =center>savefig</td>
-		<td align =center >number,CHR,chr,Chr:number,CHR,chr,Chr:number,CHR,chr,Chr:number,CHR,chr,Chr</td>
+		<td align =center >Specify the file name to save</td>
 </table>
 
 
@@ -451,11 +453,11 @@ quota_Anchor circle -c circle.conf
     	</tr>
         	<tr>
 		<td align =center>text_font_size</td>
-		<td align =center >Text font size</td>
+		<td align =center >Adjust the text font size in the picture</td>
     	</tr>
       <tr>
 		<td align =center>savefig</td>
-		<td align =center >Save file name</td>
+		<td align =center >Specify the file name to save</td>
 </table>
 
 
