@@ -235,6 +235,18 @@ quota_Anchor pre_col -c ./config_file/pre_collinearity.conf
 		<td align =center>maximum_gap_size</td>
 		<td align =center >maximum gap size for chain</td>
 	</tr>
+		<tr>
+		<td align =center>delete_tandem</td>
+		<td align =center >Specify whether to delete tandem gene pairs in the input file (default: 0)
+              Options: 0 to retain tandem gene pairs; 1 or any other integer to delete them.</td>
+	</tr>
+		<tr>
+		<td align =center>tandem_dis</td>
+		<td align =center >When -m is set to delete tandem gene pairs(1 or any other integer), 
+              specify the maximum distance allowed between two homologous gene pairs before they are considered for deletion(default: 5)
+              This parameter is ignored if -m is not set to delete tandem gene pairs(set 0).
+</td>
+	</tr>
   	<tr>
 		<td align =center>input_file_name</td>
 		<td align =center >quotaAnchor pre_col command module output file path(Please type <font color=red>combineBlastAndStrand.out_file 's value</font>)</td>
