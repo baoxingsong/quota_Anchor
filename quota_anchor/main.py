@@ -2,6 +2,7 @@ import configparser
 import argparse
 from pathlib import Path
 import os
+import sys
 from .lib import pre_collinearity, collinearity, dotplot, circle, get_chr_length, line_2, line_proali_pangenome
 
 
@@ -109,3 +110,4 @@ def main():
         args.func(args)
     else:
         parser.print_help()
+        sys.exit(0)
