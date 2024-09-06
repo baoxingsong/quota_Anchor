@@ -11,7 +11,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 required = ['pandas', 'numpy', 'biopython', 'matplotlib', 'scipy', 'seaborn', 'plotnine']
 
 setup(
-    name="quota_Anchor",
+    name="quota_anchor",
     version="0.0.1a0",
     author="XiaoDong Li",
     author_email="xiaodongli2405@gmail.com",
