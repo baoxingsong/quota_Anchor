@@ -1,7 +1,7 @@
 # quota_Anchor( Proustian monstrosity)
 Here are the scripts and documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave. We currently provide three visualization methods for syntenic results.
 ## Installation
-You can simple by the following command get this software in a independent conda envirment. This is a beta version, so we haven't uploaded it to bioconda yet.
+You can simple by the following command get this software in a independent conda envirment. This is a beta version, so we haven't uploaded it to bioconda yet. ([miniforge download link](https://github.com/conda-forge/miniforge?tab=readme-ov-file#install))
 ```
 mamba install xiaodli::quota_anchor
 ```
