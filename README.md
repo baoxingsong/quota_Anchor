@@ -3,7 +3,7 @@ Here are the scripts and documents to conduct strand and WGD aware syntenic gene
 ## Installation
 You can simple by the following command get this software in a independent conda envirment. This is a beta version, so we haven't uploaded it to bioconda yet.
 ```
-conda install xiaodli::quota_anchor
+mamba install xiaodli::quota_anchor
 ```
 ## Usage
 ### Help info
