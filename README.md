@@ -5,6 +5,11 @@ You can simple by the following command get this software in a independent conda
 ```
 mamba install xiaodli::quota_anchor
 ```
+or 
+```
+conda update -n base -c defaults conda
+conda install xiaodli::quota_anchor
+```
 ## Usage
 ### Help info
 ```
