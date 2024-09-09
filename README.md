@@ -1,13 +1,8 @@
 # quota_Anchor( Proustian monstrosity)
 Here are the scripts and documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave. We currently provide three visualization methods for syntenic results.
 ## Installation
-You can simple by the following command get this software in a independent conda envirment. This is a beta version, so we haven't uploaded it to bioconda yet. ([miniforge download link](https://github.com/conda-forge/miniforge?tab=readme-ov-file#install))
+You can simple by the following command get this software in a independent conda envirment. This is a beta version, so we haven't uploaded it to bioconda yet.
 ```
-mamba install xiaodli::quota_anchor
-```
-or 
-```
-conda update -n base -c defaults conda
 conda install xiaodli::quota_anchor
 ```
 ## Usage
@@ -228,7 +223,7 @@ quota_Anchor pre_col -c ./config_file/pre_collinearity.conf
 ### Collinearity analysis(maize vs sorghum)
 <table>
  <tr>
-		<td width="10%" rowspan="5" align =center>[AnchorWave]</td>
+		<td width="10%" rowspan="7" align =center>[AnchorWave]</td>
 		<td width="10%" align =center>R</td>
 		<td align =center >The R value indicates the maximum number of occurrences of a reference gene in the collinearity file</td>
 	</tr>
@@ -241,16 +236,15 @@ quota_Anchor pre_col -c ./config_file/pre_collinearity.conf
 		<td align =center >maximum gap size for chain</td>
 	</tr>
 		<tr>
-		<td align =center>delete_tandem</td>
-		<td align =center >Specify whether to delete tandem gene pairs in the input file (default: 0)
-              Options: 0 to retain tandem gene pairs; 1 or any other integer to delete them.</td>
+		<td align =center>collapse_blast_matches</td>
+		<td align =center >Specify whether to collapse blast mathches in the input file (default: 0)
+              Options: 0 don't collapse blast matches; 1 or any other integer to collapse them.</td>
 	</tr>
 		<tr>
-		<td align =center>tandem_dis</td>
-		<td align =center >When -m is set to delete tandem gene pairs(1 or any other integer), 
-              specify the maximum distance allowed between two homologous gene pairs before they are considered for deletion(default: 5)
-              This parameter is ignored if -m is not set to delete tandem gene pairs(set 0).
-</td>
+		<td align =center>overlap_window</td>
+		<td align =center >When -m is set to collapse blast matches(1 or any other integer), 
+              specify the maximum distance(overlap window) allowed between two homologous gene pairs before they are considered for deletion(default: 5)
+              This parameter is ignored if -m is not set to collapse overlap window(set 0).
 	</tr>
   	<tr>
 		<td align =center>input_file_name</td>
@@ -272,8 +266,8 @@ Put the following information into the sb_zm/config_file/collinearity.conf file 
 R = 2
 Q = 1
 maximum_gap_size = 25
-delete_tandem = 0
-tandem_dis = 5
+collapse_blast_matches = 0
+overlap_window = 5
 input_file_name = sb_zm.table
 output_coll_name = sb_zm.table.collinearity
 ```
@@ -512,7 +506,7 @@ plotnine_figure_height=1200
 filename= sb_zm.order.table.png
 ```
 <p align="center">
-<img src="./quota_anchor/plots/sb_zm.table.order.png" width="800px" background-color="#ffffff" />
+<img src="./quota_anchor/plots/sb_zm.order.table.png" width="800px" background-color="#ffffff" />
 </p>
 
 ### Visualzing by quota_Anchor
