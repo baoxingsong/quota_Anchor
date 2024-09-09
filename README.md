@@ -28,7 +28,7 @@ gene collinearity analysis:
     line_2              Collinearity result visualization
     line_proali         Anchors file from AnchorWave proali visualization
 ```
-## Example
+## Example1
 Here is an example to identify syntenic genes between maize and sorghum. The maize lineage has undergone a whole genome duplication (WGD) since its divergence with sorghum, but subsequent chromosomal fusions resulted in these species having the same chromosome number (n = 10). AnchorWave can allow up to two collinear paths for each sorghum anchor while one collinear path for each maize anchor.
 ### Make some folders rather than a folder may be more clearer
 Working directory structure are as follows. We may give you an option to create this directory later, but you will need to do it yourself now.
@@ -390,7 +390,9 @@ gff_file = ../raw_data/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.57.gff3, ../raw_da
 select_fai_chr_startswith = number,CHR,chr,Chr:number,CHR,chr,Chr
 length_file = sb_length.txt, zm_length.txt
 ```
-
+```
+quota_Anchor get_chr_length -c get_length.conf
+```
 ### Visualzing by quota_Anchor
 <table>
  <tr>
@@ -437,7 +439,7 @@ font_size = 7
 savefig = sb_zm.circle.png
 ```
 ```
-quota_Anchor circle -c circle.conf
+quota_Anchor circle -c ./config_file/circle.conf
 ```
 <p align="center">
 <img src="./quota_anchor/plots/sb_zm.circle.png" width="800px" background-color="#ffffff" />
@@ -484,7 +486,7 @@ text_font_size = 8
 savefig = sb_zm.line.png
 ```
 ```
-quota_Anchor line -c line.conf
+quota_Anchor line -c ./config_file/line.conf
 ```
 <p align="center">
 <img src="./quota_anchor/plots/sb_zm.line.png" width="800px" background-color="#ffffff" />
@@ -505,6 +507,9 @@ plotnine_figure_width=1500
 plotnine_figure_height=1200
 filename= sb_zm.order.table.png
 ```
+```
+quota_Anchor dotplot -c ./config_file/dotplot.conf
+```
 <p align="center">
 <img src="./quota_anchor/plots/sb_zm.order.table.png" width="800px" background-color="#ffffff" />
 </p>
@@ -524,6 +529,9 @@ plotnine_figure_width=1500
 plotnine_figure_height=1200
 filename= sb_zm.table.collinearity.png
 ```
+```
+quota_Anchor dotplot -c ./config_file/dotplot.conf
+```
 <p align="center">
 <img src="./quota_anchor/plots/sb_zm.table.collinearity.png" width="800px" background-color="#ffffff" />
 </p>
@@ -540,6 +548,31 @@ remove_chromosome_prefix = chr,CHR,Chr
 text_font_size = 7
 savefig = os_sb_zm_sv.line.png
 ```
+```
+quota_Anchor line_2 -c line.conf
+```
 <p align="center">
 <img src="./quota_anchor/plots/os_sb_zm_sv.line.png" width="800px" background-color="#ffffff" />
 </p>
+
+## Example2
+Only identify and extract the longest protein sequence encoded by each gene. 
+Put the following information into the ```pre_collinearity.conf``` file
+```
+[gffread]
+genome_seq = species1.fa, species2.fa, species3.fa, species4.fa
+gff_file = species1.gff3, species2.gff3, species3.gff3, species4.gff3
+out_pep_seq = species1.p.fa, species2.p.fa, species3.p.fa, species4.p.fa
+# The next line is the description of the S parameter of gffread(https://github.com/gpertea/gffread), you need to set True in general.
+# -S    for -y option, use '*' instead of '.' as stop codon translation
+use_S_parameter = True
+
+[longest_pep]
+out_longest_pep_name = species1.protein.fa, species2.protein.fa, species3.protein.fa, species4.protein.fa
+thread = 4
+```
+
+```
+quota_Anchor pre_col -c pre_collinearity.conf -only_longest_pep
+```
+

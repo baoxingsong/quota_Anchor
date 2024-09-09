@@ -1,3 +1,7 @@
+import os
+import sys
+
+
 def split_conf(conf, separator):
     new_conf = []
     split_lt = conf.split(separator)
@@ -61,3 +65,16 @@ def bezier3(a, b, c, d, t):
         y = a * (1-i)**3 + 3 * b * i * (1-i)**2 + 3 * c * (1-i) * i**2 + d * i**3
         fvalue.append(y)
     return fvalue
+
+
+def file_empty(file_path):
+    if os.path.isfile(file_path):
+        if os.path.getsize(file_path) > 0:
+            pass
+        else:
+            sys.exit(1)
+    else:
+        error_message = f"{file_path} don't exist"
+        print(error_message)
+        raise FileNotFoundError(error_message)
+    

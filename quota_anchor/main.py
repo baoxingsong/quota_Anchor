@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import os
 import sys
-from .lib import pre_collinearity, collinearity, dotplot, circle, get_chr_length, line_2, line_proali_pangenome
+from .lib import base, pre_collinearity, collinearity, dotplot, circle, get_chr_length, line_2, line_proali_pangenome, classification_gene, number_gn_visualization
 
 
 base_dir = Path(__file__).resolve().parent
@@ -17,15 +17,20 @@ def run_pre_coll(parameter):
     config_par = configparser.ConfigParser()
     # config_par.read(os.path.join(base_dir, "config_file/pre_collinearity.conf"))
     config_par.read(parameter.conf)
+    base.file_empty(parameter.conf)
     config_soft = configparser.ConfigParser()
     config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
-    pre_collinearity.Prepare(config_par, config_soft).run_all_process()
-
+    ctl_par = parameter.only_longest_pep
+    if not ctl_par:
+        pre_collinearity.Prepare(config_par, config_soft).run_all_process()
+    else:
+        pre_collinearity.Longest(config_par,config_soft).run_all_process()
 
 def run_coll(parameter):
     global base_dir
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
+    base.file_empty(parameter.conf)
     config_soft = configparser.ConfigParser()
     config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
     collinearity.Collinearity(config_par, config_soft).run()
@@ -35,6 +40,7 @@ def run_dotplot(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
+    base.file_empty(parameter.conf)
     dotplot.Dotplot(config_par).run()
 
 
@@ -42,6 +48,7 @@ def run_circle(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
+    base.file_empty(parameter.conf)
     circle.Circle(config_par).run()
 
 
@@ -49,6 +56,7 @@ def run_lens(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
+    base.file_empty(parameter.conf)
     get_chr_length.Lens(config_par).run()
 
 
@@ -56,6 +64,7 @@ def run_line_2(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
+    base.file_empty(parameter.conf)
     line_2.Line(config_par).run()
 
 
@@ -63,6 +72,7 @@ def run_line_3(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     config_par.read(parameter.conf)
+    base.file_empty(parameter.conf)
     line_proali_pangenome.Line(config_par).run()
 
 
@@ -75,6 +85,7 @@ subparsers = parser.add_subparsers(title='Gene collinearity analysis', dest='ana
 parser_sub_a = subparsers.add_parser('pre_col', help='Get longest protein file from gffread result and input file for gene collinearity analysis')
 parser_sub_a.set_defaults(func=run_pre_coll)
 parser_sub_a.add_argument('-c', '--conf', dest='conf', help="configure file", metavar="")
+parser_sub_a.add_argument('-only_longest_pep', '--only_longest_pep', dest='only_longest_pep', help="produce longest protein seq", action='store_true')
 # produce collinearity file
 parser_sub_b = subparsers.add_parser('col', help='Get gene collinearity result file')
 parser_sub_b.set_defaults(func=run_coll)
