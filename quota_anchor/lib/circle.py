@@ -10,22 +10,34 @@ from . import base
 
 
 class Circle:
-    def __init__(self, config_pra):
+    def __init__(self, config_pra, parameter):
         # fig setting refers to famCircle(https://github.com/lkiko/famCircle).
         # gaps between chromosome circle, chr:gap = 4: 1
+        self.overwrite = False
+        self.ref_name = "Reference species"
+        self.query_name = "Query species"
+        self.remove_chromosome_prefix = "chr,CHR,Chr"
+        self.chr_font_size = 7
+        self.species_name_font_size = 7
+        for i in config_pra.sections():
+            if i == 'circle':
+                for key in config_pra[i]:
+                    setattr(self, key, config_pra[i][key])
+        for key, value in vars(parameter).items():
+            if key != "func" and key != "analysis" and value is not None:
+                setattr(self, key, value)
+        print()
+        for key, value in vars(self).items():
+            if key != "conf":
+                print(key, "=", value)
+        print()
         self.gap_ratio = 4
         self.inner_radius = 0.3
         self.outer_radius = 0.31
         self.ring_width = 0.01
         self.dpi = 1000
         # self.block_gep = 200
-        self.collinearity = config_pra['circle']['collinearity']
-        self.ref_length = config_pra['circle']['ref_length']
-        self.query_length = config_pra['circle']['query_length']
-        self.ref_prefix = config_pra['circle']['ref_prefix']
-        self.qry_prefix = config_pra['circle']['query_prefix']
-        self.font_size = config_pra['circle']['font_size']
-        self.savefig = config_pra['circle']['savefig']
+
 
     @staticmethod
     def set_husl_palette():
@@ -68,6 +80,16 @@ class Circle:
         pos_radian = 2 * pi * (pos / total_length)
         return pos_radian
 
+    def plot_legend_first(self) -> tuple[list, list]: 
+        x = [self.inner_radius, self.inner_radius, self.inner_radius - self.ring_width *2, self.inner_radius - self.ring_width *2]
+        y = [self.inner_radius - self.ring_width, self.inner_radius, self.inner_radius, self.inner_radius - self.ring_width]
+        return x, y
+
+    def plot_legend_second(self) -> tuple[list, list]: 
+        x = [self.inner_radius, self.inner_radius, self.inner_radius - self.ring_width *2, self.inner_radius - self.ring_width *2]
+        y = [self.inner_radius - 3 * self.ring_width, self.inner_radius - 2 * self.ring_width, 
+             self.inner_radius - 2 * self.ring_width, self.inner_radius - 3 * self.ring_width]
+        return x, y
     @staticmethod
     def plot_circle_chr(start_radian, end_radian, radius_a, radius_b, ring_width, ring_radian):
         new_start_radian = start_radian + ring_radian
@@ -97,61 +119,6 @@ class Circle:
         y.append(y[0])
         # print(x, y)
         return x, y
-
-    # don't modify this function
-    @staticmethod
-    def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_start):
-        # left -> ref;  right -> query
-        data = []
-        ref_chr_list = []
-        query_chr_list = []
-        gene_pos_dict = {}
-        block_index = 0
-        block = []
-        # print(qry_prefix)
-        # print(ref_prefix)
-        # print(collinearity)
-        # print(chr_list)
-        # print(chr_to_start)
-        with open(collinearity) as f:
-            print(collinearity)
-            _ = next(f)
-            _ = next(f)
-            flag = True
-            for line in f:
-                if line.startswith("#"):
-                    if block:
-                        data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
-                        block = []
-                    chr_pair = line.split()[4].split("&")
-                    if ref_prefix + chr_pair[0] not in chr_list or qry_prefix + chr_pair[1] not in chr_list:
-                        flag = False
-                    else:
-                        flag = True
-                        ref_chr = ref_prefix + chr_pair[0]
-                        ref_chr_list.append(ref_chr)
-                        query_chr = qry_prefix + chr_pair[1]
-                        query_chr_list.append(query_chr)
-                        block_index += 1
-                else:
-                    if flag:
-                        line_list = line.split()
-                        block.append([line_list[0], line_list[5]])
-                        gene_pos_dict[line_list[0]] = chr_to_start[ref_chr] + int(line_list[4])
-                        gene_pos_dict[line_list[5]] = chr_to_start[query_chr] + int(line_list[9])
-                    else:
-                        continue
-            data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
-            print("parse", collinearity, "success")
-        return data, gene_pos_dict, ref_chr_list, query_chr_list
-
-    @staticmethod
-    def bezier3(a, b, c, d, t):
-        fvalue = []
-        for i in t:
-            y = a * (1-i)**3 + 3 * b * i * (1-i)**2 + 3 * c * (1-i) * i**2 + d * i**3
-            fvalue.append(y)
-        return fvalue
 
     @staticmethod
     def plot_closed_region(pos1_radian, pos2_radian, pos3_radian, pos4_radian, radius):
@@ -212,14 +179,26 @@ class Circle:
             return angle - 270
 
     def run(self):
+        base.file_empty(self.input_file)
+        base.file_empty(self.ref_length)
+        base.file_empty(self.query_length)
+        base.output_file_parentdir_exist(self.output_file_name, self.overwrite)
+        chr_abbr = self.remove_chromosome_prefix.split(',')
+        strip_chr_abbr = []
+        for i in chr_abbr:
+            if len(i) == 0:
+                continue
+            i = i.strip()
+            strip_chr_abbr.append(i)
+
         ref_length = pd.read_csv(self.ref_length, sep='\t', header=0)
         ref_length['chr'] = ref_length['chr'].astype(str)
-        ref_length['chr'] = self.ref_prefix + ref_length['chr']
+        ref_length['chr'] = self.ref_name + ref_length['chr']
         ref_length['length'] = ref_length['length'].astype(int)
 
         query_length = pd.read_csv(self.query_length, sep='\t', header=0)
         query_length['chr'] = query_length['chr'].astype(str)
-        query_length['chr'] = self.qry_prefix + query_length['chr']
+        query_length['chr'] = self.query_name + query_length['chr']
         query_length['length'] = query_length['length'].astype(int)
         df_dup = pd.concat([ref_length, query_length])
         df_dup.reset_index(inplace=True, drop=True)
@@ -237,7 +216,10 @@ class Circle:
             chr_color_dict[ch] = color_dict
             i += 1
         # figure geometry info
-        plt.rcParams['font.family'] = "Times New Roman"
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif', 'Bitstream Vera Serif', 'Computer Modern Roman',
+                                       'New Century Schoolbook', 'Century Schoolbook L', 'Utopia',
+                                         'ITC Bookman', 'Bookman', 'Nimbus Roman No9 L', 'Times', 'Palatino', 'Charter', 'serif']
         fig, ax = plt.subplots(figsize=(10, 10))
         ax.set_aspect('equal')
         total_chr_length = df_dup['length'].sum()
@@ -252,15 +234,24 @@ class Circle:
         ring_radian = np.arctan(self.ring_width / 2 / (self.inner_radius + self.ring_width / 2))
         for ch in chr_list:
             x, y = self.plot_circle_chr(chr_radian_pos[i][0], chr_radian_pos[i][1], self.inner_radius, self.outer_radius, self.ring_width, ring_radian)
-            color = chr_color_dict[ch]['chr']
-            plt.fill(x, y, facecolor=color, alpha=.7)
+            # color = chr_color_dict[ch]['chr']
+            if not ch.startswith(str(self.ref_name)) and ch.startswith(str(self.query_name)):
+                color = "blue"
+                ch = ch[len(self.query_name):]
+            else:
+                color = "red"
+                ch = ch[len(self.ref_name):]
+            plt.fill(x, y, facecolor=color, alpha=.5)
             # plt.plot(x, y, color='black')
             label_x = self.outer_radius * 1.04 * np.cos((chr_radian_pos[i][0] + chr_radian_pos[i][1]) / 2)
             label_y = self.outer_radius * 1.04 * np.sin((chr_radian_pos[i][0] + chr_radian_pos[i][1]) / 2)
             angle = self.text_rotation(chr_pos[i][0], chr_pos[i][1], total_length)
-            plt.text(label_x, label_y, ch, ha="center", va="center", fontsize=self.font_size, color='black', rotation=angle)
+            for abbr in strip_chr_abbr:
+                if ch.startswith(abbr):
+                    ch = ch[len(abbr):]
+            plt.text(label_x, label_y, ch, ha="center", va="center", fontsize=self.chr_font_size, color='black', rotation=angle)
             i += 1
-        data, gene_pos_dict, ref_chr_list, query_chr_list = base.read_collinearity(self.qry_prefix, self.ref_prefix, self.collinearity, chr_list, chr_to_start)
+        data, gene_pos_dict, ref_chr_list, query_chr_list = base.read_collinearity(self.query_name, self.ref_name, self.input_file, chr_list, chr_to_start)
 
         i = 0
         intra = []
@@ -297,8 +288,20 @@ class Circle:
             x, y = self.plot_closed_region(pos1_radian, pos2_radian, pos3_radian, pos4_radian, 0.99 * self.inner_radius)
             plt.fill(x, y, facecolor=color, alpha=0.3)
             i += 1
-
+        
+        # First
+        legend_x, legend_y = self.plot_legend_first()
+        plt.fill(legend_x, legend_y, facecolor='red', alpha=0.5)
+        plt.text(self.inner_radius + 0.5 * self.ring_width, self.inner_radius - 0.5 * self.ring_width, 
+                 self.ref_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black')
+        
+        # Second
+        if self.ref_name != self.query_name:
+            legend_x, legend_y = self.plot_legend_second()
+            plt.fill(legend_x, legend_y, facecolor='blue', alpha=0.5)
+            plt.text(self.inner_radius + 0.5 * self.ring_width, self.inner_radius - 2.5 * self.ring_width, 
+                     self.query_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black')
         plt.axis('off')
         # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
-        plt.savefig(self.savefig, dpi=int(self.dpi), bbox_inches='tight')
+        plt.savefig(self.output_file_name, dpi=int(self.dpi), bbox_inches='tight')
         sys.exit(0)
