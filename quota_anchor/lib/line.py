@@ -12,22 +12,32 @@ import seaborn as sns
 
 
 class Line:
-    def __init__(self, config_pra):
+    def __init__(self, config_pra, parameter):
         # fig setting refers to famCircle(https://github.com/lkiko/famCircle).
         # gaps between chromosome, chr:gap = 4: 1
+        self.overwrite = False
+        self.remove_chromosome_prefix = "chr,CHR,Chr"
+        self.chr_font_size = 7
+        self.species_name_font_size = 7
+        for i in config_pra.sections():
+            if i == 'line':
+                for key in config_pra[i]:
+                    setattr(self, key, config_pra[i][key])
+        for key, value in vars(parameter).items():
+            if key != "func" and key != "analysis" and value is not None:
+                setattr(self, key, value)
+        print()
+        for key, value in vars(self).items():
+            if key != "conf":
+                print(key, "=", value)
+        print()
         self.gap_ratio = 10
         self.ref_height = 0.3
         self.height_gap = 0.3
         self.query_height = 0.6
         self.width = 0.015
-        self.dpi = 2500
+        self.dpi = 1000
         # self.block_gep = 200
-        self.collinearity = config_pra['line']['collinearity']
-        self.length_file = config_pra['line']['length_file']
-        self.prefix = config_pra['line']['prefix']
-        self.remove_chromosome_prefix = config_pra['line']['remove_chromosome_prefix']
-        self.font_size = int(config_pra['line']['text_font_size'])
-        self.savefig = config_pra['line']['savefig']
 
     @staticmethod
     def circle(radius, x):
@@ -211,7 +221,7 @@ class Line:
         # relative length 1
         label_x = -0.1
         label_y = ref_height + self.width / 2
-        plt.text(label_x, label_y, prefix[0], ha="center", va="center", fontsize=self.font_size, color='black')
+        plt.text(label_x, label_y, prefix[0], ha="center", va="center", fontsize=self.species_name_font_size, color='black')
         for i in range(len(ref_chr_list)):
             ref_start_x = ref_start_list[i] / total_length
             ref_end_x = ref_end_list[i] / total_length
@@ -223,7 +233,7 @@ class Line:
             for abbr in strip_chr_abbr:
                 if text_chr.startswith(abbr):
                     text_chr = text_chr[len(abbr):]
-            plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.font_size, color='black')
+            plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.chr_font_size, color='black')
 
         query_gap_length = (total_length - query_length['length'].sum()) / (len(query_chr_list) + 1)
         query_start_list, query_end_list, query_chr_to_start = self.line_get_pos_list(query_length, query_gap_length)
@@ -237,7 +247,7 @@ class Line:
         if loop == last_loop:
             label_x = -0.1
             label_y = query_height + self.width / 2
-            plt.text(label_x, label_y, prefix[1], ha="center", va="center", fontsize=self.font_size, color='black')
+            plt.text(label_x, label_y, prefix[1], ha="center", va="center", fontsize=self.species_name_font_size, color='black')
             for i in range(len(query_chr_list)):
                 query_start_x = query_start_list[i] / total_length
                 query_end_x = query_end_list[i] / total_length
@@ -249,7 +259,7 @@ class Line:
                 for abbr in strip_chr_abbr:
                     if text_chr.startswith(abbr):
                         text_chr = text_chr[len(abbr):]
-                plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.font_size, color='black')
+                plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.chr_font_size, color='black')
         chr_list = list(OrderedDict.fromkeys(query_chr_list + ref_chr_list))
         chr_to_start = {}
         chr_to_start.update(query_chr_to_start)
@@ -305,6 +315,7 @@ class Line:
             i += 1
 
     def run(self):
+        base.output_file_parentdir_exist(self.output_file_name, self.overwrite)
         chr_abbr = self.remove_chromosome_prefix.split(',')
         strip_chr_abbr = []
         for i in chr_abbr:
@@ -314,16 +325,17 @@ class Line:
             strip_chr_abbr.append(i)
 
         # split collinearity in order to loop
-        collinearity_file_list = self.collinearity.split(",")
+        collinearity_file_list = self.input_file.split(",")
         strip_collinearity_file_list = []
         for col in collinearity_file_list:
             if len(col) == 0:
                 continue
             col = col.strip()
+            base.file_empty(col)
             strip_collinearity_file_list.append(col)
 
         # split prefix in order to pair
-        prefix = self.prefix.split(",")
+        prefix = self.species_name.split(",")
         strip_prefix = []
         new_prefix = []
         for prx in prefix:
@@ -343,6 +355,7 @@ class Line:
             le = le.strip()
             if len(le) == 0:
                 continue
+            base.file_empty(le)
             length = pd.read_csv(le, sep='\t', header=0)
             # print(length)
             length['chr'] = length['chr'].astype(str)
@@ -363,7 +376,10 @@ class Line:
 
         zipped_three_pair = list(zip(strip_collinearity_file_list, new_prefix, new_length_file_list_df))
         # print(zipped_three_pair)
-        plt.rcParams['font.family'] = "Times New Roman"
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif', 'Bitstream Vera Serif', 'Computer Modern Roman',
+                                       'New Century Schoolbook', 'Century Schoolbook L', 'Utopia',
+                                         'ITC Bookman', 'Bookman', 'Nimbus Roman No9 L', 'Times', 'Palatino', 'Charter', 'serif']
         fig, ax = plt.subplots(figsize=(10, 10), facecolor='white')
         ax.set_aspect('equal')
 
@@ -382,6 +398,6 @@ class Line:
 
         plt.axis('off')
         # # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
-        plt.savefig(self.savefig, dpi=int(self.dpi), bbox_inches='tight')
-        print("produce", self.savefig, "success")
+        plt.savefig(self.output_file_name, dpi=int(self.dpi), bbox_inches='tight')
+        print("produce", self.output_file_name, "success")
         sys.exit(0)

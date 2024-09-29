@@ -2,6 +2,10 @@ import os
 import sys
 
 
+class FileEmptyError(Exception):
+    pass
+
+
 def split_conf(conf, separator):
     new_conf = []
     split_lt = conf.split(separator)
@@ -68,13 +72,43 @@ def bezier3(a, b, c, d, t):
 
 
 def file_empty(file_path):
-    if os.path.isfile(file_path):
-        if os.path.getsize(file_path) > 0:
-            pass
+    try:
+        file_path = os.path.abspath(file_path)
+        if os.path.exists(file_path):
+            if os.path.getsize(file_path) > 0:
+                pass
+            else:
+                raise FileEmptyError
         else:
+            raise FileNotFoundError
+    except FileNotFoundError as e1:
+        exist_error_message = f"{file_path} don't exist or the path physically exists but permission is not granted to execute os.stat() on the requested file"
+        print(exist_error_message)  
+        sys.exit(1)
+    except FileEmptyError as e2:
+        empty_error_message = "{0} is empty".format(file_path)
+        print(empty_error_message)
+        sys.exit(1)
+    except OSError as e3:
+        OSE_error_message = f"{file_path} does not exist or is inaccessible."
+        print(OSE_error_message)
+        sys.exit(1)
+
+
+def output_file_parentdir_exist(path, overwite):
+    if os.path.exists(path):
+        print(f"{path} already exist.")
+        if overwite:
+            print(f"{path} will be overwrited.")
+            return
+        else:
+            print(f"{path} will not be overwrited, and you can set '--overwrite' in the command line to overwrite it.")
             sys.exit(1)
+    path = os.path.abspath(path)
+    dir_name = os.path.dirname(path)
+    if os.path.isdir(dir_name):
+        pass
     else:
-        error_message = f"{file_path} don't exist"
-        print(error_message)
-        raise FileNotFoundError(error_message)
-    
+        print(f"{dir_name} does not exist and software will make directorys.")
+        os.makedirs(dir_name, exist_ok=True)
+

@@ -1,19 +1,29 @@
 from plotnine import *
 import pandas as pd
 import numpy as np
-
+from . import base
 
 class Dotplot:
-    def __init__(self, config_pra):
-        self.input_file = config_pra['dotplot']['input_file']
-        self.query_length = config_pra['dotplot']['query_length']
-        self.ref_length = config_pra['dotplot']['ref_length']
-        self.f_width = int(config_pra['dotplot']['plotnine_figure_width'])
-        self.f_height = int(config_pra['dotplot']['plotnine_figure_height'])
-        self.type = config_pra['dotplot']['type']
-        self.query_name = config_pra['dotplot']['query_name']
-        self.ref_name = config_pra['dotplot']['ref_name']
-        self.filename = config_pra['dotplot']['filename']
+    def __init__(self, config_pra, parameter):
+        self.overwrite = False
+        self.type = "order"
+        self.ref_name = "Reference species"
+        self.query_name = "Query species"
+        self.plotnine_figure_width=1500 
+        self.plotnine_figure_height=1200
+        for i in config_pra.sections():
+            if i == 'dotplot':
+                for key in config_pra[i]:
+                    setattr(self, key, config_pra[i][key])
+        for key, value in vars(parameter).items():
+            if key != "func" and key != "analysis" and value is not None:
+                setattr(self, key, value)
+        print()
+        for key, value in vars(self).items():
+            if key != "conf":
+                print(key, "=", value)
+
+        print()
         self.my_theme = theme(
                 panel_background=element_rect(fill='white'),
                 panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
@@ -58,7 +68,7 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})}) + self.my_theme
-            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
+            plot1.save(str(self.output_file_name), width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
         else:
             coll_df['queryStart'] = coll_df['queryStart'].apply(lambda x: x / 1000000)
             coll_df['referenceStart'] = coll_df['referenceStart'].apply(lambda x: x / 1000000)
@@ -72,7 +82,7 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
-            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
+            plot1.save(str(self.output_file_name), width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
 
     def run_blast_dotplot(self):
         dict2 = {"color": "strand"}
@@ -103,7 +113,7 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
-            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
+            plot1.save(str(self.output_file_name), width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
         else:
             coll_df['queryStart'] = coll_df['queryStart'].apply(lambda x: x / 1000000)
             coll_df['referenceStart'] = coll_df['referenceStart'].apply(lambda x: x / 1000000)
@@ -117,9 +127,11 @@ class Dotplot:
 
             plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
             plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 8, 'alpha': 1})})
-            plot1.save(str(self.filename), width=self.f_width, height=self.f_height, units="mm", limitsize=False)
+            plot1.save(str(self.output_file_name), width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
 
     def run(self):
+        base.file_empty(self.input_file)
+        base.output_file_parentdir_exist(self.output_file_name, self.overwrite)
         with open(self.input_file, 'r') as file:
             first_line = file.readline()
         if first_line.startswith("#"):
