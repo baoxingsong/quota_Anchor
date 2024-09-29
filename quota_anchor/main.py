@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import os
 import sys
-from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome, classification_gene, number_gn_visualization
+from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome
 from .lib import get_longest_pep, pre_collinearity, get_longest_cds
 
 base_dir = Path(__file__).resolve().parent
@@ -99,23 +99,23 @@ def run_line_3(parameter):
     line_proali_pangenome.Line(config_par).run()
 
 
-def run_class_gene(parameter):
-    # global base_dir
-    config_par = configparser.ConfigParser()
-    config_par.read(parameter.conf)
-    base.file_empty(parameter.conf)
-    if int(config_par["classification"]["type"]) == 1:
-        classification_gene.ClassGeneUnique(config_par).run()
-    else:
-        classification_gene.ClassGene(config_par).run()
-
-
-def run_clv(parameter):
-    # global base_dir
-    config_par = configparser.ConfigParser()
-    config_par.read(parameter.conf)
-    base.file_empty(parameter.conf)
-    number_gn_visualization.ClsVis(config_par).run()
+#def run_class_gene(parameter):
+#    # global base_dir
+#    config_par = configparser.ConfigParser()
+#    config_par.read(parameter.conf)
+#    base.file_empty(parameter.conf)
+#    if int(config_par["classification"]["type"]) == 1:
+#        classification_gene.ClassGeneUnique(config_par).run()
+#    else:
+#        classification_gene.ClassGene(config_par).run()
+#
+#
+#def run_clv(parameter):
+#    # global base_dir
+#    config_par = configparser.ConfigParser()
+#    config_par.read(parameter.conf)
+#    base.file_empty(parameter.conf)
+#    number_gn_visualization.ClsVis(config_par).run()
 
 
 parser = argparse.ArgumentParser(description='Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.', prog="quota_Anchor")
@@ -429,12 +429,12 @@ parser_sub_line_proali.set_defaults(func=run_line_3)
 parser_sub_line_proali.add_argument('-c', '--conf', dest='conf', help="Configure file", metavar="")
 
 
-parser_sub_clv = subparsers.add_parser('clv', help='Class gene number visualization')
-parser_sub_clv.set_defaults(func=run_clv)
-parser_sub_clv.add_argument('-c', '--conf', dest='conf', help="Command configure file", metavar="")
-parser_sub_class_gene = subparsers.add_parser('class_gene', help='Class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
-parser_sub_class_gene.set_defaults(func=run_class_gene)
-parser_sub_class_gene.add_argument('-c', '--conf', dest='conf', help="Command configure file", metavar="")
+#parser_sub_clv = subparsers.add_parser('clv', help='Class gene number visualization')
+#parser_sub_clv.set_defaults(func=run_clv)
+#parser_sub_clv.add_argument('-c', '--conf', dest='conf', help="Command configure file", metavar="")
+#parser_sub_class_gene = subparsers.add_parser('class_gene', help='Class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
+#parser_sub_class_gene.set_defaults(func=run_class_gene)
+#parser_sub_class_gene.add_argument('-c', '--conf', dest='conf', help="Command configure file", metavar="")
 
 
 args = parser.parse_args()
