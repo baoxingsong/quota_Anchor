@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import os
 import sys
-from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome, classification_gene, number_gn_visualization
+from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome
 from .lib import get_longest_pep, pre_collinearity, get_longest_cds, ks
 
 base_dir = Path(__file__).resolve().parent
