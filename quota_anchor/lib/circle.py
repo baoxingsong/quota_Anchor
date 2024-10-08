@@ -14,9 +14,9 @@ class Circle:
         # fig setting refers to famCircle(https://github.com/lkiko/famCircle).
         # gaps between chromosome circle, chr:gap = 4: 1
         self.overwrite = False
-        self.ref_name = "Reference species"
-        self.query_name = "Query species"
-        self.remove_chromosome_prefix = "chr,CHR,Chr"
+        self.ref_name = "Reference_species"
+        self.query_name = "Query_species"
+        self.remove_chromosome_prefix = "CHR,Chr,chr"
         self.chr_font_size = 7
         self.species_name_font_size = 7
         for i in config_pra.sections():
@@ -220,7 +220,8 @@ class Circle:
         plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif', 'Bitstream Vera Serif', 'Computer Modern Roman',
                                        'New Century Schoolbook', 'Century Schoolbook L', 'Utopia',
                                          'ITC Bookman', 'Bookman', 'Nimbus Roman No9 L', 'Times', 'Palatino', 'Charter', 'serif']
-        fig, ax = plt.subplots(figsize=(10, 10))
+        fig, ax = plt.subplots(figsize=(10, 10), facecolor='white')
+        # fig.patch.set_alpha(0.95)
         ax.set_aspect('equal')
         total_chr_length = df_dup['length'].sum()
         average_length = total_chr_length / len(chr_list)

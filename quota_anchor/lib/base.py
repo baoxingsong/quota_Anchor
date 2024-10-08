@@ -1,6 +1,6 @@
 import os
 import sys
-
+import pandas as pd
 
 class FileEmptyError(Exception):
     pass
@@ -62,7 +62,7 @@ def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_sta
         print("parse", collinearity, "success")
     return data, gene_pos_dict, ref_chr_list, query_chr_list
 
-
+     
 def bezier3(a, b, c, d, t):
     fvalue = []
     for i in t:
@@ -99,6 +99,7 @@ def output_file_parentdir_exist(path, overwite):
     if os.path.exists(path):
         print(f"{path} already exist.")
         if overwite:
+            os.remove(path)
             print(f"{path} will be overwrited.")
             return
         else:
@@ -112,3 +113,13 @@ def output_file_parentdir_exist(path, overwite):
         print(f"{dir_name} does not exist and software will make directorys.")
         os.makedirs(dir_name, exist_ok=True)
 
+
+def get_blank_chr(query_length, ref_length):
+    query_df = pd.read_csv(query_length, sep="\t", header=0, index_col=None)
+    query_df['chr'] = query_df['chr'].astype(str)
+
+    ref_df = pd.read_csv(ref_length, sep="\t", header=0, index_col=None)
+    ref_df['chr'] = ref_df['chr'].astype(str)
+    chr_margin = pd.merge(left=ref_df, right=query_df, how="cross")
+    chr_margin.columns = ["refChr", "referenceStart",  "refId", "queryChr", "queryStart", "queryId"]
+    return chr_margin
