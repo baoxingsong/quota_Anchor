@@ -3,8 +3,8 @@ import argparse
 from pathlib import Path
 import os
 import sys
-from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome
-from .lib import get_longest_pep, pre_collinearity, get_longest_cds
+from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome, classification_gene, number_gn_visualization
+from .lib import get_longest_pep, pre_collinearity, get_longest_cds, ks
 
 base_dir = Path(__file__).resolve().parent
 
@@ -99,24 +99,15 @@ def run_line_3(parameter):
     line_proali_pangenome.Line(config_par).run()
 
 
-#def run_class_gene(parameter):
-#    # global base_dir
-#    config_par = configparser.ConfigParser()
-#    config_par.read(parameter.conf)
-#    base.file_empty(parameter.conf)
-#    if int(config_par["classification"]["type"]) == 1:
-#        classification_gene.ClassGeneUnique(config_par).run()
-#    else:
-#        classification_gene.ClassGene(config_par).run()
-#
-#
-#def run_clv(parameter):
-#    # global base_dir
-#    config_par = configparser.ConfigParser()
-#    config_par.read(parameter.conf)
-#    base.file_empty(parameter.conf)
-#    number_gn_visualization.ClsVis(config_par).run()
-
+def run_ks(parameter):
+    global base_dir
+    config_par = configparser.ConfigParser()
+    if parameter.conf is not None:
+        config_par.read(parameter.conf)
+        base.file_empty(parameter.conf)
+    config_soft = configparser.ConfigParser()
+    config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
+    ks.Ks(config_par,config_soft, parameter).first_layer_run()
 
 parser = argparse.ArgumentParser(description='Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.', prog="quota_Anchor")
 parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1.1a0')
@@ -247,7 +238,7 @@ parser_sub_pre_col.add_argument('-mts', '--max_target_seqs', dest='max_target_se
 parser_sub_pre_col.add_argument('-e', '--evalue', dest='evalue', help="Blast e_value threshold. If you set '-skip_blast', this parametr is disabled.", metavar="")
 parser_sub_pre_col.add_argument('-t', '--thread', dest='thread', help="Process number for '-a/--align blastp/blastn'. If you set '-skip_blast', this parametr is disabled.", metavar="", type=int)
 parser_sub_pre_col.add_argument('-ot', '--outfmt', dest='outfmt', help="Blast result file format(default: 6). If you set '-skip_blast', this parametr is disabled.", type=int, metavar="")
-parser_sub_pre_col.add_argument('-d', '--dtype', dest='dtype', help="Sequence data type. If you set '-skip_blast', this parametr is disabled.", choices=['nucl', 'prot'], metavar="")
+parser_sub_pre_col.add_argument('-d', '--dtype', dest='dtype', help="Sequence data type(nucl/prot). If you set '-skip_blast', this parametr is disabled.", choices=['nucl', 'prot'], metavar="")
 parser_sub_pre_col.add_argument('-b', '--blast_file', dest='blast_file', help="Blast file which will be generated or had been generated", metavar="")
 parser_sub_pre_col.add_argument('-rg', '--ref_gff_file', dest='ref_gff_file', help="Reference gff file", metavar="")
 parser_sub_pre_col.add_argument('-qg', '--query_gff_file', dest='query_gff_file', help="Query gff file", metavar="")
@@ -290,9 +281,11 @@ parser_sub_col.add_argument('-m', '--tandem_length', dest='tandem_length',metava
                          """ This parameter is useful only for self vs self synteny alignment. Options: 0 means retain tandem gene pairs;
                              1 or any other integer means remove gene pairs with a tandem length shorter than the specified integer value.(default: 0)
                              When you are doing ks peaks analysis about WGD/Divergent event, you need set this parameter""")
-parser_sub_col.add_argument('-W', '--over_lap_window', dest='over_lap_window', type=int, help="Collapse BLAST matches. Specify the maximum distance allowed, and only retain best homology pair to synteny analysis under this distance condition(default: 0)", metavar="")
+parser_sub_col.add_argument('-W', '--over_lap_window', dest='over_lap_window', type=int, help="Collapse BLAST matches. Specify the maximum distance allowed, and only retain best homology pair to synteny analysis under this distance condition(default: 1)", metavar="")
 parser_sub_col.add_argument('-D', '--maximum_gap_size', dest='maximum_gap_size', type=int, help="Maximum gap size for chain (default: 25)", metavar="")
-parser_sub_col.add_argument('-I', '--minimum_chain_score', dest='minimum_chain_score', type=int, help="minimum chain score (default: 2)", metavar="")
+parser_sub_col.add_argument('-I', '--minimum_chain_score', dest='minimum_chain_score', type=int, help="minimum chain score (default: 3)", metavar="")
+parser_sub_col.add_argument('-E', '--gap_extend_penalty', dest='gap_extend_penalty', type=int, help="chain gap extend penalty (default: -0.005)", metavar="")
+parser_sub_col.add_argument('-f', '--strcit_remove_overlap', dest='strcit_remove_overlap', type=int, help="Specify whether to strictly remove square region gene pairs for a block to avoid overlap. (1:yes;0:no. default:  0)", metavar="")
 parser_sub_col.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
 
@@ -323,7 +316,7 @@ parser_sub_get_chr_length.set_defaults(func=run_lens)
 parser_sub_get_chr_length.add_argument('-c', '--conf', dest='conf', help="Configure file which file has minimum prioriy", metavar="")
 parser_sub_get_chr_length.add_argument('-f', '--fai_file', dest='fai_file', help="Species fai files produced by gffread(Separator: ',') ", metavar="")
 parser_sub_get_chr_length.add_argument('-g', '--gff_file', dest='gff_file', help="Species gff files list(Separator: ',') ", metavar="")
-parser_sub_get_chr_length.add_argument('-s', '--select_fai_chr_startswith', dest='select_fai_chr_startswith', help="""E.g. 1) 0-9: software select chromosome name start with number.
+parser_sub_get_chr_length.add_argument('-s', '--select_fai_chr_startswith', dest='select_fai_chr_startswith', help="""E.g. 1) 0-9: software select chromosome name start with numeric.
 2) chr: software select chromosome name start with the string "chr".
 3) Chr: software select chromosome name start with the string "Chr". (Select Separator: ',')(Species Separator: ':') """, metavar="")
 parser_sub_get_chr_length.add_argument('-o', '--output_length_file', dest='output_length_file', help="Output species length file(Separator: ',')", metavar="")
@@ -357,6 +350,7 @@ parser_sub_dotplot.add_argument('-q', '--query_length', dest='query_length', hel
 parser_sub_dotplot.add_argument('-t', '--type', dest='type', help="Use gene count position within chromosome for plot(type: order) or base pair(physical distance) position within chromosome for plot(type: base)(defaults: order)", metavar="", choices=['order', 'base'])   
 parser_sub_dotplot.add_argument('-r_label', '--ref_name', dest='ref_name', help="Reference species coordinate axis label", metavar="")
 parser_sub_dotplot.add_argument('-q_label', '--query_name', dest='query_name', help="Query species coordinate axis label", metavar="")
+parser_sub_dotplot.add_argument('-ks', '--ks', dest='ks', help="Collinearity gene pair ks file(Optional)", metavar="")
 parser_sub_dotplot.add_argument('-w', '--plotnine_figure_width', dest='plotnine_figure_width', help="Plotnine module figure width (defaults: 1500)(unit: mm)", metavar="", type=int)
 parser_sub_dotplot.add_argument('-e', '--plotnine_figure_height', dest='plotnine_figure_height', help="Plotnine module figure height (defaults: 2000)(unit: mm)", metavar="", type=int)
 parser_sub_dotplot.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
@@ -394,7 +388,7 @@ parser_sub_circle.add_argument('-sf', '--species_name_font_size', dest='species_
 parser_sub_circle.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
 # collinearity line plot
-parser_sub_line_2 = subparsers.add_parser('line', help='Collinearity result visualization', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
+parser_sub_line = subparsers.add_parser('line', help='Collinearity result visualization', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
     You can execute this command in three ways: 
                                        
     1. Using configuration file:
@@ -412,31 +406,49 @@ parser_sub_line_2 = subparsers.add_parser('line', help='Collinearity result visu
        quota_Anchor line -c line.conf -i sb_zm.collinearity -o sb_zm.line.png -l sb_length.txt,zm_length.txt
                                            -n "Sorghum bicolor,Zea mays" -rm chr,Chr,CHR -cf 7 -sf 7 [--overwrite] 
  """)
-parser_sub_line_2.set_defaults(func=run_line)
-parser_sub_line_2.add_argument('-c', '--conf', dest='conf', help="Configure file which file has minimum prioriy", metavar="")
-parser_sub_line_2.add_argument('-i', '--input_file', dest='input_file', help="Collinearity file(e.g. file1,file2,file3)(Separator: ',') ")
-parser_sub_line_2.add_argument('-o', '--output_file_name', dest='output_file_name', help="Specify a file name to save figure")
-parser_sub_line_2.add_argument('-l', '--length_file', dest='length_file', help="Species length file list(e.g. file1,file2,file3)(Separator: ',')")
-parser_sub_line_2.add_argument('-n', '--species_name', dest='species_name', help="Species name list(e.g. name1,name2,name3)(Separator: ',')")
-parser_sub_line_2.add_argument('-rm', '--remove_chromosome_prefix', dest='remove_chromosome_prefix', help="Remove chromosome prefix to plot(e.g. chr,Chr,CHR)(Separator: ',')")
-parser_sub_line_2.add_argument('-cf', '--chr_font_size', dest='chr_font_size', help="Chromosome name font size(defaults: 7)", type=int)
-parser_sub_line_2.add_argument('-sf', '--species_name_font_size', dest='species_name_font_size', help="Species name font size(defaults: 7)", type=int)
-parser_sub_line_2.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
+parser_sub_line.set_defaults(func=run_line)
+parser_sub_line.add_argument('-c', '--conf', dest='conf', help="Configure file which file has minimum prioriy", metavar="")
+parser_sub_line.add_argument('-i', '--input_file', dest='input_file', help="Collinearity file(e.g. file1,file2,file3)(Separator: ',') ")
+parser_sub_line.add_argument('-o', '--output_file_name', dest='output_file_name', help="Specify a file name to save figure")
+parser_sub_line.add_argument('-l', '--length_file', dest='length_file', help="Species length file list(e.g. file1,file2,file3)(Separator: ',')")
+parser_sub_line.add_argument('-n', '--species_name', dest='species_name', help="Species name list(e.g. name1,name2,name3)(Separator: ',')")
+parser_sub_line.add_argument('-rm', '--remove_chromosome_prefix', dest='remove_chromosome_prefix', help="Remove chromosome prefix to plot(e.g. chr,Chr,CHR)(Separator: ',')")
+parser_sub_line.add_argument('-cf', '--chr_font_size', dest='chr_font_size', help="Chromosome name font size(defaults: 7)", type=int)
+parser_sub_line.add_argument('-sf', '--species_name_font_size', dest='species_name_font_size', help="Species name font size(defaults: 7)", type=int)
+parser_sub_line.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
 # collinearity AnchorWave proali anchors plot
 parser_sub_line_proali = subparsers.add_parser('line_proali', help='Anchors file from AnchorWave proali to visualization')
 parser_sub_line_proali.set_defaults(func=run_line_3)
 parser_sub_line_proali.add_argument('-c', '--conf', dest='conf', help="Configure file", metavar="")
 
-
-#parser_sub_clv = subparsers.add_parser('clv', help='Class gene number visualization')
-#parser_sub_clv.set_defaults(func=run_clv)
-#parser_sub_clv.add_argument('-c', '--conf', dest='conf', help="Command configure file", metavar="")
-#parser_sub_class_gene = subparsers.add_parser('class_gene', help='Class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
-#parser_sub_class_gene.set_defaults(func=run_class_gene)
-#parser_sub_class_gene.add_argument('-c', '--conf', dest='conf', help="Command configure file", metavar="")
-
-
+parser_sub_ks = subparsers.add_parser('ks', help='Syntenic gene pair synonymous substitution rate using yn00', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
+    You can execute this command in three ways: 
+                                       
+    1. Using configuration file:
+       a)quota_Anchor ks -c [\\?, example, help] >> ks.conf 
+       b)quota_Anchor ks -c ks.conf [--overwrite] 
+                                       
+    2. Using command-line arguments:
+       quota_Anchor ks -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
+                                           -d sb_zm.cds.fa -o sb_zm.ks -t inter [--overwrite] 
+                                       
+    3. Using both a configuration file and command-line arguments:
+       The configuration file has lower priority than other command-line parameters. 
+       Parameters specified in the configuration file will be replaced by those provided via the command line.
+    
+       quota_Anchor ks -c ks.conf -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
+                                           -d sb_zm.cds.fa -o sb_zm.ks -t inter [--overwrite] 
+ """)
+parser_sub_ks.set_defaults(func=run_ks)
+parser_sub_ks.add_argument('-c', '--conf', dest='conf', help="Configure file which file has minimum prioriy", metavar="")
+parser_sub_ks.add_argument('-i', '--collinearity', dest='collinearity', help="Collinearity file", metavar="")
+parser_sub_ks.add_argument('-a', '--align_software', dest='align_software', help="Align software for syntenic gene pair(muscle/mafft)", choices=["mafft", "muscle"], metavar="")
+parser_sub_ks.add_argument('-p', '--pep_file', dest='pep_file', help="Species longest protein sequence file", metavar="")
+parser_sub_ks.add_argument('-d', '--cds_file', dest='cds_file', help="Species longest cds sequence file", metavar="")
+parser_sub_ks.add_argument('-o', '--ks_file', dest='ks_file', help="Output ks file in wgdi format", metavar="")
+parser_sub_ks.add_argument('-t', '--type', dest='type', help="Collinearity file type(intra/inter)", choices=["intra", "inter"], metavar="")
+parser_sub_ks.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 args = parser.parse_args()
 
 def copy_config_file():
@@ -451,8 +463,7 @@ def copy_config_file():
         "circle": "circle.conf",
         "line": "line.conf",
         "line_proali": "line_proali.conf",
-        "clv": "clv.conf",
-        "class_gene": "class_gene.conf",
+        "ks": "ks.conf",
     }
     return copy_dict
 

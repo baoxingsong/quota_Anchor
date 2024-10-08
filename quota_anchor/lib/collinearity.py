@@ -11,11 +11,13 @@ class Collinearity:
         self.q_value = str(1)
         self.maximum_gap_size = str(25)
         self.tandem_length = str(0)
-        self.over_lap_window = str(0)
+        self.over_lap_window = str(1)
         self.count_style = str(1)
         self.strict_strand = str(1)
         self.get_all_collinearity = str(0)
-        self.minimum_chain_score = str(2)
+        self.minimum_chain_score = str(3)
+        self.gap_extend_penalty = str(-0.005)
+        self.strict_remove_overlap = str(0)
         self.AnchorWave = config_soft['software']['AnchorWave']
         
         for i in config_pra.sections():
@@ -43,7 +45,9 @@ class Collinearity:
                         count_style, 
                         strict_strand, 
                         get_all_collinearity,
-                        minimum_chain_score
+                        minimum_chain_score,
+                        gap_extend_penalty,
+                        strict_remove_overlap
                         ):
         command_line = [self.AnchorWave,
                         'pro', 
@@ -57,7 +61,9 @@ class Collinearity:
                         '-c', count_style,
                         '-s', strict_strand,
                         '-a', get_all_collinearity,
-                        '-I', minimum_chain_score
+                        '-I', minimum_chain_score,
+                        '-E', gap_extend_penalty,
+                        '-f', strict_remove_overlap
                         ]
         try:
             result = subprocess.run(command_line, check=True)
@@ -78,5 +84,8 @@ class Collinearity:
                                 str(self.count_style), 
                                 str(self.strict_strand), 
                                 str(self.get_all_collinearity),
-                                str(self.minimum_chain_score))
+                                str(self.minimum_chain_score),
+                                str(self.gap_extend_penalty),
+                                str(self.strict_remove_overlap)
+                                )
         return self.output_coll_name
