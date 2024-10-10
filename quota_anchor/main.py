@@ -353,6 +353,8 @@ parser_sub_dotplot.add_argument('-q_label', '--query_name', dest='query_name', h
 parser_sub_dotplot.add_argument('-ks', '--ks', dest='ks', help="Collinearity gene pair ks file(Optional)", metavar="")
 parser_sub_dotplot.add_argument('-w', '--plotnine_figure_width', dest='plotnine_figure_width', help="Plotnine module figure width (defaults: 1500)(unit: mm)", metavar="", type=int)
 parser_sub_dotplot.add_argument('-e', '--plotnine_figure_height', dest='plotnine_figure_height', help="Plotnine module figure height (defaults: 2000)(unit: mm)", metavar="", type=int)
+parser_sub_dotplot.add_argument('-a', '--ks_area', dest='ks_area', help="ks area to plot if you specify -ks parameter(default: 0,3)", metavar="")
+parser_sub_dotplot.add_argument('-disable', '--disable_axis_text', dest='disable_axis_text', help="disable_axis_text", action='store_true')
 parser_sub_dotplot.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
 # collinearity circle plot
