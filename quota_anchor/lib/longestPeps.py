@@ -48,11 +48,11 @@ def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
     for chromosome_name in chromosome_names:
         if (chromosome_name in chromosome_gene_dict) and len(chromosome_gene_dict[chromosome_name])>1:
             for gene_name in chromosome_gene_dict[chromosome_name]:
-                output.write(">" + gene_name + "\n")
-                output.write(pep_fastas[chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name].seq)
-                output.write("\n")
-                longest_trans_name.append(chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name)
-
+                if chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name in pep_fastas:
+                    output.write(">" + gene_name + "\n")
+                    output.write(pep_fastas[chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name].seq)
+                    output.write("\n")
+                    longest_trans_name.append(chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name)
     output.close()
     return chromosome_gene_dict, longest_trans_name
 

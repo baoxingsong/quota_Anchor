@@ -126,9 +126,11 @@ def readGff(gffFilePath):
     with open(gffFilePath) as f:
         for line in f:
             m = re.search('^#', line)
-            if m == None:
-                m = re.search(r'^(\S+)\t(\S+)\tCDS\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*Parent=([:.\-\w]+?);', line)
-                if m != None:
+            if m is None:
+                m = re.search(r'^(\S+)\t(\S+)\tCDS\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*Parent=([\s\S]+?);', line)
+                if m is None:
+                    m = re.search(r'^(\S+)\t(\S+)\tCDS\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*Parent=([\S\s]+?)$', line)
+                if m is not None:
                     chromosome_name = m.group(1)
                     if chromosome_name not in chromosome_transcript_dict:
                         chromosome_transcript_dict[chromosome_name]=dict()
@@ -146,8 +148,10 @@ def readGff(gffFilePath):
 
                     chromosome_transcript_dict[chromosome_name][transcript_name].add_cds(start, end)
 
-                m = re.search(r'^(\S+)\t(\S+)\t\S+\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([:.\-\w]+?);Parent=([:.\-\w]+?);', line)
-                if m != None:
+                m = re.search(r'^(\S+)\t(\S+)\t\S+\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([\s\S]+?);Parent=([\s\S]+?);', line)
+                if m is None:
+                    m = re.search(r'^(\S+)\t(\S+)\t\S+\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([\s\S]+?);Parent=([\s\S]+?)$', line)
+                if m is not None:
                     fake_transcript_name = m.group(8)
                     fake_gene_name = m.group(9)
                     fake_transcript_gene_map[fake_transcript_name] = fake_gene_name

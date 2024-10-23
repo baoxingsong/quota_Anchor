@@ -12,7 +12,7 @@ class Collinearity:
         self.maximum_gap_size = str(25)
         self.tandem_length = str(0)
         self.over_lap_window = str(1)
-        self.count_style = str(1)
+        self.count_style = str(0)
         self.strict_strand = str(1)
         self.get_all_collinearity = str(0)
         self.minimum_chain_score = str(3)

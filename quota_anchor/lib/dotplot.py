@@ -28,12 +28,15 @@ class Dotplot:
                 setattr(self, key, value)
         print()
         for key, value in vars(self).items():
-            if key != "conf" and key != "ks_area":
+            if key != "conf" and key != "ks_area" and key != "use_identity":
                 print(key, "=", value)
             if key == "ks_area" and hasattr(self, "ks"):
                 print(key, "=", value)
+            else:
+                if key == "use_identity":
+                    print(key, "=", value)
         print()
-        # please modify parameter
+        # please modify your parameter
         self.my_theme = theme(
                 panel_background=element_rect(fill='white'),
                 panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
@@ -222,6 +225,66 @@ class Dotplot:
         print(f"Saving {self.plotnine_figure_width} x {self.plotnine_figure_height} mm image.")
         print(f"Filename: {self.output_file_name}")
 
+    def run_blast_identity_dotplot(self):
+        dict2 = {"color": "identity"}
+        query_chr = self.read_length(self.query_length)
+        ref_chr = self.read_length(self.ref_length)
+        coll_df = pd.read_csv(self.input_file, header=None, sep="\t", comment="#", low_memory=False)
+        coll_df.columns = ["refGene", "refChr", "refId", "referenceStart", "referenceEnd", "refStrand",
+                           "queryGene",	"queryChr", "queryId", "queryStart", "queryEnd", "queryStrand", "identity"]
+        coll_df["queryChr"] = coll_df["queryChr"].astype(str)
+        coll_df["refChr"] = coll_df["refChr"].astype(str)
+        coll_df["identity"] = coll_df["identity"].astype(float) / 100
+        coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
+        coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
+        coll_df['queryChr'] = pd.Categorical(coll_df['queryChr'], categories=query_chr, ordered=True)
+        coll_df['refChr'] = pd.Categorical(coll_df['refChr'], categories=ref_chr, ordered=True)
+        blank_df = base.get_blank_chr(self.query_length, self.ref_length)
+        if self.type == "order":
+            dict1 = {"x": "queryId", "y": "refId"}
+            # coll_df['refId'] = coll_df['refId'].apply(lambda x: x / 1000)
+            # coll_df['queryId'] = coll_df['queryId'].apply(lambda x: x / 1000)
+
+            plot = (ggplot(coll_df, aes(**dict1)) +
+                    facet_grid('refChr~queryChr', scales="free", space="free") +
+                    geom_point(aes(**dict2), size=1, alpha=0.5) +                    
+                    scale_color_cmap(cmap_name="gist_rainbow") +
+                    geom_blank(blank_df, show_legend=False) + 
+                    scale_x_continuous(expand=(0, 0)) +
+                    scale_y_continuous(expand=(0, 0)))
+        else:
+            coll_df['queryStart'] = coll_df['queryStart'].apply(lambda x: x / 1000000)
+            coll_df['referenceStart'] = coll_df['referenceStart'].apply(lambda x: x / 1000000)
+            blank_df['queryStart'] = blank_df['queryStart'].apply(lambda x: x / 1000000)
+            blank_df['referenceStart'] = blank_df['referenceStart'].apply(lambda x: x / 1000000)
+            dict1 = {"x": "queryStart", "y": "referenceStart"}
+            plot = (ggplot(coll_df, aes(**dict1)) +
+                    facet_grid('refChr~queryChr', scales="free", space="free") +
+                    geom_point(aes(**dict2), size=0.8, alpha=0.2) +
+                    scale_color_cmap(cmap_name="gist_rainbow") +
+                    geom_blank(blank_df, show_legend=False) +                     
+                    scale_x_continuous(labels=self.major_formatter, expand=(0, 0)) +
+                    scale_y_continuous(labels=self.major_formatter, expand=(0, 0)))
+
+        plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
+        plot1 = plot1 + self.my_theme + theme(legend_position='none')
+        plot1.save(str(self.output_file_name), width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
+        
+        img = Image.open(str(self.output_file_name))
+        fig, ax = plt.subplots(figsize=(float(self.plotnine_figure_width) / 25.4, float(self.plotnine_figure_height) / 25.4))
+        cax = ax.imshow(img)  
+        ax.axis('off')  
+
+        norm = plt.Normalize(vmin=coll_df['identity'].min(), vmax=coll_df['identity'].max())
+        sm = plt.cm.ScalarMappable(cmap='gist_rainbow', norm=norm)
+        sm.set_array(coll_df['identity']) 
+        cbar = fig.colorbar(sm, ax=ax, shrink=0.5, pad=0, fraction=0.1)  
+        cbar.ax.tick_params(labelsize=40, length=5)  
+        cbar.set_label('identity', labelpad=30, fontsize=50, ha='center', va='center')
+        fig.savefig(str(self.output_file_name), bbox_inches='tight')
+        print(f"Saving {(float(self.plotnine_figure_width) / 25.4):.2f} x {(float(self.plotnine_figure_height) / 25.4):.2f} inch image.")
+        print(f"Filename: {self.output_file_name}")
+
     def run(self):
         plt.rcParams['font.family'] = 'serif'
         plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif', 'Bitstream Vera Serif', 'Computer Modern Roman',
@@ -248,5 +311,7 @@ class Dotplot:
             else:
                 self.run_coll_dotplot()
         else:
-            self.run_blast_dotplot()
-
+            if self.use_identity:
+                self.run_blast_identity_dotplot()
+            else:
+                self.run_blast_dotplot()
