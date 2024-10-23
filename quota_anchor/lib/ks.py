@@ -11,7 +11,6 @@ from . import base
 import shutil
 import numpy as np
 from Bio import SeqIO
-from Bio.Phylo.PAML import yn00
 from multiprocessing import Pool, cpu_count
 from alive_progress import alive_bar
 
