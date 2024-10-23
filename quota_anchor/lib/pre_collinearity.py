@@ -95,6 +95,14 @@ class Prepare:
         except subprocess.CalledProcessError as e:
             print(f'{blast_log}, running blastp occurs error')
     def run_all_process(self):
+        if hasattr(self, "ref_length"):
+            base.file_empty(self.ref_length)
+        else:
+            self.ref_length = ""
+        if hasattr(self, "query_length"):
+            base.file_empty(self.query_length)
+        else:
+            self.query_length = ""
         flag = True
         if not self.skip_blast:
             flag = False
@@ -121,5 +129,5 @@ class Prepare:
         if flag:
             base.output_file_parentdir_exist(self.output_file, self.overwrite)
         combineBlastAndStrandInformation.anchorwave_quota(self.ref_gff_file, self.query_gff_file, self.blast_file,
-                                                          self.output_file, self.bitscore, self.align_length)
+                                                          self.output_file, self.bitscore, self.align_length, self.query_length, self.ref_length)
         base.file_empty(self.output_file)

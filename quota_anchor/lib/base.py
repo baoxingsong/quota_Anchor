@@ -1,9 +1,58 @@
 import os
 import sys
 import pandas as pd
+import pandas as pd
+import matplotlib.pyplot as plt
+
 
 class FileEmptyError(Exception):
     pass
+
+
+class ClsVis:
+    def __init__(self, stats_file, figure):
+        self.stats_file = stats_file
+        self.output = figure
+        self.ylab = "Number"
+        self.title1 = "Different gene types of foucs species"
+        self.title2 = "Different duplicate pair types of focus species"
+
+
+    @staticmethod
+    def get_data(stats_file):
+        df = pd.read_csv(stats_file, sep="\t", index_col="Type", header=0)
+        df_pair = df.loc[["wgd.pairs", "tandem.pairs", "proximal.pairs", "transposed.pairs", "dispersed.pairs"], :]
+        df_gene = df.loc[["wgd.genes", "tandem.genes", "proximal.genes", "transposed.genes", "dispersed.genes", "singleton.genes"], :]
+        return df_pair, df_gene
+
+    def plot(self, df, name):
+        fig, ax = plt.subplots(figsize=(10, 6.18))
+        tp = [ele for ele in df.index]
+        length = len(tp)
+        counts = [df.loc[tp[i], "Number"] for i in range(length)]
+        color_list = ['#FFB6C1', '#C71585', '#FF00FF', '#9932CC', '#00CED1', "#90EE90"]
+
+        bars = ax.bar(tp, counts, color=color_list[:length])
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height}', ha='center', va='bottom')
+
+        ax.set_ylabel(str(self.ylab))
+
+        if len(df) == 6:
+            ax.set_title(str(self.title1))
+        if len(df) == 5:
+            ax.set_title(str(self.title2))
+        plt.xticks(rotation=300)
+        plt.tight_layout()
+        plt.savefig(name,  bbox_inches='tight')
+        plt.show()
+
+    def run(self):
+        output_list = self.output
+        df_pair, df_gene = self.get_data(self.stats_file)
+        self.plot(df_gene, output_list[0])
+        self.plot(df_pair, output_list[1])
 
 
 def split_conf(conf, separator):
@@ -82,7 +131,7 @@ def file_empty(file_path):
         else:
             raise FileNotFoundError
     except FileNotFoundError as e1:
-        exist_error_message = f"{file_path} don't exist or the path physically exists but permission is not granted to execute os.stat() on the requested file"
+        exist_error_message = f"please check your command line or config file\n. {file_path} don't exist or the path physically exists but permission is not granted to execute os.stat() on the requested file"
         print(exist_error_message)  
         sys.exit(1)
     except FileEmptyError as e2:

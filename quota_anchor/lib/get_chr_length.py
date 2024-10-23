@@ -74,16 +74,19 @@ class Lens:
         df = df.iloc[:, :2]
         start_list = [i.strip() for i in selected_prefix.split(',')]
         for i in start_list:
-            if len(regex) == 0:
-                if i == "0-9":
-                    regex = r"^\d"
-                    continue
-                regex = "^{}".format(i)
-            else:
-                if i == "number":
-                    regex += r"|^\d"
-                    continue
-                regex += "|^{}".format(i)
+            if len(i) == 0:
+                continue   
+            else: 
+                if len(regex) == 0:
+                    if i == "0-9":
+                        regex = r"^\d"
+                        continue
+                    regex = "^{}".format(i)
+                else:
+                    if i == "0-9":
+                        regex += r"|^\d"
+                        continue
+                    regex += "|^{}".format(i)
         lens = df[df[0].str.match(regex)]
         lens.reset_index(drop=True, inplace=True)
         chr_list = lens.iloc[:, 0].copy()

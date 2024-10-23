@@ -66,7 +66,7 @@ class Ks:
         if cpu_count() > 32:
             self.process = 12
         else:
-            self.process = cpu_count - 1
+            self.process = cpu_count() - 1
 
     def pair_kaks(self, k):
         self.align()

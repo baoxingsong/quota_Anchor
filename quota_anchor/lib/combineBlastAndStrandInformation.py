@@ -1,10 +1,21 @@
 from . import GffFile
 import sys
+import pandas as pd
 from argparse import ArgumentParser
 # baoxing.song@pku-iaas.edu.cn
 
+def read_length(conf):
+    df = pd.read_csv(conf, sep="\t", header=0, index_col=None)
+    df['chr'] = df['chr'].astype(str)
+    chr_list = list(df['chr'])
+    return chr_list
 
-def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_score, align_length):
+def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_score, align_length, query_length="", ref_length=""):
+    if query_length:
+        query_chr_list = read_length(query_length)
+    if ref_length:
+        ref_chr_list = read_length(ref_length)
+
     target_output = open(outputFile, 'w')
     refChromosome_gene_dict, refChromosome_gene_list, ref_GeneName_toChr_dict, _ = GffFile.readGff(refGffFile)
     queryChromosome_gene_dict, queryChromosome_gene_list, query_GeneName_toChr_dict, _ = GffFile.readGff(queryGffFile)
@@ -42,6 +53,14 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_sco
             evalue = elements[10]
             bitscore = float(elements[11])
             
+            if ref_length:
+                ref_chr = ref_GeneName_toChr_dict[sseqid]
+                if ref_chr not in ref_chr_list:
+                    continue
+            if query_length:
+                query_chr = query_GeneName_toChr_dict[qseqid]
+                if query_chr not in query_chr_list:
+                    continue                            
             match_pair = sseqid + "_" + qseqid
             if (match_pair not in match_pairs) and (bitscore > float(bit_score)) and (length > float(align_length)):
                 match_pairs.add(match_pair)

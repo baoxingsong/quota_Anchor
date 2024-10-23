@@ -3,21 +3,19 @@ import argparse
 from pathlib import Path
 import os
 import sys
-from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome
+from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome, classification_gene
 from .lib import get_longest_pep, pre_collinearity, get_longest_cds, ks
 
 base_dir = Path(__file__).resolve().parent
-
-# TODO
-# software path
 
 
 def run_get_longest_pep(parameter):
     global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
+
     config_soft = configparser.ConfigParser()
     config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
     get_longest_pep.Longest(config_par,config_soft, parameter).run_all_process()
@@ -26,8 +24,8 @@ def run_get_longest_cds(parameter):
     global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
     config_soft = configparser.ConfigParser()
     config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
     get_longest_cds.Longest(config_par,config_soft, parameter).run_all_process()
@@ -36,8 +34,8 @@ def run_pre_col(parameter):
     global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
     config_soft = configparser.ConfigParser()
     config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
     pre_collinearity.Prepare(config_par,config_soft, parameter).run_all_process()
@@ -47,8 +45,8 @@ def run_col(parameter):
     global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
      
     config_soft = configparser.ConfigParser()
     config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
@@ -59,8 +57,8 @@ def run_dotplot(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
     dotplot.Dotplot(config_par, parameter).run()
 
 
@@ -68,8 +66,8 @@ def run_circle(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
     circle.Circle(config_par, parameter).run()
 
 
@@ -77,8 +75,8 @@ def run_lens(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
     get_chr_length.Lens(config_par, parameter).run()
 
 
@@ -86,8 +84,8 @@ def run_line(parameter):
     # global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
     line.Line(config_par, parameter).run()
 
 
@@ -103,14 +101,26 @@ def run_ks(parameter):
     global base_dir
     config_par = configparser.ConfigParser()
     if parameter.conf is not None:
-        config_par.read(parameter.conf)
         base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
     config_soft = configparser.ConfigParser()
     config_soft.read(os.path.join(base_dir, 'config_file/software_path.ini'))
     ks.Ks(config_par,config_soft, parameter).first_layer_run()
 
+
+def run_class_gene(parameter):
+    config_par = configparser.ConfigParser()
+    if parameter.conf is not None:
+        base.file_empty(parameter.conf)
+        config_par.read(parameter.conf)
+    if parameter.unique:
+        classification_gene.ClassGeneUnique(config_par, parameter).run()
+    else:
+        classification_gene.ClassGene(config_par, parameter).run()
+
+
 parser = argparse.ArgumentParser(description='Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.', prog="quota_Anchor")
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1.1a0')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1a1')
 
 
 subparsers = parser.add_subparsers(title='Gene collinearity analysis', dest='analysis')
@@ -237,14 +247,16 @@ parser_sub_pre_col.add_argument('-ob', '--output_blast_result', dest='output_bla
 parser_sub_pre_col.add_argument('-mts', '--max_target_seqs', dest='max_target_seqs', help="Maximum number of aligned sequences to keep. If you set '-skip_blast', this parametr is disabled.", metavar="")
 parser_sub_pre_col.add_argument('-e', '--evalue', dest='evalue', help="Blast e_value threshold. If you set '-skip_blast', this parametr is disabled.", metavar="")
 parser_sub_pre_col.add_argument('-t', '--thread', dest='thread', help="Process number for '-a/--align blastp/blastn'. If you set '-skip_blast', this parametr is disabled.", metavar="", type=int)
-parser_sub_pre_col.add_argument('-ot', '--outfmt', dest='outfmt', help="Blast result file format(default: 6). If you set '-skip_blast', this parametr is disabled.", type=int, metavar="")
-parser_sub_pre_col.add_argument('-d', '--dtype', dest='dtype', help="Sequence data type(nucl/prot). If you set '-skip_blast', this parametr is disabled.", choices=['nucl', 'prot'], metavar="")
+parser_sub_pre_col.add_argument('-ot', '--outfmt', dest='outfmt', help="Blast result file format(default: 6) for '-a/--align blastp/blastn'. If you set '-skip_blast', this parametr is disabled.", type=int, metavar="")
+parser_sub_pre_col.add_argument('-d', '--dtype', dest='dtype', help="Sequence data type(nucl/prot) for '-a/--align blastp/blastn'. If you set '-skip_blast', this parametr is disabled.", choices=['nucl', 'prot'], metavar="")
 parser_sub_pre_col.add_argument('-b', '--blast_file', dest='blast_file', help="Blast file which will be generated or had been generated", metavar="")
 parser_sub_pre_col.add_argument('-rg', '--ref_gff_file', dest='ref_gff_file', help="Reference gff file", metavar="")
 parser_sub_pre_col.add_argument('-qg', '--query_gff_file', dest='query_gff_file', help="Query gff file", metavar="")
 parser_sub_pre_col.add_argument('-o', '--output_file', dest='output_file', help="Output table file and this file can be used as synteny input", metavar="")
 parser_sub_pre_col.add_argument('-bs', '--bitscore', dest='bitscore', help="Filter BLAST matches to retain only those with a bitscore value greater than the specified threshold(default: 100).", metavar="", type=int)
 parser_sub_pre_col.add_argument('-al', '--align_length', dest='align_length', help="Filter BLAST matches to retain only those with a alignment length value greater than the specified threshold(default: 0).", metavar="", type=int)
+parser_sub_pre_col.add_argument('-rl', '--ref_length', dest='ref_length', help="Reference species length file(optional)", metavar="")
+parser_sub_pre_col.add_argument('-ql', '--query_length', dest='query_length', help="Query species length file(optional)", metavar="")
 parser_sub_pre_col.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
 # produce collinearity file
@@ -275,7 +287,7 @@ parser_sub_col.add_argument('-s', '--strict_strand', dest='strict_strand', help=
 parser_sub_col.add_argument('-a', '--get_all_collinearity', dest='get_all_collinearity', help=
                          """Enable this flag to get all collinear results and disable R and Q parameters (default: 0)
                             Options: 0:enable R Q parameter; 1 or other integer: get all collinear result and disable R Q parameter""", metavar="", type=int)
-parser_sub_col.add_argument('-t', '--count_style', dest='count_style', type=int, help="R Q parameter's count style for a block, 0: count only the syntenic genes within a block; 1 or other integer: count all genes within a block(default: 1)", metavar="")
+parser_sub_col.add_argument('-t', '--count_style', dest='count_style', type=int, help="R Q parameter's count style for a block, 0: count only the syntenic genes within a block; 1 or other integer: count all genes within a block(default: 0)", metavar="")
 parser_sub_col.add_argument('-m', '--tandem_length', dest='tandem_length',metavar="", type=int,
                             help=
                          """ This parameter is useful only for self vs self synteny alignment. Options: 0 means retain tandem gene pairs;
@@ -283,8 +295,8 @@ parser_sub_col.add_argument('-m', '--tandem_length', dest='tandem_length',metava
                              When you are doing ks peaks analysis about WGD/Divergent event, you need set this parameter""")
 parser_sub_col.add_argument('-W', '--over_lap_window', dest='over_lap_window', type=int, help="Collapse BLAST matches. Specify the maximum distance allowed, and only retain best homology pair to synteny analysis under this distance condition(default: 1)", metavar="")
 parser_sub_col.add_argument('-D', '--maximum_gap_size', dest='maximum_gap_size', type=int, help="Maximum gap size for chain (default: 25)", metavar="")
-parser_sub_col.add_argument('-I', '--minimum_chain_score', dest='minimum_chain_score', type=int, help="minimum chain score (default: 3)", metavar="")
-parser_sub_col.add_argument('-E', '--gap_extend_penalty', dest='gap_extend_penalty', type=int, help="chain gap extend penalty (default: -0.005)", metavar="")
+parser_sub_col.add_argument('-I', '--minimum_chain_score', dest='minimum_chain_score', type=float, help="minimum chain score (default: 3)", metavar="")
+parser_sub_col.add_argument('-E', '--gap_extend_penalty', dest='gap_extend_penalty', type=float, help="chain gap extend penalty (default: -0.005)", metavar="")
 parser_sub_col.add_argument('-f', '--strcit_remove_overlap', dest='strcit_remove_overlap', type=int, help="Specify whether to strictly remove square region gene pairs for a block to avoid overlap. (1:yes;0:no. default:  0)", metavar="")
 parser_sub_col.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
@@ -350,11 +362,12 @@ parser_sub_dotplot.add_argument('-q', '--query_length', dest='query_length', hel
 parser_sub_dotplot.add_argument('-t', '--type', dest='type', help="Use gene count position within chromosome for plot(type: order) or base pair(physical distance) position within chromosome for plot(type: base)(defaults: order)", metavar="", choices=['order', 'base'])   
 parser_sub_dotplot.add_argument('-r_label', '--ref_name', dest='ref_name', help="Reference species coordinate axis label", metavar="")
 parser_sub_dotplot.add_argument('-q_label', '--query_name', dest='query_name', help="Query species coordinate axis label", metavar="")
-parser_sub_dotplot.add_argument('-ks', '--ks', dest='ks', help="Collinearity gene pair ks file(Optional)", metavar="")
+parser_sub_dotplot.add_argument('-ks', '--ks', dest='ks', help="Collinearity gene pair ks file for collinearity plot(Optional)", metavar="")
 parser_sub_dotplot.add_argument('-w', '--plotnine_figure_width', dest='plotnine_figure_width', help="Plotnine module figure width (defaults: 1500)(unit: mm)", metavar="", type=int)
 parser_sub_dotplot.add_argument('-e', '--plotnine_figure_height', dest='plotnine_figure_height', help="Plotnine module figure height (defaults: 2000)(unit: mm)", metavar="", type=int)
-parser_sub_dotplot.add_argument('-a', '--ks_area', dest='ks_area', help="ks area to plot if you specify -ks parameter(default: 0,3)", metavar="")
-parser_sub_dotplot.add_argument('-disable', '--disable_axis_text', dest='disable_axis_text', help="disable_axis_text", action='store_true')
+parser_sub_dotplot.add_argument('-a', '--ks_area', dest='ks_area', help="ks area to plot if you specify -ks parameter for collinearity plot(default: 0,3)", metavar="")
+parser_sub_dotplot.add_argument('-disable', '--disable_axis_text', dest='disable_axis_text', help="disable_axis_text for dotplot", action='store_true')
+parser_sub_dotplot.add_argument('-use_identity', '--use_identity', dest='use_identity', help="use identity as legend rather strand direction for table(blast) dotplot", action='store_true')
 parser_sub_dotplot.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
 # collinearity circle plot
@@ -451,6 +464,22 @@ parser_sub_ks.add_argument('-d', '--cds_file', dest='cds_file', help="Species lo
 parser_sub_ks.add_argument('-o', '--ks_file', dest='ks_file', help="Output ks file in wgdi format", metavar="")
 parser_sub_ks.add_argument('-t', '--type', dest='type', help="Collinearity file type(intra/inter)", choices=["intra", "inter"], metavar="")
 parser_sub_ks.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
+
+parser_sub_class_gene = subparsers.add_parser('class_gene', help='Class gene as tandem, proximal, transposed, wgd/segmental, dispersed, singletons')
+parser_sub_class_gene.set_defaults(func=run_class_gene)
+parser_sub_class_gene.add_argument('-c', '--conf', dest='conf', help="Configure file which file has minimum prioriy", metavar="")
+parser_sub_class_gene.add_argument('-b', '--query_blast', dest='query_blast', help="Focus species blast file", metavar="")
+parser_sub_class_gene.add_argument('-g', '--query_gff_file', dest='query_gff_file', help="Focus species gff file", metavar="")
+parser_sub_class_gene.add_argument('-q', '--query_query_collinearity', dest='query_query_collinearity', help="Focus species self vs self collinearity file", metavar="")
+parser_sub_class_gene.add_argument('-qr', '--query_ref_collinearity', dest='query_ref_collinearity', help="Focus species collinearity file with reference/outgroup species", metavar="")
+parser_sub_class_gene.add_argument('-o', '--out_directory', dest='out_directory', help="Output directory path.", metavar="")
+parser_sub_class_gene.add_argument('-p', '--output_prefix', dest='output_prefix', help="Output file prefix", metavar="")
+parser_sub_class_gene.add_argument('-s', '--seg_anc', dest='seg_anc', help="are wgd/segmental duplicates ancestral loci or not? default: 1, yes(1:yes; 0: no)",choices=[0, 1], metavar="", type=int)
+parser_sub_class_gene.add_argument('-u', '--unique', dest='unique', help="Unique gene and gene pair for every classification", action='store_true')
+parser_sub_class_gene.add_argument('-d', '--proximal_max_distance', dest='proximal_max_distance', help="Proximal allowed max distance(default: 10)", type=int, metavar="")
+parser_sub_class_gene.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
+
+
 args = parser.parse_args()
 
 def copy_config_file():
@@ -466,6 +495,7 @@ def copy_config_file():
         "line": "line.conf",
         "line_proali": "line_proali.conf",
         "ks": "ks.conf",
+        "class_gene": "class_gene.conf",
     }
     return copy_dict
 
