@@ -1,8 +1,11 @@
 import sys
+import logging
 from . import GffFile, FastaFile
 from Bio import SeqIO
 import numpy as np
 
+
+logger = logging.getLogger('main.longestCds')
 def longestCds(gffFile, fastaFile):
     longest_trans_name = []
     chromosome_gene_dict, _, _, _ = GffFile.readGff(gffFile)
@@ -47,18 +50,20 @@ def longestCds(gffFile, fastaFile):
 
     return chromosome_gene_dict, longest_trans_name
 
+# TODO: accelerate
 def longest_cds(gff_file, fasta_file, cds_file, output_file):
+    logger.info(f"generate {output_file} start.")
+    output_file_handle = open(output_file, "a+")
     _, longest_trans_name = longestCds(gff_file, fasta_file)
+    longest_trans_name = set(longest_trans_name)
     _, _, _, fake_transcript_gene_map = GffFile.readGff(gff_file)
-    seqs = []
     for seq_record in SeqIO.parse(cds_file, "fasta"):
         if seq_record.id in longest_trans_name:
             seq_record.id = fake_transcript_gene_map[seq_record.id]
-            seqs.append(seq_record)
+            SeqIO.write(seq_record, output_file_handle, "fasta")
         else:
             continue
-    SeqIO.write(seqs, output_file, "fasta")
-
+    logger.info(f"generate {output_file} done!")
 
 if __name__ == '__main__':
-    longest_cds(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    longest_cds(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
