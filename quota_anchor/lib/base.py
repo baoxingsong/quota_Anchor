@@ -1,10 +1,10 @@
 import os
 import sys
-import pandas as pd
+import logging
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
+logger = logging.getLogger('main.base')
 class FileEmptyError(Exception):
     pass
 
@@ -14,9 +14,8 @@ class ClsVis:
         self.stats_file = stats_file
         self.output = figure
         self.ylab = "Number"
-        self.title1 = "Different gene types of foucs species"
-        self.title2 = "Different duplicate pair types of focus species"
-
+        self.title1 = "Different gene types of focal species"
+        self.title2 = "Different duplicate pair types of focal species"
 
     @staticmethod
     def get_data(stats_file):
@@ -54,7 +53,6 @@ class ClsVis:
         self.plot(df_gene, output_list[0])
         self.plot(df_pair, output_list[1])
 
-
 def split_conf(conf, separator):
     new_conf = []
     split_lt = conf.split(separator)
@@ -65,9 +63,7 @@ def split_conf(conf, separator):
         new_conf.append(ele)
     return new_conf
 
-
 def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_start):
-    # left -> ref;  right -> query
     data = []
     ref_chr_list = []
     query_chr_list = []
@@ -80,7 +76,6 @@ def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_sta
     # print(chr_list)
     # print(chr_to_start)
     with open(collinearity) as f:
-        print("read", collinearity, "....")
         _ = next(f)
         _ = next(f)
         flag = True
@@ -107,8 +102,8 @@ def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_sta
                     gene_pos_dict[line_list[5]] = chr_to_start[query_chr] + int(line_list[9])
                 else:
                     continue
-        data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
-        print("parse", collinearity, "success")
+        if block:
+            data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
     return data, gene_pos_dict, ref_chr_list, query_chr_list
 
      
@@ -130,38 +125,37 @@ def file_empty(file_path):
                 raise FileEmptyError
         else:
             raise FileNotFoundError
-    except FileNotFoundError as e1:
-        exist_error_message = f"please check your command line or config file\n. {file_path} don't exist or the path physically exists but permission is not granted to execute os.stat() on the requested file"
-        print(exist_error_message)  
+    except FileNotFoundError:
+        exist_error_message = f"{file_path} don't exist or the path physically exists but permission is not granted to execute os.stat() on the requested file."
+        logger.error(exist_error_message)
         sys.exit(1)
-    except FileEmptyError as e2:
-        empty_error_message = "{0} is empty".format(file_path)
-        print(empty_error_message)
+    except FileEmptyError:
+        empty_error_message = "{0} is empty.".format(file_path)
+        logger.error(empty_error_message)
         sys.exit(1)
-    except OSError as e3:
-        OSE_error_message = f"{file_path} does not exist or is inaccessible."
-        print(OSE_error_message)
+    except OSError:
+        ose_error_message = f"{file_path} does not exist or is inaccessible."
+        logger.error(ose_error_message)
         sys.exit(1)
 
 
-def output_file_parentdir_exist(path, overwite):
+def output_file_parentdir_exist(path, overwrite):
     if os.path.exists(path):
-        print(f"{path} already exist.")
-        if overwite:
+        logger.info(f"Output file {path} already exist.")
+        if overwrite:
             os.remove(path)
-            print(f"{path} will be overwrited.")
+            logger.info(f"Output file {path} will be overwrote.")
             return
         else:
-            print(f"{path} will not be overwrited, and you can set '--overwrite' in the command line to overwrite it.")
+            logger.info(f"Output file {path} will not be overwrited, and you can set '--overwrite' in the command line to overwrite it.")
             sys.exit(1)
     path = os.path.abspath(path)
     dir_name = os.path.dirname(path)
     if os.path.isdir(dir_name):
         pass
     else:
-        print(f"{dir_name} does not exist and software will make directorys.")
+        logger.info(f"{dir_name} does not exist and software will make directory.")
         os.makedirs(dir_name, exist_ok=True)
-
 
 def get_blank_chr(query_length, ref_length):
     query_df = pd.read_csv(query_length, sep="\t", header=0, index_col=None)
@@ -172,3 +166,11 @@ def get_blank_chr(query_length, ref_length):
     chr_margin = pd.merge(left=ref_df, right=query_df, how="cross")
     chr_margin.columns = ["refChr", "referenceStart",  "refId", "queryChr", "queryStart", "queryId"]
     return chr_margin
+
+def output_info(info):
+    if info:
+        info_list = info.split("\n")
+        for i in info_list:
+            if i:
+                logger.info(f'{i}')
+    return

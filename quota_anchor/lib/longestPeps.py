@@ -1,13 +1,15 @@
 from . import GffFile, FastaFile
 import sys
+import logging
 import numpy as np
 from argparse import ArgumentParser
 
 
 # baoxing.song@pku-iaas.edu.cn
-
+logger = logging.getLogger('main.longestPeps')
 
 def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
+    logger.info(f"generate {outputFile} start.")
     longest_trans_name = []
     chromosome_gene_dict, chromosome_gene_list, geneName_toChr_dict, _ = GffFile.readGff(gffFile)
     chromosome_names, fastas = FastaFile.readFastaFile(fastaFile)
@@ -54,6 +56,7 @@ def longestPeps(gffFile, fastaFile, proteinSeqs, outputFile):
                     output.write("\n")
                     longest_trans_name.append(chromosome_gene_dict[chromosome_name][gene_name].transcripts[0].name)
     output.close()
+    logger.info(f"generate {outputFile} done!")
     return chromosome_gene_dict, longest_trans_name
 
 

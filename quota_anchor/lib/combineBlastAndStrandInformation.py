@@ -1,8 +1,11 @@
 from . import GffFile
 import sys
+import logging
 import pandas as pd
 from argparse import ArgumentParser
 # baoxing.song@pku-iaas.edu.cn
+
+logger = logging.getLogger('main.combineBlastAndStrandInformation')
 
 def read_length(conf):
     df = pd.read_csv(conf, sep="\t", header=0, index_col=None)
@@ -10,7 +13,8 @@ def read_length(conf):
     chr_list = list(df['chr'])
     return chr_list
 
-def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_score, align_length, query_length="", ref_length=""):
+def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_score, align_length, query_length, ref_length):
+    logger.info(f"Combine the Blast result and GFF file information to generate {outputFile} that can be used as input for synteny analysis.")
     if query_length:
         query_chr_list = read_length(query_length)
     if ref_length:
@@ -74,6 +78,7 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_sco
                                     queryChromosome_gene_dict[query_GeneName_toChr_dict[qseqid]][qseqid].strand + "\t" + pident + "\n")
 
     target_output.close()
+    logger.info(f"generate {outputFile} done")
 
 
 if __name__ == '__main__':

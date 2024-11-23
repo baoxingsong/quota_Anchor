@@ -17,10 +17,10 @@ class Line:
         # gaps between chromosome, chr:gap = 4: 1
         self.gap_ratio = 6
         self.ref_height = 0.3
-        self.height_gap = 0.07
-        self.query_height = 0.37
-        self.width = 0.015
-        self.dpi = 2500
+        self.height_gap = 0.08
+        self.query_height = 0.38
+        self.width = 0.003
+        self.dpi = 300
         # self.block_gep = 200
         self.collinearity = config_pra['line']['collinearity']
         self.length_file = config_pra['line']['length_file']
@@ -63,13 +63,11 @@ class Line:
         data = []
         ref_chr_list = []
         query_chr_list = []
+        ref_block_direction = []
+        # var = ""
         block_index = 0
         block = []
-        # print(qry_prefix)
-        # print(ref_prefix)
-        # print(collinearity)
-        # print(chr_list)
-        # print(chr_to_start)
+
         with open(collinearity) as f:
             print("read", collinearity, "....")
             _ = next(f)
@@ -78,17 +76,21 @@ class Line:
             flag_number = True
             for line in f:
                 if line.startswith("#block begin"):
+                    # var = line.split()[2]
                     flag = True
                     flag_number = True
                     if block:
                         data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
+                        # ref_block_direction.append(var)
                         block = []
+                        # var = ""
                 elif line.startswith("#block end"):
                     continue
                 else:
                     if flag:
                         chr_pair = [line.split()[0], line.split()[3]]
                         if ref_prefix + chr_pair[0] not in chr_list or qry_prefix + chr_pair[1] not in chr_list:
+                            # print("block not in length.txt")
                             flag = False
                         else:
                             if flag_number:
@@ -97,6 +99,7 @@ class Line:
                                 ref_chr_list.append(ref_chr)
                                 query_chr = qry_prefix + chr_pair[1]
                                 query_chr_list.append(query_chr)
+                                ref_block_direction.append(line.split()[6])
                                 block_index += 1
                                 flag_number = False
                         if flag:
@@ -104,9 +107,11 @@ class Line:
                             block.append([chr_to_start[ref_chr] + int(line_list[2]), chr_to_start[query_chr] + int(line_list[5])])
                     else:
                         continue
-            data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
+            if block:
+                data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
+                # ref_block_direction.append(var)
             print("parse", collinearity, "success")
-        return data, ref_chr_list, query_chr_list
+        return data, ref_chr_list, query_chr_list, ref_block_direction
 
     @staticmethod
     def set_husl_palette():
@@ -117,13 +122,33 @@ class Line:
     @staticmethod
     def set_palette():
         colors = ['#FFA07A', '#4b6870', '#4169E1', '#9370DB']
-        cmap = LinearSegmentedColormap.from_list('custom_cmap', colors)
-        return cmap
+        color_inversion = ["#66AD56", "#66AD56"]
+        color_normal_grey = ["#F0F0F0", "#F0F0F0"]
+        cmap_normal = LinearSegmentedColormap.from_list('custom_cmap', color_normal_grey)
+        cmap_inversion = LinearSegmentedColormap.from_list('custom_cmap', color_inversion)
+        return cmap_normal, cmap_inversion
 
     @staticmethod
-    def plot_line_chr(start, end, width, height):
+    def get_margin_radius(max_total_length, gap_radio, max_number, margin_radio, width, total_length):
+        fake_gap_total_length = max_total_length / gap_radio
+        every_margin = fake_gap_total_length / (max_number + 1)
+        x = every_margin * margin_radio / total_length
+        radius_to_sub_run = (x ** 2 + 1 / 4 * width ** 2) / (2 * x)
+        change_length = (radius_to_sub_run - x)
+        return radius_to_sub_run, change_length
+    
+    @staticmethod
+    def get_change_radian(margin_radius ,change_length):
+        half_radian = np.arccos(change_length / margin_radius)
+        radian = 2 * half_radian
+        return radian
+
+    @staticmethod
+    def plot_line_chr(start, end, width, height, radian, change_length, margin_radius):
         new_start = start + width / 2
         new_end = end - width / 2
+        # new_start = start
+        # new_end = end
 
         # right
         t = np.arange(-pi/2, pi/2, pi / 180)
@@ -138,8 +163,8 @@ class Line:
 
         # left
         t = np.arange(pi/2, 3*pi/2, pi / 180)
-        x1 = list(width / 2 * np.cos(t) + new_start)
-        y1 = list(width / 2 * np.sin(t) + height + width / 2)
+        x1 = list(width/2 * np.cos(t) + new_start)
+        y1 = list(width/2 * np.sin(t) + height + width / 2)
         x += x1
         y += y1
 
@@ -153,8 +178,7 @@ class Line:
 
     def plot_collinearity_region(self, pos1, pos2, pos3, pos4, query_height, ref_height, jg_qr_st, jg_qr_ed, jg_rf_st, jg_rf_ed):
         ratio = 0.316
-        # ref_mar = ref_height + self.width * 1.1
-        # query_mar = query_height - self.width * 0.1
+
         ref_mar = ref_height + self.width * 1.0
         query_mar = query_height
         x, y = [], []
@@ -176,10 +200,9 @@ class Line:
                 will_y = ref_height + self.width / 2 + self.circle(self.width / 2, i - jg_rf_ed)
                 x.append(will_x)
                 y.append(will_y)
-        # x.append(pos1)
-        # y.append(ref_mar)
-        # x.append(pos3)
-        # y.append(ref_mar)
+            
+            # x.append(i)
+            # y.append(ref_mar)
 
         # p3->p4
         pos3_x = x[-1]
@@ -193,6 +216,9 @@ class Line:
         else:
             will_x = pos4
             will_y = query_height + self.width / 2 - self.circle(self.width / 2, pos4 - jg_qr_ed)
+        # will_x = pos4
+        # will_y = query_mar
+        
         t = np.arange(0, 1.01, 0.005)
         dx = will_x - pos3_x
         dy = will_y - pos3_y
@@ -221,6 +247,8 @@ class Line:
                 will_y = query_height + self.width / 2 - self.circle(self.width / 2, i - jg_qr_ed)
                 x.append(will_x)
                 y.append(will_y)
+            # x.append(i)
+            # y.append(query_mar)
 
         # p2->p1
         pos2_x = x[-1]
@@ -239,16 +267,23 @@ class Line:
 
         return x, y
 
-    def sub_run(self, collinearity, prefix, ref_length, query_length, total_length, query_height, ref_height, loop, last_loop, strip_chr_abbr):
+    def sub_run(self, collinearity, prefix, ref_length, query_length, total_length, query_height, ref_height, loop, last_loop, strip_chr_abbr, radian, change_length, margin_radius):
         ref_chr_list = ref_length['chr'].tolist()
         query_chr_list = query_length['chr'].tolist()
-        chr_color_dict = {}
-        # cmap = self.set_palette()
-        cmap = self.set_husl_palette()
+        chr_color_dict_normal = {}
+        chr_color_dict_inversion = {}
+        chr_color_dict_trans = {}
+        chr_color_dict_trans_inversion = {}
+        cmap_normal, cmap_inversion = self.set_palette()
+        # cmap = self.set_husl_palette()
         i = 1
         for ch in ref_chr_list:
-            color_dict = {'chr': cmap(round(i / len(ref_chr_list), 2))}
-            chr_color_dict[ch] = color_dict
+            color_dict_normal = {'chr': cmap_normal(round(i / len(ref_chr_list), 2))}
+            chr_color_dict_normal[ch] = color_dict_normal
+            
+            color_dict_inversion = {'chr': cmap_inversion(round(i / len(ref_chr_list), 2))}
+            chr_color_dict_inversion[ch] = color_dict_inversion
+            
             i += 1
         # figure geometry info
         ref_gap_length = (total_length - ref_length['length'].sum()) / (len(ref_chr_list) + 1)
@@ -265,20 +300,25 @@ class Line:
         # relative length 1
         label_x = -0.1
         label_y = ref_height + self.width / 2
-        plt.text(label_x, label_y, prefix[0], ha="center", va="center", fontsize=self.font_size, color='black')
+        # plt.text(label_x, label_y, prefix[0], ha="center", va="center", fontsize=self.font_size, color='black')
         for i in range(len(ref_chr_list)):
             ref_start_x = ref_start_list[i] / total_length
             ref_end_x = ref_end_list[i] / total_length
-            x, y = self.plot_line_chr(ref_start_x, ref_end_x, self.width, ref_height)
+            x, y = self.plot_line_chr(ref_start_x, ref_end_x, self.width, ref_height, radian, change_length, margin_radius)
             # modify outline?
-            plt.fill(x, y, facecolor='white', alpha=.7, edgecolor='black')
+            if loop in [0, 1, 2, 3 ,4]:
+                plt.fill(x, y, facecolor='#E83828', alpha=0.5)
+            elif loop in [5,6]:
+                plt.fill(x, y, facecolor='#E78A00', alpha=0.5)
+            else:
+                plt.fill(x, y, facecolor='#3F40C3', alpha=0.5)
             label_x = (ref_start_x + ref_end_x) / 2
             label_y = ref_height + self.width / 2
             text_chr = ref_chr_list[i][len(prefix[0]):]
             for abbr in strip_chr_abbr:
                 if text_chr.startswith(abbr):
                     text_chr = text_chr[len(abbr):]
-            plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.font_size, color='black')
+            # plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.font_size, color='black')
 
         query_gap_length = (total_length - query_length['length'].sum()) / (len(query_chr_list) + 1)
         query_start_list, query_end_list, query_chr_to_start = self.line_get_pos_list(query_length, query_gap_length)
@@ -297,20 +337,20 @@ class Line:
             # print(prefix[1])
             # print(label_x)
             # print(label_y)
-            plt.text(label_x, label_y, prefix[1], ha="center", va="center", fontsize=self.font_size, color='black')
+            # plt.text(label_x, label_y, prefix[1], ha="center", va="center", fontsize=self.font_size, color='black')
             for i in range(len(query_chr_list)):
                 query_start_x = query_start_list[i] / total_length
                 query_end_x = query_end_list[i] / total_length
-                x, y = self.plot_line_chr(query_start_x, query_end_x, self.width, query_height)
+                x, y = self.plot_line_chr(query_start_x, query_end_x, self.width, query_height, radian, change_length, margin_radius)
                 # modify outline ?
-                plt.fill(x, y, facecolor='white', alpha=0.7, edgecolor='black')
+                plt.fill(x, y, facecolor='#3F40C3', alpha=0.5)
                 label_x = (query_start_x + query_end_x) / 2
                 label_y = query_height + self.width / 2
                 text_chr = query_chr_list[i][len(prefix[1]):]
                 for abbr in strip_chr_abbr:
                     if text_chr.startswith(abbr):
                         text_chr = text_chr[len(abbr):]
-                plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.font_size, color='black')
+                # plt.text(label_x, label_y, text_chr, ha="center", va="center", fontsize=self.font_size, color='black')
         # print(ref_chr_list)
         # print(query_chr_list)
         chr_list = list(OrderedDict.fromkeys(query_chr_list + ref_chr_list))
@@ -323,20 +363,31 @@ class Line:
         # print(chr_to_start)
         # data, gn_to_pos, rf_blk_chr, qry_blk_chr = base.read_collinearity(prefix[1], prefix[0], collinearity, chr_list, chr_to_start)
 
-        data, rf_blk_chr, qry_blk_chr = self.read_proali_collinearity(prefix[1], prefix[0], collinearity, chr_list, chr_to_start)
+        data, rf_blk_chr, qry_blk_chr, ref_block_direction = self.read_proali_collinearity(prefix[1], prefix[0], collinearity, chr_list, chr_to_start)
         intra = []
         intra_chr_list = []
         i = 0
         # intra_color_index = []
         for block in data:
             if qry_blk_chr[i] == rf_blk_chr[i]:
+                # print("aaa")
                 intra.append(block)
                 intra_chr_list.append(qry_blk_chr[i])
                 # intra_color_index.append(i)
                 i += 1
             else:
                 # color = cmap(round(i / len(data), 2))
-                color = chr_color_dict[rf_blk_chr[i]]['chr']
+                if ref_block_direction[i] == '+':
+                    color = chr_color_dict_normal[rf_blk_chr[i]]['chr']
+                if ref_block_direction[i] == '-':
+                    color = chr_color_dict_inversion[rf_blk_chr[i]]['chr']
+                # if ref_block_direction[i] == 'Trans':
+                #     color = chr_color_dict_trans[rf_blk_chr[i]]['chr']
+                # if ref_block_direction[i] == 'Inversion/Trans':
+                #     color = chr_color_dict_trans_inversion[rf_blk_chr[i]]['chr']
+                # if ref_block_direction[i] == 'Trans/Inversion':
+                #     color = chr_color_dict_trans_inversion[rf_blk_chr[i]]['chr']
+                # color = chr_color_dict[rf_blk_chr[i]]['chr']
                 # id1, id2, id3, id4 = block[0], block[1], block[2], block[3]
                 # pos1, pos2, pos3, pos4 = gn_to_pos[id1], gn_to_pos[id2], gn_to_pos[id3], gn_to_pos[id4]
                 pos1, pos2, pos3, pos4 = block[0], block[1], block[2], block[3]
@@ -353,12 +404,20 @@ class Line:
                 judge_fake_ref_end_x = only_for_chr_margin_collinearity_plot_ref_chr_to_position[ref_chr][1]
                 x, y = self.plot_collinearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height,
                                                      judge_fake_query_start_x, judge_fake_query_end_x, judge_fake_ref_start_x, judge_fake_ref_end_x)
-                plt.fill(x, y, facecolor=color, alpha=0.7)
+                plt.fill(x, y, facecolor=color, alpha=0.8)
                 i += 1
         i = 0
         for block in intra:
             # color = cmap(round(intra_color_index[i] / len(data), 2))
-            color = chr_color_dict[intra_chr_list[i]]['chr']
+            color = chr_color_dict_normal[intra_chr_list[i]]['chr']
+            # if ref_block_direction[i] == 'Normal':
+            #     color = chr_color_dict_normal[rf_blk_chr[i]]['chr']
+            # if ref_block_direction[i] == 'Inversion':
+            #     color = chr_color_dict_inversion[rf_blk_chr[i]]['chr']
+            # if ref_block_direction[i] == 'Trans':
+            #     color = chr_color_dict_trans[rf_blk_chr[i]]['chr']
+            # if ref_block_direction[i] == 'Inversion/Trans':
+            #     color = chr_color_dict_trans_inversion[rf_blk_chr[i]]['chr']
             # id1, id2, id3, id4 = block[0], block[1], block[2], block[3]
             # pos1, pos2, pos3, pos4 = gn_to_pos[id1], gn_to_pos[id2], gn_to_pos[id3], gn_to_pos[id4]
             pos1, pos2, pos3, pos4 = block[0], block[1], block[2], block[3]
@@ -374,7 +433,7 @@ class Line:
             judge_fake_ref_end_x = only_for_chr_margin_collinearity_plot_ref_chr_to_position[ref_chr][1]
             x, y = self.plot_collinearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height,
                                                  judge_fake_query_start_x, judge_fake_query_end_x, judge_fake_ref_start_x, judge_fake_ref_end_x)
-            plt.fill(x, y, facecolor=color, alpha=0.7)
+            plt.fill(x, y, facecolor=color, alpha=0)
             i += 1
 
     def run(self):
@@ -411,6 +470,8 @@ class Line:
         length_file_list = self.length_file.split(",")
         strip_length_file_list_df = []
         new_length_file_list_df = []
+        # 20241024 to get chr margin avoid overlap
+        chr_number  = []
         i = 0
         for le in length_file_list:
             le = le.strip()
@@ -422,7 +483,10 @@ class Line:
             length['chr'] = strip_prefix[i] + length['chr']
             length['length'] = length['length'].astype(int)
             strip_length_file_list_df.append(length)
+            chr_number.append(len(length['chr'].tolist()))
             i += 1
+        # 20241024 to get chr margin avoid overlap
+        max_number = max(chr_number)
         # print(strip_length_file_list_df)
         for i in range(len(strip_collinearity_file_list)):
             new_length_file_list_df.append([strip_length_file_list_df[i], strip_length_file_list_df[i+1]])
@@ -433,11 +497,17 @@ class Line:
             length_list.append(df['length'].sum())
         total_chr_length = max(length_list)
         total_length = total_chr_length + total_chr_length / self.gap_ratio
+        
+        # 20241024 to get chr margin avoid overlap
+        radito_margin_gap = 0.25
+        margin_radius, change_length = self.get_margin_radius(total_chr_length, self.gap_ratio, max_number, radito_margin_gap, self.width, total_length)
+        radian = self.get_change_radian(margin_radius, change_length)
 
         zipped_three_pair = list(zip(strip_collinearity_file_list, new_prefix, new_length_file_list_df))
         # print(zipped_three_pair)
+        
         plt.rcParams['font.family'] = "Times New Roman"
-        fig, ax = plt.subplots(figsize=(10, 6.18), facecolor='white')
+        fig, ax = plt.subplots(figsize=(14, 8), facecolor='white')
         ax.set_aspect('equal')
 
         query_height = self.query_height
@@ -452,7 +522,7 @@ class Line:
             # print(ref_height)
             # print(query_height)
 
-            self.sub_run(col, prefix, length[0], length[1], total_length, query_height, ref_height, i, last_loop, strip_chr_abbr)
+            self.sub_run(col, prefix, length[0], length[1], total_length, query_height, ref_height, i, last_loop, strip_chr_abbr, radian, change_length, margin_radius)
             query_height = query_height + self.height_gap
 
             ref_height = ref_height + self.height_gap
@@ -463,6 +533,6 @@ class Line:
 
         plt.axis('off')
         # # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
-        plt.savefig(self.savefig, dpi=int(self.dpi), bbox_inches='tight')
+        plt.savefig(self.savefig, dpi=int(self.dpi))
         print("produce", self.savefig, "success")
         sys.exit(0)
