@@ -37,7 +37,7 @@ class Lens:
             logger.error(exist_error_message)
             return False
         except base.FileEmptyError:
-            empty_error_message = "{0} is empty.".format(file_path)
+            empty_error_message = "{0} is empty and please check your parameters and files.".format(file_path)
             logger.error(empty_error_message)
             return False
         except OSError:
@@ -61,13 +61,13 @@ class Lens:
         if os.path.isdir(dir_name):
             pass
         else:
-            logger.info(f"{dir_name} does not exist and software will make directories.")
+            logger.info(f"{dir_name} does not exist and software will recursively create directories.")
             os.makedirs(dir_name, exist_ok=True)
         return True
 
     @staticmethod
     def read_fai_gff(selected_prefix, fai_file, output, gff):
-        logger.info(f'generate {output} start.')
+        logger.info(f'Generate {output} start.')
         regex = ""
         df = pd.read_csv(fai_file, sep="\t", header=None, index_col=None)
         df[0] = df[0].astype(str)
@@ -90,8 +90,8 @@ class Lens:
                     regex += "|^{}".format(i)
         lens = df[df[0].str.match(regex)]
         if len(lens) == 0:
-            logger.error(f'{fai_file} don\'t have a chromosome name starts with regex:{regex}.')
-            logger.info(f'skip generate {output}')
+            logger.error(f'{fai_file} don\'t have a chromosome name starts with {regex}.')
+            logger.info(f'Skip generate {output}')
             return
         lens.reset_index(drop=True, inplace=True)
         chr_list = lens.iloc[:, 0].copy()
@@ -111,13 +111,22 @@ class Lens:
         logger.info(f'generate {output} end!')
 
     def run(self):
-        logger.info("Init get_chr_length and the following parameters are config information.")
+        logger.info("Get_chr_length module init and the following parameters are config information.")
 
         print()
         for key, value in vars(self).items():
             if key != "conf":
                 print(key, "=", value)
         print()
+        if not self.fai_file:
+            logger.error("Please specify your fai file path")
+            sys.exit(1)
+        if not self.output_length_file:
+            logger.error("Please specify your output file name")
+            sys.exit(1)
+        if not self.gff_file:
+            logger.error("Please specify your gff file path")
+            sys.exit(1)
 
         new_fai_file_list = base.split_conf(self.fai_file, ",")
         new_start_with = base.split_conf(self.select_fai_chr_startswith, ":")
@@ -126,7 +135,7 @@ class Lens:
         try:
             assert len(new_fai_file_list) == len(new_start_with) == len(new_length_file) == len(gff_file_list)
         except AttributeError:
-            logger.error('please check your separator for four variables.')
+            logger.error('Please check your separator for four variables.')
             sys.exit(1)
         zipped_three_pair = list(zip(new_fai_file_list, new_start_with, new_length_file, gff_file_list))
         # skip trios pair which has some problems
@@ -141,5 +150,5 @@ class Lens:
             if not flag3:
                 continue
             self.read_fai_gff(start, fai, length, gff)
-        logger.info("get chromosome information finished!")
+        logger.info("Generate chromosome length file finished!")
 

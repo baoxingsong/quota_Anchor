@@ -130,7 +130,7 @@ def file_empty(file_path):
         logger.error(exist_error_message)
         sys.exit(1)
     except FileEmptyError:
-        empty_error_message = "{0} is empty.".format(file_path)
+        empty_error_message = "{0} is empty, please check your parameters and files.".format(file_path)
         logger.error(empty_error_message)
         sys.exit(1)
     except OSError:
@@ -147,14 +147,14 @@ def output_file_parentdir_exist(path, overwrite):
             logger.info(f"Output file {path} will be overwrote.")
             return
         else:
-            logger.info(f"Output file {path} will not be overwrited, and you can set '--overwrite' in the command line to overwrite it.")
+            logger.info(f"Output file {path} will not be overwrote, and you can set '--overwrite' in the command line to overwrite it.")
             sys.exit(1)
     path = os.path.abspath(path)
     dir_name = os.path.dirname(path)
     if os.path.isdir(dir_name):
         pass
     else:
-        logger.info(f"{dir_name} does not exist and software will make directory.")
+        logger.info(f"{dir_name} does not exist and the software will recursively create the directory.")
         os.makedirs(dir_name, exist_ok=True)
 
 def get_blank_chr(query_length, ref_length):

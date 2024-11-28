@@ -197,10 +197,18 @@ class Circle:
         base.file_empty(self.query_length)
         base.output_file_parentdir_exist(self.output_file_name, self.overwrite)
 
-        if not self.query_length or not self.ref_length:
-            logger.error("Please specify your chromosome length file")
+        if not self.query_length:
+            logger.error("Please specify your query species chromosome length file")
             sys.exit(1)
-
+        if not self.ref_length:
+            logger.error("Please specify your reference species chromosome length file")
+            sys.exit(1)
+        if not self.input_file:
+            logger.error("Please specify your collinearity file as input file")
+            sys.exit(1)
+        if not self.output_file_name:
+            logger.error("Please specify your output file name")
+            sys.exit(1)
         chr_abbr = self.remove_chromosome_prefix.split(',')
         strip_chr_abbr = []
         for i in chr_abbr:
@@ -258,7 +266,7 @@ class Circle:
         return circle_perimeter, gap_length
 
     def run(self):
-        logger.info("Init circle and the following parameters are config information.")
+        logger.info("Circle module init and the following parameters are config information.")
         strip_chr_abbr, width, height = self.circle_init()
         df_dup = self.get_chr_info()
 
@@ -303,7 +311,7 @@ class Circle:
             data, gene_pos_dict, ref_chr_list, query_chr_list = base.read_collinearity(self.query_name, self.ref_name, self.input_file, chr_list, chr_to_start)
             assert len(data) > 0 and len(ref_chr_list) > 0 and len(query_chr_list) > 0 and len(gene_pos_dict) > 0
         except AssertionError:
-            logger.error(f'please check your {self.input_file}, {self.ref_length} and {self.query_length}.')
+            logger.error(f'Please check your {self.input_file}, {self.ref_length} and {self.query_length}.')
             sys.exit(1)
 
         i = 0
@@ -366,5 +374,5 @@ class Circle:
         plt.axis('off')
         # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
         plt.savefig(self.output_file_name, dpi=DPI, bbox_inches='tight', transparent=True)
-        logger.info(f"plot {self.output_file_name} finished!")
+        logger.info(f"Plot {self.output_file_name} finished!")
         sys.exit(0)

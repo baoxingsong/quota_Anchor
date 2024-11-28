@@ -20,7 +20,7 @@ def readFastaFile(fastaFile):
     with open(fastaFile) as f:
         for line in f:
             m = re.search(r'^>(\S+)', line)
-            if m != None:
+            if m is not None:
                 if (len(name) > 0) & (len(seq) > 0):
                     s = ''.join(seq)
                     s = re.sub("\\s", "", s)

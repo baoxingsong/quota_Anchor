@@ -52,7 +52,7 @@ def longestCds(gffFile, fastaFile):
 
 # TODO: accelerate
 def longest_cds(gff_file, fasta_file, cds_file, output_file):
-    logger.info(f"generate {output_file} start.")
+    logger.info(f"Generate {output_file} start.")
     output_file_handle = open(output_file, "a+")
     _, longest_trans_name = longestCds(gff_file, fasta_file)
     longest_trans_name = set(longest_trans_name)
@@ -63,7 +63,7 @@ def longest_cds(gff_file, fasta_file, cds_file, output_file):
             SeqIO.write(seq_record, output_file_handle, "fasta")
         else:
             continue
-    logger.info(f"generate {output_file} done!")
+    logger.info(f"Generate {output_file} done!")
 
 if __name__ == '__main__':
     longest_cds(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])

@@ -1,5 +1,6 @@
 from ..lib import base
 import logging
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -85,13 +86,7 @@ class Kde:
                 try:
                     ks = ks_dict[pair_name]
                 except KeyError:
-                    # non self vs self may be keyError
-                    elements = pair_name.split("_")
-                    new_pair_name = elements[1] + "_" + elements[0]
-                    if new_pair_name in ks_dict:
-                        ks = ks_dict[new_pair_name]
-                    else:
-                        continue
+                    continue
                 block_dict[key].append(ks)
             last_key = key
         if len(block_dict[last_key]) >= 5:
@@ -119,20 +114,39 @@ class Kde:
         median_list_kde.set_bandwidth(bw_method=median_list_kde.factor * modifier)
         return all_list_kde, median_list_kde
 
-    def run(self):
-        logger.info("Init kde and the following parameters are config information")
+    def kde_init(self):
         print()
         for key, value in vars(self).items():
             if key != "conf" and key != "col":
                 print(key, "=", value)
         print()
-        logger.info("Check if the input file exists and is not empty")
+
+        if not self.query_length:
+            logger.error("Please specify your query species chromosome length file")
+            sys.exit(1)
+        if not self.ref_length:
+            logger.error("Please specify your reference species chromosome length file")
+            sys.exit(1)
+        if not self.ks_file:
+            logger.error("Please specify your ks file")
+            sys.exit(1)
+        if not self.collinearity_file:
+            logger.error("Please specify your collinearity file")
+            sys.exit(1)
+        if not self.output_file:
+            logger.error("Please specify your output file name")
+            sys.exit(1)
+
         base.file_empty(self.ref_length)
         base.file_empty(self.query_length)
         base.file_empty(self.ks_file)
         base.file_empty(self.collinearity_file)
         base.output_file_parentdir_exist(self.output_file, self.overwrite)
-        
+
+    def run(self):
+        logger.info("Kde module init and the following parameters are config information")
+        self.kde_init()
+
         ref_chr_list = pd.read_csv(self.ref_length, sep="\t", header=0, index_col=None)['chr'].astype(str).tolist()
         query_chr_list = pd.read_csv(self.query_length, sep="\t", header=0, index_col=None)['chr'].astype(str).tolist()
         self.figsize = [float(k) for k in self.figsize.split(',')]
@@ -162,4 +176,4 @@ class Kde:
         plt.setp(ax.yaxis.get_majorticklabels(), rotation=90, va='center')
         plt.savefig(self.output_file, dpi=500, bbox_inches='tight', transparent=True)
         plt.show()
-        logger.info("kde plot finished!")
+        logger.info("Plot histogram and kde curve finished!")

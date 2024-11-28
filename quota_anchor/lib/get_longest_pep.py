@@ -48,7 +48,7 @@ class Longest:
             logger.error(exist_error_message)
             sys.exit(1)
         except base.FileEmptyError:
-            empty_error_message = "{0} is empty. gff file and genome file don't match.".format(file_path)
+            empty_error_message = "{0} is empty. And gff file and genome file may be don't match.".format(file_path)
             logger.error(empty_error_message)
             sys.exit(1)
         except OSError:
@@ -59,15 +59,13 @@ class Longest:
     def run_gffread_get_protein(self, fasta, gff, output_protein_file):
         command_line = [self.gffread, '-g', fasta, '-y', output_protein_file, gff, '-S']
         try:
-            logger.info(f"gffread generate {output_protein_file} start.")
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             stderr_gff_read = result.stderr.decode()
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-            logger.info(f"gffread generate {output_protein_file} done!")
         except subprocess.CalledProcessError:
-            logger.error(f"generate {output_protein_file} failed by gffread!")
+            logger.error(f"Generate {output_protein_file} failed by gffread!")
             sys.exit(1)
     
     @staticmethod
@@ -89,8 +87,10 @@ class Longest:
     def sub_run(self, sub_run_include_species, genome_list, gff_list, out_pep_list, out_longest_pep_name_list, idx):
         pool = Pool(sub_run_include_species)
         for i in range(idx, idx + sub_run_include_species):
+            logger.info(f"Generate {out_pep_list[i]} start.")
             self.run_gffread_get_protein(genome_list[i], gff_list[i], out_pep_list[i])
             self.pep_file_empty(out_pep_list[i])
+            logger.info(f"Generate {out_pep_list[i]} done!")
             pool.apply_async(longestPeps.longestPeps, args=(gff_list[i], genome_list[i], out_pep_list[i], out_longest_pep_name_list[i]))
         pool.close()
         pool.join()
@@ -123,12 +123,24 @@ class Longest:
         return loop_times, sub_run_include_species, final_pool, ideal_process_number
 
     def run_all_process(self):
-        logger.info("Init longest_pep and the following parameters are config information.")
+        logger.info("Longest_pep module init and the following parameters are config information.")
         print()
         for key, value in vars(self).items():
             if key != "gffread" and key != "conf" and value is not None:
                 print(key, "=", value)
         print()
+        if not self.genome_file:
+            logger.error("Please specify your genome file path")
+            sys.exit(1)
+        if not self.gff_file:
+            logger.error("Please specify your gff file path")
+            sys.exit(1)
+        if not self.out_pep_file:
+            logger.error("Please specify your output pep file path")
+            sys.exit(1)
+        if not self.out_longest_pep_file:
+            logger.error("Please specify your longest pep file path")
+            sys.exit(1)
 
         genome_list, gff_list, out_pep_list, out_longest_pep_name_list = self.split_para()
         if hasattr(self, 'merge') and self.merge is not None:
@@ -145,4 +157,4 @@ class Longest:
         if hasattr(self, 'merge') and self.merge is not None:
             self.merge_cds_pep(out_longest_pep_name_list, self.merge)
             base.file_empty(self.merge)
-        logger.info("get longest protein finished!")
+        logger.info("Generate species longest protein sequence file finished!")

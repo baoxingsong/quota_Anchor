@@ -16,6 +16,7 @@ class Correct:
         self.trios_file = ""
         self.species_pair_ks_file = ""
         self.outfile_divergent_peaks = "outfile_divergent_peaks.csv"
+        self.overwrite = False
 
         self.ks_range = "0,3"
 
@@ -29,19 +30,39 @@ class Correct:
 
         self.col = "ks_NG86"
         self.bins_number = 200
-        self.n_replicates = 3
+        self.n_replicates = 382
 
     def get_ks_limit(self):
-        ks_min, ks_max = float(self.ks_range.split(",")[0]), float(self.ks_range.split(",")[1])
+        ks_range = self.ks_range.split(",")
+        ks_min, ks_max = float(ks_range[0]), float(ks_range[1])
         return ks_min, ks_max
 
     def init_process(self):
+        print()
+        for key, value in vars(self).items():
+            if key != "conf" and key not in ["col", "bins_number", "n_replicates"]:
+                print(key, "=", value)
+        print()
+
+        if not self.species_pair_file:
+            logger.error("Please specify your species pair file path")
+            sys.exit(1)
+        if not self.trios_file:
+            logger.error("Please specify your trios file path")
+        if not self.species_pair_ks_file:
+            logger.error(r'Please specify your species pair ks file path(Separator ",")')
+        if not self.outfile_divergent_peaks:
+            logger.error("Please specify your output file path")
+            sys.exit(1)
+
         base.file_empty(self.species_pair_file)
         base.file_empty(self.trios_file)
+        base.output_file_parentdir_exist(self.outfile_divergent_peaks, self.overwrite)
+
         pair_df = pd.read_csv(self.species_pair_file, header=0, index_col=None)
         pair_df["Species_1"] = pair_df["Species_1"].astype(str)
         pair_df["Species_2"] = pair_df["Species_2"].astype(str)
-        # TODO: reciprocal best syntenic ???
+
         ks_file_list = base.split_conf(self.species_pair_ks_file, ",")
         try:
             assert len(ks_file_list) == len(pair_df)    
@@ -73,6 +94,7 @@ class Correct:
         for _ in range(n_replicates):
             sample_list = random.choices(ks_list, k=len(ks_list))
             __, kde_x, kde_y = self.compute_kde(sample_list, ks_min, ks_max)
+
             index_max_y = np.argmax(kde_y)
             mode_x_value = kde_x[index_max_y]
 
@@ -87,23 +109,22 @@ class Correct:
         return mean_mode, std_mode, mean_median, std_median
     
     def get_fitting_info(self):
-        logger.info("The order of species pairs in the species pair file(specify by -s parameter/species_pair_file) must be consistent with the order of the ks file(specify by -k parameter/species_pair_ks_file)")
+        logger.info(r"The order of species pairs in the species pair file(specify by -s parameter/species_pair_file) must be consistent with the order of the ks file(specify by -k parameter/species_pair_ks_file)")
         pair_df, ks_file_list = self.init_process()
         ks_min, ks_max = self.get_ks_limit()
         col = self.col
         pair_ks_dict = self.get_pair_ks_map(pair_df, ks_file_list)
         
         mode_sd = []
-        # zip order == pair_df order
         for pair in pair_ks_dict:
             df = pd.read_csv(pair_ks_dict[pair], header=0, index_col=None, sep="\t")
             df['id1'] = df['id1'].astype(str)
             df['id2'] = df['id2'].astype(str)
             ks_df = df[(df[col] >= max(ks_min, 0)) & (df[col] <= ks_max) & (df[col] != -1)]
             ks_list = ks_df[col].tolist()
-            logger.info(f"{pair} compute_kde start")
+            logger.info(f"{pair} kernel density estimation start")
             mode_mean, mode_sd_mean, median_mean, median_sd_mean = self.get_mode_sd(ks_list, ks_min, ks_max, self.n_replicates)
-            logger.info(f"{pair} compute_kde end")
+            logger.info(f"{pair} kernel density estimation end")
             mode_sd.append([mode_mean, mode_sd_mean])
 
         peaks_info_df = pd.DataFrame(mode_sd, columns=["mode", "sd"])
@@ -154,12 +175,11 @@ class Correct:
 
             adjusted_focal_sister = 2 * adjusted_focal
             adjusted_focal_sister_sd = np.sqrt(2) * adjusted_focal_sd
-            # more small more accurate
+            # smaller and more accurate
             OC_distance = focal_out_mode - adjusted_focal
 
             if node not in sisters_per_node:
                 sisters_per_node[node] = []
-            #TODO: latin sister name????
             if sister_name not in sisters_per_node[node]:
                 sisters_per_node[node].append(sister_name)
             
@@ -173,8 +193,6 @@ class Correct:
     
     def mean_or_best_strategy(self, pre_select_trios):
         pair_corrected_list = []
-        # pd.options.display.max_columns = None
-        # pd.options.display.max_rows = 10
         for name, group in pre_select_trios.groupby(by=['Node', "Sister_Species"]):
             # name (1, 'sorghum') (Node, Sister_Species)
             # strategy one: mean
@@ -192,9 +210,14 @@ class Correct:
             best_out = group['Out_Distance'].min()
             node_df_sister_best = group[group['Out_Distance'] == best_out]
             mode_mean_best = float(node_df_sister_best['Adjusted_Mode'].values.mean())
-            sd_mean_best = float(node_df_sister_best['Adjusted_Mode_SD'].values.mean())
             focal_mean_best = float(node_df_sister_best['Ks_Focal'].values.mean())
             sister_mean_best = float(node_df_sister_best['Ks_Sister'].values.mean())
+
+            best_sd_err_prop = 0
+            best_adjusted_sd_list = node_df_sister_best['Adjusted_Mode_SD'].values
+            for sd in best_adjusted_sd_list:
+                best_sd_err_prop += pow(sd, 2)
+            sd_mean_best = np.sqrt(best_sd_err_prop) / len(best_adjusted_sd_list)
 
             pair_corrected_list.append([name[0], group["Focal_Species"].to_list()[0], group["Sister_Species"].to_list()[0], round(adjusted_mode_mean,6), round(sd_err_prop, 6),
                                         round(focal_mean, 6), round(sister_mean, 6), round(mode_mean_best, 6), round(sd_mean_best, 6), round(focal_mean_best, 6), round(sister_mean_best, 6),
@@ -208,15 +231,11 @@ class Correct:
         return df
 
     def run(self):
-        logger.info("Init trios and the following parameters are config information")
-        print()
-        for key, value in vars(self).items():
-            if key != "conf" and key not in ["col", "bins_number", "n_replicates"]:
-                print(key, "=", value)
-        print()
+        logger.info("Trios module init and the following parameters are config information")
         pair_mode_info_df = self.get_fitting_info()
-        logger.info("Correction start")
+
+        logger.info("Divergent ks peak between focal species and sister psecies correction start")
         pre_select_trios, sisters_per_node = self.correct_trios(pair_mode_info_df)
         pair_corrected = self.mean_or_best_strategy(pre_select_trios)
-        logger.info("Correction end")
-        logger.info(f"{self.outfile_divergent_peaks} generated done!")
+        logger.info("Divergent ks peak between focal species and sister psecies correction end")
+        logger.info(f"Generate {self.outfile_divergent_peaks} done!")

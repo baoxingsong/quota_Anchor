@@ -66,15 +66,15 @@ class Prepare:
     def diamond_makedb(self, ref_protein, database):
         command_line = [self.diamond, 'makedb', '--in', ref_protein, '--db', database]
         try:
-            logger.info(f"run diamond makedb and generate {database} start.")
+            logger.info(f"Run diamond makedb and generate {database} start.")
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             stderr_gff_read = result.stderr.decode()
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-            logger.info(f"run diamond makedb and generate {database} end.")
+            logger.info(f"Run diamond makedb and generate {database} end.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"run diamond makedb and generate {database} failed!")
+            logger.error(f"Run diamond makedb and generate {database} failed!")
 
             error_message = e.stderr.decode()
             base.output_info(error_message)
@@ -86,15 +86,15 @@ class Prepare:
     def run_diamond_blastp(self, database, query_file, blast_file, max_target, e_value):
         command_line = [self.diamond, 'blastp', '--db', database, '-q', query_file, '-o', blast_file, '-k', max_target, '-e', e_value]
         try:
-            logger.info(f"run diamond blastp and generate {blast_file} start.")
+            logger.info(f"Run diamond blastp and generate {blast_file} start.")
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             stderr_gff_read = result.stderr.decode()
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-            logger.info(f"run diamond blastp and generate {blast_file} end.")
+            logger.info(f"Run diamond blastp and generate {blast_file} end.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"run diamond blastp and generate {blast_file} failed!")
+            logger.error(f"Run diamond blastp and generate {blast_file} failed!")
 
             error_message = e.stderr.decode()
             base.output_info(error_message)
@@ -106,15 +106,15 @@ class Prepare:
     def mkblastdb(self, ref_seq, database, dtype):
         command_line = [self.makeblastdb, '-in', ref_seq, '-dbtype', dtype, '-out', database]
         try:
-            logger.info(f"run makeblastdb and generate {database} start.")
+            logger.info(f"Run makeblastdb and generate {database} start.")
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             stderr_gff_read = result.stderr.decode()
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-            logger.info(f"run makeblastdb and generate {database} end.")
+            logger.info(f"Run makeblastdb and generate {database} end.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"run makeblastdb and generate {database} failed!")
+            logger.error(f"Run makeblastdb and generate {database} failed!")
 
             error_message = e.stderr.decode()
             base.output_info(error_message)
@@ -127,15 +127,15 @@ class Prepare:
         command_line = [self.blastn, '-query', query_file, '-out', blast_file, '-evalue', e_value,
                         '-db', blast_database, '-num_threads', thread, '-max_target_seqs', max_target_seqs, '-outfmt', outfmt, '-strand', strand]
         try:
-            logger.info(f"run blastn and generate {blast_file} start.")
+            logger.info(f"Run blastn and generate {blast_file} start.")
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             stderr_gff_read = result.stderr.decode()
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-            logger.info(f"run blastn and generate {blast_file} end.")
+            logger.info(f"Run blastn and generate {blast_file} end.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"run blastn and generate {blast_file} failed!")
+            logger.error(f"Run blastn and generate {blast_file} failed!")
 
             error_message = e.stderr.decode()
             base.output_info(error_message)
@@ -148,15 +148,15 @@ class Prepare:
         command_line = [self.blastp, '-query', query_file, '-out', blast_file, '-evalue', e_value,
                         '-db', blast_database, '-num_threads', thread, '-max_target_seqs', max_target_seqs, '-outfmt', outfmt]
         try:
-            logger.info(f"run blastp and generate {blast_file} start.")
+            logger.info(f"Run blastp and generate {blast_file} start.")
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             stderr_gff_read = result.stderr.decode()
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-            logger.info(f"run blastp and generate {blast_file} end.")
+            logger.info(f"Run blastp and generate {blast_file} end.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"run blastp and generate {blast_file} failed!")
+            logger.error(f"Run blastp and generate {blast_file} failed!")
 
             error_message = e.stderr.decode()
             base.output_info(error_message)
@@ -179,7 +179,7 @@ class Prepare:
                             if key != "strand" and key != "skip_blast":
                                 print(key, "=", value)
                     except AttributeError:
-                        logger.error('you need specify --skip_blast parameter if you skip blast step.')
+                        logger.error(r'You need to specify the --skip_blast option if you want to skip the blast step. Otherwise, specify --align diamond/blastp/blastn')
                         sys.exit(1)
                 else:
                     blast_key_list = ["align", "database_name", "output_blast_result", "strand",
@@ -187,15 +187,36 @@ class Prepare:
                     if key not in blast_key_list:
                         print(key, "=", value)
         print()
+    def pre_col_init(self):
+        if not self.skip_blast:
+            if not self.ref_seq:
+                logger.error("Please specify your reference species protein/cds file")
+                sys.exit(1)
+            if not self.query_seq:
+                logger.error("Please specify your query species protein/cds file")
+                sys.exit(1)
+        if not self.ref_gff_file:
+            logger.error("Please specify your reference species gff file")
+            sys.exit(1)
+        if not self.query_gff_file:
+            logger.error("Please specify your query species gff file")
+            sys.exit(1)
+        if not self.output_file:
+            logger.error("Please specify your output table file name (called blast file containing gene position information)")
+            sys.exit(1)
+        if not self.blast_file:
+            logger.error("Please specify your blast file name")
+            sys.exit(1)
 
     def run_all_process(self):
-        logger.info("Init pre_collinearity and the following parameters are config information.")
+        logger.info("Pre_collinearity module init and the following parameters are config information.")
         self.print_config()
-
+        self.pre_col_init()
         if self.ref_length:
             base.file_empty(self.ref_length)
         if self.query_length:
             base.file_empty(self.query_length)
+
         base.file_empty(self.ref_gff_file)
         base.file_empty(self.query_gff_file)
         base.output_file_parentdir_exist(self.output_file, self.overwrite)
@@ -221,4 +242,4 @@ class Prepare:
         combineBlastAndStrandInformation.anchorwave_quota(self.ref_gff_file, self.query_gff_file, self.blast_file,
                                                           self.output_file, self.bitscore, self.align_length, self.query_length, self.ref_length)
         base.file_empty(self.output_file)
-        logger.info("pre_collinearity process finished!")
+        logger.info(f'Generate {self.output_file} finished!')

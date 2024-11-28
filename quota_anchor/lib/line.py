@@ -202,7 +202,7 @@ class Line:
         return x, y
 
     def sub_run(self, collinearity, prefix, ref_length, query_length, chr_plus_gap_length, query_height, ref_height, loop, last_loop, strip_chr_abbr):
-        logger.info(f"plot {collinearity} start.")
+        logger.info(f"Plot {collinearity} start.")
         ref_chr_list = ref_length['chr'].tolist()
         query_chr_list = query_length['chr'].tolist()
         chr_color_dict = {}
@@ -327,7 +327,7 @@ class Line:
                     plt.fill(x, y, facecolor=color, alpha=0.8)
                     i += 1
                     bar()
-        logger.info(f"plot {collinearity} finished.")
+        logger.info(f"Plot {collinearity} finished!")
 
     def line_init(self):
         print()
@@ -339,7 +339,12 @@ class Line:
         if not self.length_file:
             logger.error("Please specify your chromosome length file(Separator: ',')")
             sys.exit(1)
-
+        if not self.input_file:
+            logger.error("Please specify your input collinearity file")
+            sys.exit(1)
+        if not self.output_file_name:
+            logger.error("Please specify your output file name")
+            sys.exit(1)
         if not self.species_name:
             logger.error("Please specify your species name(Separator: ',')")
             sys.exit(1)
@@ -382,7 +387,7 @@ class Line:
         return chr_plus_gap_length
 
     def run(self):
-        logger.info("Init line and the following parameters are config information.")
+        logger.info("Line module init and the following parameters are config information.")
         self.line_init()
         base.output_file_parentdir_exist(self.output_file_name, self.overwrite)
 
@@ -424,5 +429,5 @@ class Line:
         plt.axis('off')
         # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
         plt.savefig(self.output_file_name, dpi=DPI, bbox_inches='tight')
-        logger.info(f"generate {self.output_file_name} finished.")
+        logger.info(f"Generate {self.output_file_name} finished!")
         sys.exit(0)
