@@ -1,4 +1,5 @@
 import sys
+from ..lib import base
 import logging
 import warnings
 warnings.filterwarnings('ignore', category=SyntaxWarning)
@@ -15,6 +16,8 @@ class Trios:
         self.nwk_tree = ""
         self.outfile_trios_path = ""
         self.outfile_species_pair_file = ""
+        self.outfile_drawing_path = ""
+        self.overwrite = False
 
         for i in config_pra.sections():
             if i == 'trios':
@@ -27,14 +30,11 @@ class Trios:
 
     def get_trios(self, outfile_trios_path):
         focal_species = self.focal_species
-        #TODO: color parameter may be need to add in ks_fitting module
-
-        # divergence_colors = ["#f5493d", "#0022e0", "#b89f00", "#1b5f1c", "#f466e4", "#3593ab"]
-        # num_required_colors = len(divergence_colors)
+        # species name check
         tree = ksrates.get_newick_tree(self.nwk_tree)
-        #TODO: this is print raw nwk tree
         logger.info("The following is raw nwk tree")
         print(tree)
+        # binary tree check
         ksrates.check_integrity_newick_tree(tree)
         ordered_tree = ksrates.reorder_tree_leaves(tree, focal_species)
         logger.info("The following is ordered tree")
@@ -51,18 +51,13 @@ class Trios:
             sys.exit(1)
 
         ksrates.labeling_internal_nodes(species_of_interest_node)
-        # TODO: color parameter may be need to add in ks_fitting module
 
-        # if len(divergence_colors) < num_required_colors:
-        #     print("")
-        #     print(f'Configuration file field "divergence_colors" is missing {num_required_colors - len(divergence_colors)} color(s) ' +
-        #                 f"out of {num_required_colors} required for the analysis on focal species [{focal_species}]")
-        #     print("Please add the missing color(s) and rerun the analysis")
-        #     print("Exiting.")
-        #     sys.exit(1)
-        trios_array = []  # list of trios
-        # TODO: txt file
-        outfile_drawing_path = f"tree_{focal_species}.txt"
+        trios_array = []
+        if not self.outfile_drawing_path:
+            outfile_drawing_path = f"tree_{focal_species}.txt"
+        else:
+            outfile_drawing_path = self.outfile_drawing_path
+
         with open(outfile_drawing_path, "w+") as outfile_drawing:
             outfile_drawing.write(f"Focal species: {focal_species}\n\n")
             
@@ -99,33 +94,43 @@ class Trios:
     @staticmethod
     def get_necessary_pairs(trios_array, species_pair_file):
         # THIS CODE JUST TAKES THE PAIRS THAT ARE NECESSARY FOR THE TRIOS
-        species_pairs = []
+        species_pairs = set()
         new_species_pairs = []
         for trio in trios_array:
             combos = [[trio[1], trio[2]], [trio[1], trio[3]], [trio[2], trio[3]]]
             for pair in combos:
-                if pair not in species_pairs:
-                    species_pairs.append(pair)
-                    species_pairs.append([pair[1], pair[0]])
-                    new_pair=[pair[0], pair[1], str(1), str(1)]
+                pair_name = pair[0] + "\t" + pair[1]
+                if pair_name not in species_pairs:
+                    species_pairs.add(pair_name)
+                    reverse_pair = pair[1] + "\t" + pair[0]
+                    species_pairs.add(reverse_pair)
+                    new_pair=[pair[0], pair[1], str(1), str(1), str(0)]
                     new_species_pairs.append(new_pair)
-        
-        # species_pairs = [sorted(x, key=str.casefold) for x in species_pairs]
-        header = ["Species_1", "Species_2", "r_value", "q_value"]
+
+        header = ["Species_1", "Species_2", "q_value", "r_value", "get_all_collinear_pairs"]
         df = pd.DataFrame(new_species_pairs, columns=header)
         df.to_csv(species_pair_file, index=False, header=True)
-        
-        # TODO: ksrates can use unknown species pairs to construct tree branch length
-        # species_pairs_unknown = []
+
         return species_pairs
+
+    def trios_init(self):
+        print()
+        for key, value in vars(self).items():
+            if key != "conf" and key != "overwrite":
+                print(key, "=", value)
+        print()
+        if not self.outfile_trios_path:
+            logger.error("Please specify your output trios file path")
+            sys.exit(1)
+        if not self.outfile_species_pair_file:
+            logger.error("Please specify your output species pair file path")
+            sys.exit(1)
+        base.output_file_parentdir_exist(self.outfile_trios_path, self.overwrite)
+        base.output_file_parentdir_exist(self.outfile_species_pair_file, self.overwrite)
 
     def run(self):
         logger.info("Init trios and the following parameters are config information")
-        print()
-        for key, value in vars(self).items():
-            if key != "conf":
-                print(key, "=", value)
-        print()
+        self.trios_init()
         df, trios_array = self.get_trios(self.outfile_trios_path)
         self.get_necessary_pairs(trios_array, self.outfile_species_pair_file)
         logger.info(f"{self.outfile_trios_path} and {self.outfile_species_pair_file} generated done!")

@@ -153,13 +153,13 @@ def run_correct(parameter):
     correct.Correct(config_par, parameter).run()
 
 parser = argparse.ArgumentParser(description='Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.', prog="quota_Anchor")
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1b1')
 
 
 subparsers = parser.add_subparsers(title='Gene collinearity analysis', dest='analysis')
 
 # get the longest protein sequence file
-parser_sub_longest_pep = subparsers.add_parser('longest_pep', help='Generate the longest protein sequence file from gffread result.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
+parser_sub_longest_pep = subparsers.add_parser('longest_pep', help='Call gffread to generate the protein sequence of the species based on the genome and gff files. The longest transcripts are then extracted based on the gff file and the protein sequence file.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
     You can execute this command in three ways:
                                        
     1. Using configuration file:
@@ -179,7 +179,6 @@ parser_sub_longest_pep = subparsers.add_parser('longest_pep', help='Generate the
                                 -p sb.p.fa,zm.p.fa -l sorghum.protein.fa,maize.protein.fa -t 2 -c longest_pep.conf
                                 [--overwrite] [-merge merged.fa]                                      
  """)
-
 parser_sub_longest_pep.set_defaults(func=run_get_longest_pep)
 parser_sub_longest_pep.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
 parser_sub_longest_pep.add_argument('-f', '--genome_file', dest='genome_file', help="Species genome file list(separator: ',').", metavar="")
@@ -190,8 +189,9 @@ parser_sub_longest_pep.add_argument('-t', '--thread', dest='thread', help="Numbe
 parser_sub_longest_pep.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 parser_sub_longest_pep.add_argument('-merge', '--merge', dest='merge', help="Optional, specify a file name, and merge all longest pep file content to this file.", metavar="")
 
+
 # get the longest cds sequence file
-parser_sub_longest_cds = subparsers.add_parser('longest_cds', help='Generate the longest cds sequence file from gffread result.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
+parser_sub_longest_cds = subparsers.add_parser('longest_cds', help='Call gffread to generate the coding sequence of the species based on the genome and gff files. The longest cds are then extracted based on the gff file and the coding sequence file.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
     You can execute this command in three ways: 
                                        
     1. Using configuration file:
@@ -211,7 +211,6 @@ parser_sub_longest_cds = subparsers.add_parser('longest_cds', help='Generate the
                                 -p sb.cds.fa,zm.cds.fa -l sorghum.cds.fa,maize.cds.fa -t 2 --overwrite -c longest_cds.conf
                                 [--overwrite] [-merge merged.fa]                                       
  """)
-
 parser_sub_longest_cds.set_defaults(func=run_get_longest_cds)
 parser_sub_longest_cds.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
 parser_sub_longest_cds.add_argument('-f', '--genome_file', dest='genome_file', help="Species genome file list(separator: ',').", metavar="")
@@ -222,8 +221,64 @@ parser_sub_longest_cds.add_argument('-t', '--thread', dest='thread', help="Numbe
 parser_sub_longest_cds.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 parser_sub_longest_cds.add_argument('-merge', '--merge', dest='merge', help="Optional, specify a file name, and merge all longest cds file content to this file.", metavar="")
 
+
+parser_sub_get_chr_length = subparsers.add_parser('get_chr_length',
+                                                  help='Generate a length file containing chromosome length and total number of genes based on the fai file and gff file.',
+                                                  formatter_class=argparse.RawDescriptionHelpFormatter, description="""         
+    The maize length information example file are as follows.
+    chr	length	total_gene
+    chr1    308452471   5892
+    chr2    243675191	4751
+    chr3    238017767	4103
+    chr4    250330460	4093
+    chr5    226353449	4485
+    chr6    181357234	3412
+    chr7    185808916	3070
+    chr8    182411202	3536
+    chr9    163004744	2988
+    chr10   152435371	2705                                  
+    You can execute this command in three ways: 
+
+    1. Using configuration file:
+       a)quota_Anchor get_chr_length -c [\\?, example, help] >> get_chr_length.conf 
+       b)quota_Anchor get_chr_length -c get_chr_length.conf [--overwrite]    
+
+    2. Using command-line arguments:
+       quota_Anchor get_chr_length -f Oryza.fai,Sorghum.fai,Zm.fai,Setaria.fai 
+            -g oryza.gff3,sorghum.gff3,maize.gff3,setaria.gff3
+            -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr 
+            -o os_length.txt,sb_length.txt,zm_length.txt,sv_length.txt [--overwrite]    
+
+    3. Using both a configuration file and command-line arguments:
+       The configuration file has lower priority than other command-line parameters. 
+       Parameters specified in the configuration file will be replaced by those provided via the command line.
+
+       quota_Anchor get_chr_length -f Oryza.fai,Sorghum.fai,Zm.fai,Setaria.fai 
+            -g oryza.gff3,sorghum.gff3,maize.gff3,setaria.gff3
+            -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr 
+            -o os_length.txt,sb_length.txt,zm_length.txt,sv_length.txt 
+            -c get_chr_length.conf [--overwrite]                                         
+ """)
+parser_sub_get_chr_length.set_defaults(func=run_lens)
+parser_sub_get_chr_length.add_argument('-c', '--conf', dest='conf',
+                                       help="Configuration files have the lowest priority.", metavar="")
+parser_sub_get_chr_length.add_argument('-f', '--fai_file', dest='fai_file',
+                                       help="Species fai files produced by gffread process or samtools(Separator: ',').",
+                                       metavar="")
+parser_sub_get_chr_length.add_argument('-g', '--gff_file', dest='gff_file',
+                                       help="Species gff files list(Separator: ',').", metavar="")
+parser_sub_get_chr_length.add_argument('-s', '--select_fai_chr_startswith', dest='select_fai_chr_startswith', help="""e.g. 0-9,chr,Chr (By default, the first column of the lines starting with numeric or chr or Chr in the fai file are extracted for plotting) (1) 0-9: software selects chromosome name start with numeric.
+(2) chr: software selects chromosome name that start with 'chr'.
+(3) Chr: software selects chromosome name start with 'Chr'. (Selection Separator: ',')(Species Separator: ':').""",
+                                       metavar="")
+parser_sub_get_chr_length.add_argument('-o', '--output_length_file', dest='output_length_file',
+                                       help="Output species length file(Separator: ',').", metavar="")
+parser_sub_get_chr_length.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.",
+                                       action='store_true')
+
+
 # get the input file of anchorwave pro command(table file)
-parser_sub_pre_col = subparsers.add_parser('pre_col', help='Generate input file of synteny analysis(table file).', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
+parser_sub_pre_col = subparsers.add_parser('pre_col', help='Generates the input file for synteny analysis (called a table file or blast file containing gene position information).', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
     You can execute this command in three ways: 
                                        
     1. Using configuration file:
@@ -273,7 +328,6 @@ parser_sub_pre_col = subparsers.add_parser('pre_col', help='Generate input file 
                             -rg sorghum.gff3 -qg maize.gff3 -bs 100 -al 0 -o sb_zm.table 
                             [--overwrite] [-rl ref_length.txt] [-ql query_length.txt]                                  
  """)
-
 parser_sub_pre_col.set_defaults(func=run_pre_col)
 parser_sub_pre_col.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
 parser_sub_pre_col.add_argument('-skip_blast', '--skip_blast', dest='skip_blast', help="Don't run blast step and use your blast file.", action='store_true')
@@ -300,8 +354,9 @@ parser_sub_pre_col.add_argument('-ql', '--query_length', dest='query_length', he
 
 parser_sub_pre_col.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file", action='store_true')
 
+
 # produce collinearity file
-parser_sub_col = subparsers.add_parser('col', help='Generate gene collinearity result file.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
+parser_sub_col = subparsers.add_parser('col', help='Generate a collinearity file based on the table file.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""
     The r_value means the maximum times of occurrences of a gene in the collinearity file, and q_value means the same as r_value.
     For maize and sorghum, maize has undergone an additional whole-genome duplication compared to sorghum.
     If sorghum is used as a reference, you can set r_value to 2 and q_value to 1.
@@ -313,21 +368,20 @@ parser_sub_col = subparsers.add_parser('col', help='Generate gene collinearity r
                                        
     2. Using command-line arguments:
        a) get collinearity result and specify -r -q parameter
-       quota_Anchor col -i input_file_path -o output_file -r r_value -q q_value -s 0 -a 0 [--overwrite]
+       quota_Anchor col -i sb_zm.table -o sb_zm.collinearity -r 2 -q 1 -s 0 -a 0 [--overwrite]
        
        b) get all collinearity result and remove relative inversion gene pair
-       quota_Anchor col -i input_file_path -o output_file -s 1 -a 1 [--overwrite]
+       quota_Anchor col -i sb_zm.table -o sb_zm.collinearity -s 1 -a 1 [--overwrite]
        
        c) get all collinearity result and retain relative inversion gene pair
-       quota_Anchor col -i input_file_path -o output_file -s 0 -a 1 [--overwrite]    
+       quota_Anchor col -i sb_zm.table -o sb_zm.collinearity -s 0 -a 1 [--overwrite]    
                                          
     3. Using both a configuration file and command-line arguments:
        The configuration file has lower priority than other command-line parameters. 
        Parameters specified in the configuration file will be replaced by those provided via the command line.
                                        
-       quota_Anchor col -c collinearity.conf -i input_file_path -o output_file -r r_value -q q_value -s 1 -a 0 [--overwrite]                                      
+       quota_Anchor col -c collinearity.conf -i sb_zm.table -o sb_zm.collinearity -r 2 -q 1 -s 1 -a 0 [--overwrite]                                      
  """)
-
 parser_sub_col.set_defaults(func=run_col)
 parser_sub_col.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
 parser_sub_col.add_argument('-i', '--input_file_name', dest='input_file_name', help="Input file(table file).", metavar="")
@@ -351,54 +405,46 @@ parser_sub_col.add_argument('-E', '--gap_extend_penalty', dest='gap_extend_penal
 parser_sub_col.add_argument('-f', '--strict_remove_overlap', dest='strict_remove_overlap', type=int, help="Specify whether to strictly remove square region gene pairs for a block to avoid overlap. (1:yes;0:no. default:  0).", metavar="")
 parser_sub_col.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
-
-parser_sub_get_chr_length = subparsers.add_parser('get_chr_length', help='Generate chromosome length and total number of genes information from fai file.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""         
-    The maize length information example file are as follows.
-    chr	length	total_gene
-    chr1    308452471   5892
-    chr2    243675191	4751
-    chr3    238017767	4103
-    chr4    250330460	4093
-    chr5    226353449	4485
-    chr6    181357234	3412
-    chr7    185808916	3070
-    chr8    182411202	3536
-    chr9    163004744	2988
-    chr10   152435371	2705                                  
+parser_sub_ks = subparsers.add_parser('ks',
+                                      help='Synonymous/non-synonymous substitution rates for syntenic gene pairs calculated in parallel.',
+                                      formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
     You can execute this command in three ways: 
-                                       
+
     1. Using configuration file:
-       a)quota_Anchor get_chr_length -c [\\?, example, help] >> get_chr_length.conf 
-       b)quota_Anchor get_chr_length -c get_chr_length.conf [--overwrite]    
-                                       
+       a)quota_Anchor ks -c [\\?, example, help] >> ks.conf 
+       b)quota_Anchor ks -c ks.conf [--overwrite] 
+
     2. Using command-line arguments:
-       quota_Anchor get_chr_length -f Oryza.fai,Sorghum.fai,Zm.fai,Setaria.fai 
-            -g oryza.gff3,sorghum.gff3,maize.gff3,setaria.gff3
-            -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr 
-            -o os_length.txt,sb_length.txt,zm_length.txt,sv_length.txt [--overwrite]    
-                                       
+       quota_Anchor ks -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
+                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6[--overwrite] 
+       quota_Anchor ks -a muscle -i zm_zm.collinearity -p zm.pep.fa
+                                           -d zm.cds.fa -o zm_zm.ks -t 6[--overwrite]                                
     3. Using both a configuration file and command-line arguments:
        The configuration file has lower priority than other command-line parameters. 
        Parameters specified in the configuration file will be replaced by those provided via the command line.
-                                                  
-       quota_Anchor get_chr_length -f Oryza.fai,Sorghum.fai,Zm.fai,Setaria.fai 
-            -g oryza.gff3,sorghum.gff3,maize.gff3,setaria.gff3
-            -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr 
-            -o os_length.txt,sb_length.txt,zm_length.txt,sv_length.txt 
-            -c get_chr_length.conf [--overwrite]                                         
+
+       quota_Anchor ks -c ks.conf -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
+                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6[--overwrite] 
  """)
-parser_sub_get_chr_length.set_defaults(func=run_lens)
-parser_sub_get_chr_length.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
-parser_sub_get_chr_length.add_argument('-f', '--fai_file', dest='fai_file', help="Species fai files produced by gffread process or samtools(Separator: ',').", metavar="")
-parser_sub_get_chr_length.add_argument('-g', '--gff_file', dest='gff_file', help="Species gff files list(Separator: ',').", metavar="")
-parser_sub_get_chr_length.add_argument('-s', '--select_fai_chr_startswith', dest='select_fai_chr_startswith', help="""e.g. 0-9,chr,Chr (By default, the first column of the lines starting with numeric or chr or Chr in the fai file are extracted for plotting) (1) 0-9: software selects chromosome name start with numeric.
-(2) chr: software selects chromosome name that start with 'chr'.
-(3) Chr: software selects chromosome name start with 'Chr'. (Selection Separator: ',')(Species Separator: ':').""", metavar="")
-parser_sub_get_chr_length.add_argument('-o', '--output_length_file', dest='output_length_file', help="Output species length file(Separator: ',').", metavar="")
-parser_sub_get_chr_length.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
+parser_sub_ks.set_defaults(func=run_ks)
+parser_sub_ks.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.",
+                           metavar="")
+parser_sub_ks.add_argument('-i', '--collinearity', dest='collinearity', help="Collinearity file.", metavar="")
+parser_sub_ks.add_argument('-a', '--align_software', dest='align_software',
+                           help="Align software for every syntenic gene pair(muscle/mafft).",
+                           choices=["mafft", "muscle"], metavar="")
+parser_sub_ks.add_argument('-p', '--pep_file', dest='pep_file', help="Species longest protein sequence file.",
+                           metavar="")
+parser_sub_ks.add_argument('-d', '--cds_file', dest='cds_file', help="Species longest cds sequence file.", metavar="")
+parser_sub_ks.add_argument('-o', '--ks_file', dest='ks_file', help="Output ks file.", metavar="")
+parser_sub_ks.add_argument('-t', '--process', dest='process', help="Number of parallel processes.", metavar="",
+                           type=int)
+parser_sub_ks.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.",
+                           action='store_true')
+
 
 # collinearity dotplot or blast dotplot
-parser_sub_dotplot = subparsers.add_parser('dotplot', help='Generate collinearity dotplot or blast dotplot.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
+parser_sub_dotplot = subparsers.add_parser('dotplot', help='Generate collinear gene pairs dotplot or homologous gene pairs dotplot.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
     You can execute this command in three ways: 
                                        
     1. Using configuration file:
@@ -436,6 +482,7 @@ parser_sub_dotplot.add_argument('-disable', '--disable_axis_text', dest='disable
 parser_sub_dotplot.add_argument('-use_identity', '--use_identity', dest='use_identity', help="Optional, use identity as legend rather strand direction for table(blast) dotplot.", action='store_true')
 parser_sub_dotplot.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
+
 # collinearity circle plot
 parser_sub_circle = subparsers.add_parser('circle', help='Collinearity result visualization(circos).', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
     You can execute this command in three ways: 
@@ -468,6 +515,7 @@ parser_sub_circle.add_argument('-cf', '--chr_font_size', dest='chr_font_size', h
 parser_sub_circle.add_argument('-sf', '--species_name_font_size', dest='species_name_font_size', help="Species name font size(defaults: 12).", metavar="", type=int)
 parser_sub_circle.add_argument('-fs', '--figsize', dest='figsize', help="Figure size(defaults: 14,14).", metavar="")
 parser_sub_circle.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
+
 
 # collinearity line plot
 parser_sub_line = subparsers.add_parser('line', help='Collinearity result visualization(line style).', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
@@ -504,42 +552,14 @@ parser_sub_line.add_argument('-sf', '--species_name_font_size', dest='species_na
 parser_sub_line.add_argument('-fs', '--figsize', dest='figsize', help="Figure size(defaults: 14,14).", metavar="")
 parser_sub_line.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
+
 # collinearity AnchorWave proali anchors plot
 parser_sub_line_proali = subparsers.add_parser('line_proali', help='Anchors file from AnchorWave proali to visualization(line style).')
 parser_sub_line_proali.set_defaults(func=run_line_3)
 parser_sub_line_proali.add_argument('-c', '--conf', dest='conf', help="Configure file.", metavar="")
 
-parser_sub_ks = subparsers.add_parser('ks', help='Syntenic gene pair synonymous/non-synonymous substitution rate using yn00.', formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
-    You can execute this command in three ways: 
-                                       
-    1. Using configuration file:
-       a)quota_Anchor ks -c [\\?, example, help] >> ks.conf 
-       b)quota_Anchor ks -c ks.conf [--overwrite] 
-                                       
-    2. Using command-line arguments:
-       quota_Anchor ks -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
-                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6[--overwrite] 
-       quota_Anchor ks -a muscle -i zm_zm.collinearity -p zm.pep.fa
-                                           -d zm.cds.fa -o zm_zm.ks -t 6[--overwrite]                                
-    3. Using both a configuration file and command-line arguments:
-       The configuration file has lower priority than other command-line parameters. 
-       Parameters specified in the configuration file will be replaced by those provided via the command line.
-    
-       quota_Anchor ks -c ks.conf -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
-                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6[--overwrite] 
- """)
-parser_sub_ks.set_defaults(func=run_ks)
-parser_sub_ks.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
-parser_sub_ks.add_argument('-i', '--collinearity', dest='collinearity', help="Collinearity file.", metavar="")
-parser_sub_ks.add_argument('-a', '--align_software', dest='align_software', help="Align software for every syntenic gene pair(muscle/mafft).", choices=["mafft", "muscle"], metavar="")
-parser_sub_ks.add_argument('-p', '--pep_file', dest='pep_file', help="Species longest protein sequence file.", metavar="")
-parser_sub_ks.add_argument('-d', '--cds_file', dest='cds_file', help="Species longest cds sequence file.", metavar="")
-parser_sub_ks.add_argument('-o', '--ks_file', dest='ks_file', help="Output ks file.", metavar="")
-parser_sub_ks.add_argument('-t', '--process', dest='process', help="Number of parallel processes.", metavar="", type=int)
-parser_sub_ks.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
-
-parser_sub_class_gene = subparsers.add_parser('class_gene', help='Genes/Pairs were classified as tandem, proximal, transposed, wgd/segmental, dispersed, and singleton.',
+parser_sub_class_gene = subparsers.add_parser('class_gene', help='Genes or gene pairs are classified into whole genome duplication, tandem duplication, proximal duplication, transposed duplication, and dispersed duplication. For gene classification, there is also a single gene category (singleton) which has no homologous gene.',
                                       formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
     You can execute this command in three ways: 
 
@@ -548,16 +568,16 @@ parser_sub_class_gene = subparsers.add_parser('class_gene', help='Genes/Pairs we
        b)quota_Anchor class_gene -c class_gene.conf [--overwrite] 
 
     2. Using command-line arguments:
-        quota_Anchor class_gene -b sorghum.sorghum.blastp -g sorghum.gff3 -q sorghum.sorghum.collinearity 
-                                -qr sb_zm.collinearity -o class_gene_result -p sorghum -s 1 -d 10 
+        quota_Anchor class_gene -b maize.maize.diamond -g maize.gff3 -q zm_zm.collinearity -qr bananaB_zm.collinearity
+                                -o maize_classify_dir -p maize -s 1 -d 10 --overwrite -u
                                 [--overwrite]
                                
     3. Using both a configuration file and command-line arguments:
        The configuration file has lower priority than other command-line parameters. 
        Parameters specified in the configuration file will be replaced by those provided via the command line.
 
-        quota_Anchor class_gene -b sorghum.sorghum.blastp -g sorghum.gff3 -q sorghum.sorghum.collinearity 
-                                -qr sb_zm.collinearity -o class_gene_result -p sorghum -s 1 -d 10 -c class_gene.conf 
+        quota_Anchor class_gene -b maize.maize.diamond -g maize.gff3 -q zm_zm.collinearity -qr bananaB_zm.collinearity
+                                -o maize_classify_dir -p maize -s 1 -d 10 --overwrite -u -c class_gene.conf
                                 [--overwrite]
  """)
 parser_sub_class_gene.set_defaults(func=run_class_gene)
@@ -565,7 +585,7 @@ parser_sub_class_gene.add_argument('-c', '--conf', dest='conf', help="Configurat
 parser_sub_class_gene.add_argument('-b', '--query_blast', dest='query_blast', help="Focal species blast file.", metavar="")
 parser_sub_class_gene.add_argument('-g', '--query_gff_file', dest='query_gff_file', help="Focal species gff file.", metavar="")
 parser_sub_class_gene.add_argument('-q', '--query_query_collinearity', dest='query_query_collinearity', help="Focal species self vs self collinearity file.", metavar="")
-parser_sub_class_gene.add_argument('-qr', '--query_ref_collinearity', dest='query_ref_collinearity', help="Collinearity file of focal species and reference/outgroup species.", metavar="")
+parser_sub_class_gene.add_argument('-qr', '--query_ref_collinearity', dest='query_ref_collinearity', help="Collinearity file between focal species and outgroup species.", metavar="")
 parser_sub_class_gene.add_argument('-o', '--out_directory', dest='out_directory', help="Output directory path.", metavar="")
 parser_sub_class_gene.add_argument('-p', '--output_prefix', dest='output_prefix', help="Output file prefix.", metavar="")
 parser_sub_class_gene.add_argument('-s', '--seg_anc', dest='seg_anc', help="Wgd/segmental genes are ancestral gene. (default: 1)[1:yes; 0: no].",choices=[0, 1], metavar="", type=int)
@@ -574,7 +594,26 @@ parser_sub_class_gene.add_argument('-u', '--unique', dest='unique', help="There 
 parser_sub_class_gene.add_argument('-d', '--proximal_max_distance', dest='proximal_max_distance', help="The maximum distance allowed for proximal genes(default: 10).", type=int, metavar="")
 parser_sub_class_gene.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
-parser_sub_kde = subparsers.add_parser('kde', help='Focal species all syntenic pairs ks / block ks median histogram / gaussian kde curve.')
+
+parser_sub_kde = subparsers.add_parser('kde', help='Focal species all syntenic pairs ks / block ks median histogram and gaussian kde curve.',
+formatter_class = argparse.RawDescriptionHelpFormatter, description = """                                           
+   You can execute this command in three ways: 
+
+   1. Using configuration file:
+      a)quota_Anchor kde -c [\\?, example, help] >> kde.conf 
+      b)quota_Anchor kde -c kde.conf --overwrite
+
+   2. Using command-line arguments:
+        quota_Anchor kde -i zm_zm.collinearity -r maize.length.txt -q maize.length.txt -o zm.zm.kde.png 
+                         -k zm.zm.ks [--overwrite]
+
+   3. Using both a configuration file and command-line arguments:
+      The configuration file has lower priority than other command-line parameters. 
+      Parameters specified in the configuration file will be replaced by those provided via the command line.
+
+        quota_Anchor kde -i zm_zm.collinearity -r maize.length.txt -q maize.length.txt -o zm.zm.kde.png 
+                         -k zm.zm.ks -c kde.conf [--overwrite]
+""")
 parser_sub_kde.set_defaults(func=run_kde)
 parser_sub_kde.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
 parser_sub_kde.add_argument('-k', '--ks_file', dest='ks_file', help="Ks file.", metavar="")
@@ -584,42 +623,109 @@ parser_sub_kde.add_argument('-q', '--query_length', dest='query_length', help="Q
 parser_sub_kde.add_argument('-kr', '--ks_range', dest='ks_range', help="Ks range for plot(default:0,3).", metavar="")
 parser_sub_kde.add_argument('-s', '--figsize', dest='figsize', help="Figure size(default:10,6.18).", metavar="")
 parser_sub_kde.add_argument('-n', '--bins_number', dest='bins_number', help="histogram/curve bins number(default:100).", metavar="", type=int)
-parser_sub_kde.add_argument('-o', '--output_file', dest='output_file', help="Output figure file.", metavar="")
+parser_sub_kde.add_argument('-o', '--output_file', dest='output_file', help="Output image name.", metavar="")
 parser_sub_kde.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
-parser_sub_ks_fitting = subparsers.add_parser('kf', help='ks fitting plot.')
+parser_sub_ks_fitting = subparsers.add_parser('kf', help='Ks fitting plot of the focal species whole genome duplication or ks fitting plot including the corrected ks peaks of species divergence events.',
+formatter_class = argparse.RawDescriptionHelpFormatter, description = """                                           
+   You can execute this command in three ways: 
+
+   1. Using configuration file:
+      a)quota_Anchor kf -c [\\?, example, help] >> ks_fitting.conf 
+      b)quota_Anchor kf -c ks_fitting.conf [--disable_arrow] [--overwrite]
+
+   2. Using command-line arguments:
+      quota_Anchor kf -i zm_zm.collinearity -r maize.length.txt -q maize.length.txt 
+                      -o zm.zm.png -k zm.zm.ks -components 2 -f maize -kr 0,2
+                      [--correct_file outfile_divergent_peaks.csv] [--disable_arrow] [--overwrite]
+
+
+   3. Using both a configuration file and command-line arguments:
+      The configuration file has lower priority than other command-line parameters. 
+      Parameters specified in the configuration file will be replaced by those provided via the command line.
+
+      quota_Anchor kf -i zm_zm.collinearity -r maize.length.txt -q maize.length.txt
+                      -o zm.zm.png -k zm.zm.ks -components 2 -f maize -kr 0,2 -c ks_fitting.conf
+                      [--correct_file outfile_divergent_peaks.csv] [--disable_arrow] [--overwrite]
+""")
 parser_sub_ks_fitting.set_defaults(func=run_kf)
 parser_sub_ks_fitting.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
-parser_sub_ks_fitting.add_argument('-k', '--ks_file', dest='ks_file', help="Ks file.", metavar="")
-parser_sub_ks_fitting.add_argument('-i', '--collinearity_file', dest='collinearity_file', help="Collinearity file.", metavar="")
+parser_sub_ks_fitting.add_argument('-k', '--ks_file', dest='ks_file', help="Focal species ks file(self vs self).", metavar="")
+parser_sub_ks_fitting.add_argument('-i', '--collinearity_file', dest='collinearity_file', help="Focal species collinearity file(self vs self).", metavar="")
 parser_sub_ks_fitting.add_argument('-r', '--ref_length', dest='ref_length', help="Reference species chromosome length file.", metavar="")
 parser_sub_ks_fitting.add_argument('-q', '--query_length', dest='query_length', help="Query species chromosome length file.", metavar="")
 parser_sub_ks_fitting.add_argument('-kr', '--ks_range', dest='ks_range', help="Ks range for plot(default:0,3).", metavar="")
-parser_sub_ks_fitting.add_argument('-s', '--figsize', dest='figsize', help="Figure size(default:10,6.18).", metavar="")
+parser_sub_ks_fitting.add_argument('-s', '--figsize', dest='figsize', help="Figure size(default:12,7).", metavar="")
 parser_sub_ks_fitting.add_argument('-f', '--focal_species', dest='focal_species', help="Focal species name.", metavar="")
-parser_sub_ks_fitting.add_argument('-components', '--components', dest='components', help="wgd number, you can determine by dotplot(default:4).", metavar="", type=int)
-parser_sub_ks_fitting.add_argument('-n', '--bins_number', dest='bins_number', help="histogram/curve bins number(default:200).", metavar="", type=int)
+parser_sub_ks_fitting.add_argument('-components', '--components', dest='components', help="Number of whole genome duplication events and you can determine this number by dotplot.", metavar="", type=int)
 parser_sub_ks_fitting.add_argument('-o', '--output_file', dest='output_file', help="Output figure file.", metavar="")
-parser_sub_ks_fitting.add_argument('-correct_file', '--correct_file', dest='correct_file', help="correct file(generated by correct command).", metavar="")
-parser_sub_ks_fitting.add_argument('-disable_arrow', '--disable_arrow', dest='disable_arrow', help="disable arrow in the figure if you specify -correct_file parameter.", action='store_true')
+parser_sub_ks_fitting.add_argument('-correct_file', '--correct_file', dest='correct_file', help="Optional, correct file(generated by correct command).", metavar="")
+parser_sub_ks_fitting.add_argument('-disable_arrow', '--disable_arrow', dest='disable_arrow', help="Disable arrow in the figure if you specify -correct_file parameter.", action='store_true')
 parser_sub_ks_fitting.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
-parser_sub_trios = subparsers.add_parser('trios', help='generate trios by nwk tree.')
+parser_sub_trios = subparsers.add_parser('trios', help='Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary newick tree.',
+formatter_class = argparse.RawDescriptionHelpFormatter, description = """                                           
+   
+   You can execute this command in three ways: 
+
+   1. Using configuration file:
+      a)quota_Anchor trios -c [\\?, example, help] >> trios.conf 
+      b)quota_Anchor trios -c trios.conf --overwrite
+
+   2. Using command-line arguments:
+      quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k maize -ot ortholog_trios_maize.csv
+                         -op species_pairs.csv -t tree.txt [--overwrite]
+
+   3. Using both a configuration file and command-line arguments:
+      The configuration file has lower priority than other command-line parameters. 
+      Parameters specified in the configuration file will be replaced by those provided via the command line.
+
+      quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k maize -ot ortholog_trios_maize.csv
+                         -op species_pairs.csv -t tree.txt -c trios.conf [--overwrite]
+""")
 parser_sub_trios.set_defaults(func=run_trios)
 parser_sub_trios.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
-parser_sub_trios.add_argument('-n', '--nwk_tree', dest='nwk_tree', help="nwk tree", metavar="")
-parser_sub_trios.add_argument('-k', '--focal_species', dest='focal_species', help="focal species name in newick tree.", metavar="")
-parser_sub_trios.add_argument('-ot', '--outfile_trios_path', dest='outfile_trios_path', help="outfile trios file path.", metavar="")
-parser_sub_trios.add_argument('-op', '--outfile_species_pair_file', dest='outfile_species_pair_file', help="outfile species pair file.", metavar="")
+parser_sub_trios.add_argument('-n', '--nwk_tree', dest='nwk_tree', help="Binary tree in newick format", metavar="")
+parser_sub_trios.add_argument('-k', '--focal_species', dest='focal_species', help="Focal species name within newick tree.", metavar="")
+parser_sub_trios.add_argument('-ot', '--outfile_trios_path', dest='outfile_trios_path', help="Output trios file path.", metavar="")
+parser_sub_trios.add_argument('-op', '--outfile_species_pair_file', dest='outfile_species_pair_file', help="Output species pair file.", metavar="")
+parser_sub_trios.add_argument('-t', '--outfile_drawing_path', dest='outfile_drawing_path', help="Output newick tree file(default: tree_{focal_species}.txt).", metavar="")
+parser_sub_trios.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
-parser_sub_correct = subparsers.add_parser('correct', help='Divergent ks peaks and correction.')
+parser_sub_correct = subparsers.add_parser('correct', help='The peak ks of species divergence events were fitted and corrected to the evolutionary rate level of the focal species.',
+formatter_class = argparse.RawDescriptionHelpFormatter, description = """                                           
+   You can execute this command in three ways: 
+
+   1. Using configuration file:
+      a)quota_Anchor correct -c [\\?, example, help] >> correct.conf 
+      b)quota_Anchor correct -c correct.conf --overwrite
+
+   2. Using command-line arguments:
+      quota_Anchor correct -k "maize_sorghum.collinearity.ks,maize_setaria.collinearity.ks,
+      sorghum_setaria.collinearity.ks,maize_oryza.collinearity.ks,sorghum_oryza.collinearity.ks,setaria_oryza.collinearity.ks" 
+      -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv [--overwrite]
+
+   3. Using both a configuration file and command-line arguments:
+      The configuration file has lower priority than other command-line parameters. 
+      Parameters specified in the configuration file will be replaced by those provided via the command line.
+      
+      The order of species pairs in the species pair file(specify by -s parameter/species_pair_file)
+      must be consistent with the order of the ks file(specify by -k parameter/species_pair_ks_file)
+      
+      quota_Anchor correct -k "maize_sorghum.collinearity.ks,maize_setaria.collinearity.ks,
+      sorghum_setaria.collinearity.ks,maize_oryza.collinearity.ks,sorghum_oryza.collinearity.ks,setaria_oryza.collinearity.ks" 
+      -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv -c correct.conf [--overwrite]
+
+""")
+#TODO: add collinearity parameter rather than only ks file (speed).
 parser_sub_correct.set_defaults(func=run_correct)
 parser_sub_correct.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
-parser_sub_correct.add_argument('-t', '--trios_file', dest='trios_file', help="Generate trios file based on nwk information.", metavar="")
-parser_sub_correct.add_argument('-s', '--species_pair_file', dest='species_pair_file', help="Generate species pair file based on nwk information.", metavar="")
-parser_sub_correct.add_argument('-k', '--species_pair_ks_file', dest='species_pair_ks_file', help="ks file for each species pair(Separator: ','). You may need to use quotes around the option.", metavar="")
+parser_sub_correct.add_argument('-t', '--trios_file', dest='trios_file', help="Trios file based on newick tree information.", metavar="")
+parser_sub_correct.add_argument('-s', '--species_pair_file', dest='species_pair_file', help="Species pair file based on newick tree information.", metavar="")
+parser_sub_correct.add_argument('-k', '--species_pair_ks_file', dest='species_pair_ks_file', help="Ks file for each species pair(Separator: ','). You may need to use quotes around the option.", metavar="")
 parser_sub_correct.add_argument('-kr', '--ks_range', dest='ks_range', help="Ks range for plot(default:0,3).", metavar="")
 parser_sub_correct.add_argument('-ot', '--outfile_divergent_peaks', dest='outfile_divergent_peaks', help="The output file contains species ks divergent peak information.", metavar="")
+parser_sub_correct.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 #TODO: adding a space ? or parse sys.argv
 args = parser.parse_args()
 

@@ -55,7 +55,7 @@ class Longest:
             logger.error(exist_error_message)
             sys.exit(1)
         except base.FileEmptyError:
-            empty_error_message = "{0} is empty. gff file and genome file don't match.".format(file_path)
+            empty_error_message = "{0} is empty. And gff file and genome file may be don't match.".format(file_path)
             logger.error(empty_error_message)
             sys.exit(1)
         except OSError:
@@ -71,17 +71,17 @@ class Longest:
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-        except subprocess.CalledProcessError:
-            logger.error(f"generate {output_cds_file} failed by gffread!")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Generate {output_cds_file} failed by gffread!")
             sys.exit(1)
 
     def sub_run(self, sub_run_number, genome_list, gff_list, out_cds_list, out_longest_cds_name_list, idx):
         pool = Pool(sub_run_number)
         for i in range(idx, idx + sub_run_number):
-            logger.info(f"generate {out_cds_list[i]} start.")
+            logger.info(f"Generate {out_cds_list[i]} start.")
             self.run_gffread_get_cds(genome_list[i], gff_list[i], out_cds_list[i])
             self.cds_file_empty(out_cds_list[i])
-            logger.info(f"generate {out_cds_list[i]} done!")
+            logger.info(f"Generate {out_cds_list[i]} done!")
             pool.apply_async(longestCds.longest_cds, args=(gff_list[i], genome_list[i], out_cds_list[i], out_longest_cds_name_list[i]))
         pool.close()
         pool.join()
@@ -114,13 +114,24 @@ class Longest:
         return loop_times, sub_run_include_species, final_pool, ideal_process_number
 
     def run_all_process(self):
-        logger.info("Init longest_cds and the following parameters are config information.")
+        logger.info("Longest_cds module init and the following parameters are config information.")
         print()
         for key, value in vars(self).items():
             if key != "gffread" and key != "conf" and value is not None:
                 print(key, "=", value)
         print()
-
+        if not self.genome_file:
+            logger.error("Please specify your genome file path")
+            sys.exit(1)
+        if not self.gff_file:
+            logger.error("Please specify your gff file path")
+            sys.exit(1)
+        if not self.out_cds_file:
+            logger.error("Please specify your output cds file path")
+            sys.exit(1)
+        if not self.out_longest_cds_file:
+            logger.error("Please specify your output longest cds file path")
+            sys.exit(1)
         genome_list, gff_list, out_cds_list, out_longest_cds_name_list = self.split_para()
         if hasattr(self, 'merge') and self.merge is not None:
             base.output_file_parentdir_exist(self.merge, self.overwrite)
@@ -136,4 +147,4 @@ class Longest:
         if hasattr(self, 'merge') and self.merge is not None:
             self.merge_cds_cds(out_longest_cds_name_list, self.merge)
             base.file_empty(self.merge)
-        logger.info("get longest cds finished!")
+        logger.info("Generate species longest cds file finished!")

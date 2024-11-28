@@ -24,18 +24,17 @@ def get_newick_tree(tree_string):
     except Exception:
         logger.error('Unrecognized format for field "newick_tree" in configuration file (for example, parentheses do not match)')
         sys.exit(1)
-    
-    # TODO: why underscore or spaces is illegal?
+
     # Check if species' informal names contain illegal characters (underscore or spaces)
-    # species_illegal_char=[]
-    # for informal_name in tree.get_leaf_names():
-    #     if "_" in informal_name or " " in informal_name:
-    #         species_illegal_char.append(informal_name)
-    # if len(species_illegal_char) != 0:
-    #     print(f"Informal species' names must not contain any spaces or underscores. Please change the following names in the configuration file:")
-    #     for informal_name in species_illegal_char:
-    #         print(f"- {informal_name}")
-    #     sys.exit(1)
+    species_illegal_char=[]
+    for informal_name in tree.get_leaf_names():
+        if "_" in informal_name or " " in informal_name:
+            species_illegal_char.append(informal_name)
+    if len(species_illegal_char) != 0:
+        logger.error(f"Informal species' names must not contain any spaces or underscores. Please change the following names in commandline or configuration file:")
+        for informal_name in species_illegal_char:
+            logger.error(f"- {informal_name}")
+        sys.exit(1)
     return tree
 
 def check_integrity_newick_tree(tree):
@@ -185,16 +184,13 @@ def get_outspecies_of_a_node(currentnode, max_num_outspecies):
     :param max_num_outspecies: the maximum number (N) of outspecies allowed for the adjustment (only the N closest will be considered)
     :return: a list containing the names of the N outgroup(s) of the current node.
     """
+
     outspecies = []     # list of all outspecies of the current parent node
     for ancestor in currentnode.iter_ancestors():
         outgroup_node = ancestor.get_sisters()    # get sister NODE(s) of the current parent node
         for branch in outgroup_node:
             outspecies_leaves = branch.get_leaves() # get the outspecies leaves
-            # Limiting the amount of outgroups to the closest ones, if required in configuration file
             for outspecies_leaf in outspecies_leaves:
-                if isinstance(max_num_outspecies, int):
-                    if len(outspecies) < max_num_outspecies:
-                        outspecies.append(outspecies_leaf.name)
-                else:
+                if len(outspecies) < max_num_outspecies:
                     outspecies.append(outspecies_leaf.name)
     return outspecies

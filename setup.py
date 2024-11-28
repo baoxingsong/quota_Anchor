@@ -8,11 +8,11 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 with open("README.md", "r", encoding='utf-8') as fh:
     long_des = fh.read()
 
-required = ['pandas', 'numpy', 'biopython', 'matplotlib', 'scipy', 'seaborn', 'plotnine']
+required = ['pandas', 'numpy', 'biopython', 'matplotlib', 'scipy', 'seaborn', 'plotnine', 'ete3', 'scikit-learn']
 
 setup(
     name="quota_anchor",
-    version="0.0.1a1",
+    version="0.0.1b1",
     author="XiaoDong Li",
     author_email="xiaodongli2405@gmail.com",
     description="Conduct strand and WGD aware syntenic identification",
@@ -20,7 +20,7 @@ setup(
     long_description=long_des,
     long_description_content_type="text/markdown",
     url="https://github.com/baoxingsong/quota_Anchor",
-    packages=['quota_anchor', 'quota_anchor.lib', 'quota_anchor.config_file', 'quota_anchor.plots'],
+    packages=['quota_anchor', 'quota_anchor.lib', 'quota_anchor.kspeaks', 'quota_anchor.config_file', 'quota_anchor.plots', 'scripts'],
     package_data={
         'quota_anchor': ['config_file/*', 'plots/*'],
     },

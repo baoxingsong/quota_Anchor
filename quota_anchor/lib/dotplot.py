@@ -101,7 +101,7 @@ class Dotplot:
             plot = (ggplot(coll_df, aes(**dict1)) +
                     facet_grid('refChr~queryChr', scales="free", space="free") +
                     geom_point(aes(**dict2), size=2, alpha=1) +
-                    geom_blank(blank_df, show_legend=False) + 
+                    geom_blank(blank_df, show_legend=False) +
                     scale_color_manual(values=custom_colors) +
                     scale_x_continuous(expand=(0, 0)) +
                     scale_y_continuous(expand=(0, 0)))
@@ -354,10 +354,18 @@ class Dotplot:
                 print(key, "=", value)
         print()
 
-        if not self.query_length or not self.ref_length:
-            logger.error("Please specify your chromosome length file")
+        if not self.query_length:
+            logger.error("Please specify your query species chromosome length file")
             sys.exit(1)
-
+        if not self.ref_length:
+            logger.error("Please specify your reference species chromosome length file")
+            sys.exit(1)
+        if not self.input_file:
+            logger.error("Please specify your input file(table file or collinearity file)")
+            sys.exit(1)
+        if not self.output_file_name:
+            logger.error("Please specify your output file name")
+            sys.exit(1)
         if self.disable_axis_text:
             self.my_theme += theme(axis_text=element_blank(),
                                    axis_ticks=element_blank())
@@ -370,7 +378,7 @@ class Dotplot:
         base.output_file_parentdir_exist(self.output_file_name, self.overwrite)
 
     def run(self):
-        logger.info("Init dotplot and the following parameters are config information.")
+        logger.info("Dotplot module init and the following parameters are config information.")
         self.dotplot_init()
         plt.rcParams['font.family'] = 'serif'
         plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif', 'Bitstream Vera Serif', 'Computer Modern Roman',

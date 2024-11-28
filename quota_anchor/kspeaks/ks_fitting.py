@@ -1,11 +1,10 @@
-import re
+import re, sys
 import logging
 from ..lib import base
 import random
 from matplotlib.colors import to_rgba
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
@@ -27,8 +26,7 @@ class Kf:
         self.disable_arrow = True
 
         self.ks_range = "0,3"
-        self.figsize = "10,6.18"
-        self.bins_number = 200
+        self.figsize = "12,7"
         for i in config_pra.sections():
             if i == 'ks_fitting':
                 for key in config_pra[i]:
@@ -38,16 +36,30 @@ class Kf:
             if key != "func" and key != "analysis" and value is not None:
                 setattr(self, key, value)
 
-        self.plus_div_by_minus_axis = 0.1
+        self.minus_axis_ratio = 0.1
         self.move_distance = 0
+        self.bins_number = 100
         self.components = int(self.components)
-        self.bins_number = int(self.bins_number)
         self.col = "ks_NG86"
-        self.figsize = [float(k) for k in self.figsize.split(',')]
         self.min_block_length = 10
 
+    def fitting_init(self):
+        if not self.query_length:
+            logger.error("Please specify your query species chromosome length file")
+            sys.exit(1)
+        if not self.ref_length:
+            logger.error("Please specify your reference species chromosome length file")
+            sys.exit(1)
+        if not self.ks_file:
+            logger.error("Please specify your focal species ks file")
+            sys.exit(1)
+        if not self.collinearity_file:
+            logger.error("Please specify your focal species collinearity file(self vs self)")
+            sys.exit(1)
+        if not self.output_file:
+            logger.error("Please specify your output file name")
+            sys.exit(1)
 
-    def judge_file(self):
         base.file_empty(self.ref_length)
         base.file_empty(self.query_length)
         base.file_empty(self.ks_file)
@@ -111,7 +123,7 @@ class Kf:
                     # remove outliers
                     mad = median_abs_deviation(block_dict[last_key])
                     for i in block_dict[last_key]:
-                        if median_one[last_key] - mad <= i <= median_one[last_key] + mad:
+                        if median_one[last_key] - mad <= i <= median_one[last_key] + mad: # type: ignore
                             block_dict_rm_outlier[last_key].append(i)
                     median_one_rm_outlier[last_key] = np.median(block_dict_rm_outlier[last_key])
                 else:
@@ -120,13 +132,8 @@ class Kf:
                 try:
                     ks = ks_dict[pair_name]
                 except KeyError:
-                    # assert reverse key is exist
-                    elements = pair_name.split("_")
-                    new_pair_name = elements[1] + "_" + elements[0]
-                    if new_pair_name in ks_dict:
-                        ks = ks_dict[new_pair_name]
-                    else:
-                        continue
+                    # ks==-1 had been deleted
+                    continue
                 block_dict[key].append(ks)
             last_key = key
         if len(block_dict[last_key]) >= min_block_length:
@@ -176,9 +183,8 @@ class Kf:
         cluster_to_alignment_median_pair = {}
         cluster_to_all_ks = {}
         # init dict list
-        cluster_list = list(set(block_label))
-        cluster_list.sort()
-        for cluster in cluster_list:
+        cluster_set = set(block_label)
+        for cluster in cluster_set:
             cluster_to_median[cluster] = []
             cluster_to_alignment_median_pair[cluster] = []
             cluster_to_all_ks[cluster] = []
@@ -216,13 +222,14 @@ class Kf:
         y = self.gaussian_approximate_fuc(x, *parameter)
 
         return y, parameter
-    
-    def determine_marker_position(self, cluster_id, paras, cluster_info):
+
+    @staticmethod
+    def determine_marker_position(cluster_id, paras, cluster_info):
         head = paras[0]
         top_x = paras[1]
-        fake_sd = paras[2]
 
-        top_y = self.gaussian_approximate_fuc(top_x, head, top_x, fake_sd)
+        top_y = head
+
         cluster_info[cluster_id] = [top_x, top_y]
         return cluster_info
 
@@ -244,7 +251,7 @@ class Kf:
     
     def determine_coordinate_gap(self, y_max: float, div_peaks_number: int):
         
-        move_tick = self.plus_div_by_minus_axis * y_max
+        move_tick = self.minus_axis_ratio * y_max
         move_gap_tick = round((move_tick / (div_peaks_number + 1)), 2)
         return move_tick, move_gap_tick
 
@@ -258,8 +265,8 @@ class Kf:
         zorder = cluster_info[cluster_id][2]
 
         if self.correct_file:
-            line_max = y_max_limit * ( 1 + self.plus_div_by_minus_axis)
-            line_ratio = (top_y + self.plus_div_by_minus_axis * y_max_limit) / line_max
+            line_max = y_max_limit * ( 1 + self.minus_axis_ratio)
+            line_ratio = (top_y + self.minus_axis_ratio * y_max_limit) / line_max
         else:
             line_max = y_max_limit
             line_ratio = top_y / line_max
@@ -285,8 +292,8 @@ class Kf:
                 horizontalalignment='center', verticalalignment='center', clip_on=True, zorder=zorder +5, color='w')
     
     def determine_y_min(self):
-        if self.correct_file:
-            y_min_ratio = self.plus_div_by_minus_axis / (1 + self.plus_div_by_minus_axis) 
+        if self.correct_file and not self.disable_arrow:
+            y_min_ratio = self.minus_axis_ratio / (1 + self.minus_axis_ratio)
         else:
             y_min_ratio = 0
         return y_min_ratio
@@ -298,9 +305,8 @@ class Kf:
             return float(match.group(1))
         return 0.0
 
-    def focal_species_first_run(self, logger):
-        logger.info("Check if the input file exists and is not empty")
-        self.judge_file()
+    def focal_species_first_run(self):
+        self.fitting_init()
         ref_chr_list = pd.read_csv(self.ref_length, sep="\t", header=0, index_col=None)['chr'].astype(str).tolist()
         query_chr_list = pd.read_csv(self.query_length, sep="\t", header=0, index_col=None)['chr'].astype(str).tolist()
 
@@ -318,8 +324,8 @@ class Kf:
         new_block_label = block_label.astype(str).tolist()
 
         cluster_to_median, cluster_to_alignment_median_pair, cluster_to_all_ks, cluster_color = self.prepare_cluster_ks_info(new_block_label, block_dict_ks, block_dict_median, all_median_list)
-        
-        fig, ax = plt.subplots(1, 1, figsize=(12.0, 7.0))
+        figsize = [float(k) for k in self.figsize.split(',')]
+        fig, ax = plt.subplots(1, 1, figsize=(figsize[0], figsize[1]))
         ax.set_xlim(ks_min, ks_max)
 
         ax.set_xlabel(r'${K_s}$')
@@ -328,8 +334,6 @@ class Kf:
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
 
-        # bins_width = (ks_max-ks_min)/self.bins_number
-        
         # determine y axis limit
         cluster_info = {}
         zorder = 100
@@ -341,11 +345,11 @@ class Kf:
             # plot line
             ax.plot(x, y, color=cluster_color[cluster_id][0], linewidth=2, zorder=zorder-9)
             ctr = float(paras[1])
-            # plot histogram and hist zorder > line zorder
+            # wgd marker zorder > histogram zorder > curve fitting line zorder
             _, _, patches = ax.hist(np.array(cluster_to_all_ks[cluster_id]), linewidth=2, bins=self.bins_number, alpha=0.3,
-                                    color=cluster_color[cluster_id][0], density=True ,label=f"Cluster {cluster_color[cluster_id][1]} (mode {round(ctr, 3)})", zorder=zorder-8)
+                                    color=cluster_color[cluster_id][0], density=True, label=f"Cluster {cluster_color[cluster_id][1]} (mode {round(ctr, 3)})", zorder=zorder-8)
             map_handle_label.append((patches[0], f"Cluster {cluster_color[cluster_id][1]} (mode {round(ctr, 3)})"))
-            cluster_info = self.determine_marker_position(cluster_id, paras, cluster_info) # type: ignore
+            cluster_info = self.determine_marker_position(cluster_id, paras, cluster_info)
             
             cluster_info[cluster_id].append(zorder-7)
             zorder -= 10
@@ -368,7 +372,7 @@ class Kf:
         if not self.correct_file:
             ax.spines['bottom'].set_position(('outward', self.move_distance))
             ax.legend(handles=handles, labels=labels, frameon=False)
-            fig.suptitle(f'Clustering of syntenic pair from {self.focal_species}')
+            fig.suptitle(f'Clustering of syntenic pairs from {self.focal_species}')
             fig.savefig(self.output_file, transparent=True, dpi=300)
             plt.show()
         return fig, ax, y_min_ratio, handles, labels
@@ -414,41 +418,25 @@ class Kf:
         y = y_max * (0.922 + y_jitter)
         axis.scatter(x=x, y=y, s=220, facecolor='w', edgecolor=circle_color,
                     linewidth=1, zorder=z_order - 1)
-        y = y_max * (0.922 + y_jitter)
         axis.text(x=x, y=y, s=divergence_id, fontsize=12, horizontalalignment='center', verticalalignment='center',
                 clip_on=True, zorder=z_order, color='k')
     
     @staticmethod
     def define_legend_size(axis):
         __, labels = axis.get_legend_handles_labels()
-        final_legend_size = (1.01, 0, 0.7, 1)
+        current_legend_width = 0
+        prev = 0
         for label in labels:
-            label = label.replace("\\", "")
             # Get a legend width that can host the longest latin name of the list 
             if len(label) <= 53:
-                current_legend_width = (len(label) + 17) / 100
+                current_legend_width = max((len(label) + 17) / 100, prev)
+                prev = current_legend_width
             else:
                 current_legend_width = 0.7
-
-            final_legend_size = (1.01, 0.0, current_legend_width, 1)
+                break
+        final_legend_size = (1.01, 0, current_legend_width, 1)
         return final_legend_size
-    
-    @staticmethod
-    def sort_key_handle(handle):
-        if isinstance(handle, mpatches.Rectangle):
-            return 0
-        elif isinstance(handle, Line2D):
-            return 1
-        else:
-            return 2  
 
-    @staticmethod
-    def sort_key_label(label):
-        if label.startswith("Cluster"):
-            return 0
-        else:
-            return 1  
-      
     @staticmethod
     def create_legend(axis, legend_size, insert_pos, wgd_handles, wgd_labels):
         handles, labels = axis.get_legend_handles_labels()
@@ -461,7 +449,7 @@ class Kf:
         wgd_labels.extend(["", "Divergence with:"])
 
         sorted_handles, sorted_labels = wgd_handles + sorted_handles, wgd_labels + sorted_labels
-        lgd = axis.legend(sorted_handles, sorted_labels, loc="upper left", handlelength=1.5, facecolor="w", frameon=False, mode="expand",
+        lgd = axis.legend(sorted_handles, sorted_labels, loc="upper left", handlelength=1.618, facecolor="w", frameon=False, mode="expand",
                         bbox_to_anchor=legend_size)
         
         return lgd
@@ -469,19 +457,18 @@ class Kf:
     def save_mixed_plot(self, fig_corr, ax_corr, wgd_handles, wgd_labels, super_title):
         legend_size = Kf.define_legend_size(ax_corr)
         chart_box = ax_corr.get_position()
-
         ax_corr.set_position([chart_box.x0, chart_box.y0, chart_box.width*0.65, chart_box.height])
         lgd = Kf.create_legend(ax_corr, legend_size, self.components, wgd_handles, wgd_labels)
         fig_corr.savefig(self.output_file, bbox_extra_artists=(lgd, super_title), transparent=True)
         
     def run(self):
-        logger.info("Init kde and the following parameters are config information")
+        logger.info("Ks_fitting module init and the following parameters are config information")
         print()
         for key, value in vars(self).items():
-            if key not in ["conf", "plus_div_by_minus_axis", "move_distance", "col", "min_block_length"]:
+            if key not in ["conf", "minus_axis_ratio", "move_distance", "col", "min_block_length", "bins_number"]:
                 print(key, "=", value)
         print()
-        fig, ax, y_min_ratio, wgd_handles, wgd_labels = self.focal_species_first_run(logger)
+        fig, ax, y_min_ratio, wgd_handles, wgd_labels = self.focal_species_first_run()
 
         if self.correct_file:
             df = pd.read_csv(self.correct_file, header=0, index_col=None)
@@ -520,4 +507,4 @@ class Kf:
                 ax.set_ylim(0, y_max)
             self.save_mixed_plot(fig, ax, wgd_handles, wgd_labels, super_title) # type: ignore
             plt.show()
-        logger.info("ks fitting finished!")
+        logger.info("Plot ks fitting info finished!")

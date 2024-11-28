@@ -78,7 +78,7 @@ def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_sco
                                     queryChromosome_gene_dict[query_GeneName_toChr_dict[qseqid]][qseqid].strand + "\t" + pident + "\n")
 
     target_output.close()
-    logger.info(f"generate {outputFile} done")
+    logger.info(f"Generate {outputFile} done!")
 
 
 if __name__ == '__main__':

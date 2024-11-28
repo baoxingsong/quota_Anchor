@@ -73,16 +73,16 @@ class Collinearity:
                         '-f', strict_remove_overlap
                         ]
         try:
-            logger.info(f"run anchorwave and generate {output_file} start.")
+            logger.info(f"Run AnchorWave and generate {output_file} start.")
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             stderr_gff_read = result.stderr.decode()
             stdout_gff_read = result.stdout.decode()
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-            logger.info(f"run anchorwave and generate {output_file} end.")
+            logger.info(f"Run AnchorWave and generate {output_file} end.")
         # Added in version 3.5
         except subprocess.CalledProcessError as e:
-            logger.error(f"run anchorwave and generate {output_file} failed!")
+            logger.error(f"Run AnchorWave and generate {output_file} failed!")
 
             error_message = e.stderr.decode()
             base.output_info(error_message)
@@ -91,14 +91,24 @@ class Collinearity:
             base.output_info(output_message)
             sys.exit(1)
 
+    def col_init(self):
+        if not self.input_file_name:
+            logger.error("Please specify your table file as input file")
+            sys.exit(1)
+
+        if not self.output_coll_name:
+            logger.error("Please specify your output file name")
+            sys.exit(1)
+
+
     def run(self):
-        logger.info("Init collinearity and the following parameters are config information.")
+        logger.info("Collinearity module init and the following parameters are config information.")
         print()
         for key, value in vars(self).items():
             if key != "AnchorWave" and key != "conf":
                 print(key, "=", value)
         print()
-
+        self.col_init()
         base.file_empty(self.input_file_name)
         base.output_file_parentdir_exist(self.output_coll_name, self.overwrite)
 
@@ -120,4 +130,4 @@ class Collinearity:
                                 self.gap_extend_penalty,
                                 self.strict_remove_overlap
                                 )
-        logger.info(f"collinearity analysis process finished!")
+        logger.info(f"Collinearity analysis process finished!")

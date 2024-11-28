@@ -12,7 +12,7 @@
 
 <!-- TOC -->
 - [quota\_Anchor  ](#quota_anchor)
-  - [Installation](#installation)
+  - [安装](#安装)
   - [使用方法](#使用方法)
     - [帮助信息](#帮助信息)
   - [玉米和高粱间共线性分析示例](#玉米和高粱间共线性分析示例)
@@ -22,17 +22,18 @@
     - [生成共线性分析的输入文件](#生成共线性分析的输入文件)
     - [进行基因共线性分析](#进行基因共线性分析)
     - [产生每个基因的最长编码序列](#产生每个基因的最长编码序列)
-    - [共线性基因对和非共线性基因对同义和非同义替换率的计算](#共线性基因对和非共线性基因对同义和非同义替换率的计算)
+    - [并行计算共线性基因对的同义和非同义替换率](#并行计算共线性基因对的同义和非同义替换率)
   - [同源基因对和共线性基因对可视化](#同源基因对和共线性基因对可视化)
     - [点图可视化](#点图可视化)
     - [物种内或者物种间圈图可视化](#物种内或者物种间圈图可视化)
     - [共线性基因对线形风格染色体可视化](#共线性基因对线形风格染色体可视化)
-    - [Maize gene/gene pairs classification](#maize-genegene-pairs-classification)
+  - [玉米基因和基因对的分类](#玉米基因和基因对的分类)
+  - [基于ks峰值相对于物种分化事件定位全基因组复制事件](#基于ks峰值相对于物种分化事件定位全基因组复制事件)
 <!-- /TOC -->
 </details>
 以下是使用最长路径算法考虑基因方向和全基因组复制信息来识别一对基因组共线性基因的文档。
 
-## Installation
+## 安装
 
 你可以简单地通过conda安装这个软件:
 
@@ -49,36 +50,35 @@ quota_Anchor -h
 ```
 
 ```text
-用法: quota_Anchor [-h] [-v] {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,line_proali,ks,class_gene,kde,kf,trios,correct} ...
+用法: quota_Anchor [-h] [-v] {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,ks,class_gene,kde,kf,trios,correct} ...
 
-使用AnchorWave中实现的最长路径算法考虑基因方向和全基因组复制信息识别对一对基因组的共线性基因
+使用AnchorWave中实现的最长路径算法并考虑基因方向和全基因组复制信息来识别对一对基因组的共线性基因
 
 选项:
   -h, --help            显示帮助信息然后退出。
   -v, --version         显示版本信息然后退出。
 
 基因共线性分析:
-  {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,line_proali,ks,class_gene,kde,kf,trios,correct}
-    longest_pep         根据gffread产生的蛋白质序列和GFF文件提取最长转录本。
-    longest_cds         根据gffread产生的编码序列和GFF文件提取最长编码序列(CDS)。
-    pre_col             产生共线性分析所需的输入文件(表文件)。
-    col                 产生共线性文件。
+  {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,ks,class_gene,kde,kf,trios,correct}
+    longest_pep         基于基因组文件和GFF文件调用gffread生成物种蛋白质序列，接着结合GFF文件提取其最长转录本。
+    longest_cds         基于基因组文件和GFF文件调用gffread产生物种的基因编码序列，接着结合GFF文件提取其最长编码序列。
+    pre_col             基于染色体长度文件和blast文件产生共线性分析所需的输入文件(称为表文件或包含基因位置信息的blast文件)。
+    col                 基于表文件生成共线性文件。
     get_chr_length      根据fai文件和GFF文件产生包含染色体长度和基因总数信息的长度文件。
-    dotplot             得到共线性基因对点图和同源基因对点图。
-    circle              共线性结果可视化圈图。
-    line                共线性结果可视化线形图。
-    line_proali         AnchorWave产生的anchors文件线形可视化。
-    ks                  共线性基因对的同义和非同义替换率的计算。
-    class_gene          将基因或者基因对分类为全基因组复制重复、串联重复、近端重复、转座子重复以及离散重复，对于基因分类来说还有单基因类别(singleton)。
-    kde                 所关注的物种的 所有共线性基因对的ks/共线性区块中位数ks 柱形图和高斯核密度评估曲线。
-    kf                  ks峰值拟合图。
-    trios               根据nwk树文件产生trios，也就是产生焦点物种、姊妹物种以及外群物种组成的三元组。
-    correct             产生并矫正物种分化事件ks峰值。
+    dotplot             产生共线性基因对点图和同源基因对点图。
+    circle              共线性结果可视化(圈图)。
+    line                共线性结果可视化(线形图)。
+    ks                  并行计算共线性基因对的同义和非同义替换率。
+    class_gene          将基因或者基因对分类为全基因组复制重复、串联重复、近端重复、转座子重复以及离散重复，对于基因分类来说还有不存在同源基因的单基因类别(singleton)。
+    kde                 焦点物种 所有共线性基因对ks/共线性区块中位数ks 的柱形图和高斯核密度评估曲线。
+    kf                  对玉米全基因组复制事件ks进行核密度评估及高斯近似函数拟合并绘图或结合纠正后的物种分化ks峰值绘图。
+    trios               根据二叉newick树产生trios(焦点物种、姊妹物种以及外群物种组成的三元组)和物种对文件。
+    correct             拟合物种分化事件的ks峰值并将其矫正到焦点物种的进化速率水平上。
 ```
 
 ## 玉米和高粱间共线性分析示例
 
-自从玉米与高粱分化以来，玉米相对高粱多经历了一次全基因组复制， 但随后的染色体融合导致这两个物种的染色体数目相同(n = 10)。AnchorWave 可以最多可为每个高粱锚点提供两条共线性路径，而为每个玉米锚点提供一条共线性路径。
+自从玉米与高粱分化以来，玉米相对高粱多经历了一次全基因组复制， 但随后的染色体融合导致这两个物种的染色体数目相同(n = 10)。AnchorWave 最多可以为每个高粱锚点提供两条共线性路径，而为每个玉米锚点提供一条共线性路径。
 
 ### 基因组和注释文件的准备
 
@@ -105,7 +105,7 @@ gunzip *gz
 
 该过程主要包括两个步骤：
 
-1. 基于遗传密码表，从基因组文件和注释文件中提取蛋白质序列（调用gffread）。
+1. 基于遗传密码表，从基因组文件和注释文件中提取蛋白质序列。
 2. 对于每个基因，提取其最长转录本。
 
 ```command
@@ -114,7 +114,7 @@ quota_Anchor longest_pep -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb
 
 ### 产生染色体长度文件
 
-染色体长度文件除了记录了染色体名字外还记录了染色体长度和基因总数信息，随后可用于共线性分析和绘图。
+染色体长度文件除了记录了染色体名字外还记录了染色体长度和基因总数信息，随后可用于共线性分析和绘图。请使用`quota_Anchor get_chr_length`查看`-s`参数的含义。
 
 ```command
 quota_Anchor get_chr_length -f sorghum.fa.fai,maize.fa.fai -g sorghum.gff3,maize.gff3 -s 0-9:chr -o sorghum.length.txt,maize.length.txt --overwrite
@@ -153,14 +153,14 @@ quota_Anchor pre_col -a diamond -rs sorghum.protein.fa -qs maize.protein.fa -db 
 
 该过程主要包括两个步骤：
 
-1. 从基因组文件和注释文件中提取编码序列（调用gffread）。
+1. 从基因组文件和注释文件中提取编码序列。
 2. 对于每个基因，提取其最长编码序列。
 
 ```command
 quota_Anchor longest_cds -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.cds.fa,zm.cds.fa -l sorghum.cds.fa,maize.cds.fa -t 2 --overwrite -merge merged.cds.fa
 ```
 
-### 共线性基因对和非共线性基因对同义和非同义替换率的计算
+### 并行计算共线性基因对的同义和非同义替换率
 
 ```command
 quota_Anchor ks -i sb_zm.collinearity -a muscle -p merged.pep.fa -d merged.cds.fa  -o sb_zm.ks -t 16 --overwrite 
@@ -198,42 +198,6 @@ quota_Anchor ks -i sb_zm.collinearity -a muscle -p merged.pep.fa -d merged.cds.f
 
     <p align="center">
     <img src="./quota_anchor/plots/sb_zm.collinearity.ks.png" alt= sb_zm.ks.collinearity. png width="800px" background-color="#ffffff" />
-    </p>
-
-4. R语言共线性基因对点图可视化。
-
-    This file of `sb_zm.collinearity` could be visualized via the following R code:
-
-    ```R
-    library(ggplot2)
-    changetoM <- function ( position ){
-      position=position/1000000;
-      paste(position, "M", sep="")
-    }
-
-    data = read.table("sb_zm.collinearity", header=T)
-    data = data[which(data$refChr %in% c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")),]
-    data = data[which(data$queryChr %in% c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10")),]
-    data$refChr = factor(data$refChr, levels=c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
-    data$queryChr = factor(data$queryChr, levels=c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10"))
-
-    plot = ggplot(data=data, aes(x=queryStart, y=referenceStart))+geom_point(size=0.5, aes(color=strand))+facet_grid(refChr~queryChr, scales="free", space="free" )+ 
-      theme_grey(base_size = 30) +
-      labs(x="maize", y="sorghum")+scale_x_continuous(labels=changetoM) + scale_y_continuous(labels=changetoM) +
-      theme(axis.line = element_blank(),
-            panel.background = element_blank(),
-            panel.border = element_rect(fill=NA,color="black", linewidth=0.5, linetype="solid"),
-            axis.text.y = element_text( colour = "black"),
-            legend.position='none',
-            axis.text.x = element_text(angle=300, hjust=0, vjust=1, colour = "black") )
-
-    png("sorghum.maize.colinearity.png" , width=2000, height=1500)
-    plot
-    dev.off()
-    ```
-
-    <p align="center">
-    <img src="./quota_anchor/plots/sorghum.maize.collinearity.png" alt= sb_zm.dotplot.collinearity width="800px" background-color="#ffffff" />
     </p>
 
 ### 物种内或者物种间圈图可视化
@@ -280,7 +244,9 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     <img src="./quota_anchor/plots/os_sb_sv.line.png" alt= os_sb_sv.line.collinearity width="800px" background-color="#ffffff" />
     </p>
 
-### Maize gene/gene pairs classification
+## 玉米基因和基因对的分类
+
+该流程参考了[DupGen_finder](https://github.com/qiao-xin/DupGen_finder)，流程在一些方面有所不同。简单来说，我们在非unique模式下的划分条件更加宽松，而在unique模式下的划分条件更加严格。
 
 1. 玉米和玉米的共线性分析
 
@@ -336,4 +302,179 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 
     <p align="center">
     <img src="./quota_anchor/plots/maize.stats.pair.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    </p>
+
+## 基于ks峰值相对于物种分化事件定位全基因组复制事件
+
+这个流程参考了 [ksrates](https://github.com/VIB-PSB/ksrates), 两者在一些地方有所不同。简单来说，该流程使用基于`-r_value -q_value`参数获得的共线性基因对ks值拟合结果作为物种分化峰,而ksrates使用RBH基因对ks值拟合结果作为物种分化峰。
+以下是当前目录信息。
+
+```text
+├── raw_data
+│   ├── maize.fa
+│   ├── maize.gff3
+│   ├── oryza.fa
+│   ├── oryza.gff3
+│   ├── setaria.fa
+│   ├── setaria.gff3
+│   ├── sorghum.fa
+│   └── sorghum.gff3
+└── scripts
+    ├── ks_pipeline.py
+    └── longest_pipeline.py
+```
+
+1. 对于`raw_data(input_dir)`的每一个物种产生其最长转录本和最长编码序列。
+
+    ```command
+    python ./scripts/longest_pipeline.py -i raw_data -o output_dir --overwrite
+    ```
+
+2. 获得每个物种的染色体长度文件。
+   你可能需要根据`quota_Anchor get_chr_length`来了解`-s`参数的含义。
+    a)
+
+    ```bash
+    find ./raw_data/*fai |awk '{printf "%s,", $1}'
+    find ./raw_data/*gff3 |awk '{printf "%s,", $1}'
+    find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g   
+    ```
+
+    ```command
+    quota_Anchor get_chr_length -f ./raw_data/maize.fa.fai,./raw_data/oryza.fa.fai,./raw_data/setaria.fa.fai,./raw_data/sorghum.fa.fai -g ./raw_data/maize.gff3,./raw_data/oryza.gff3,./raw_data/setaria.gff3,./raw_data/sorghum.gff3 -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o ./raw_data/maize.length.txt,./raw_data/oryza.length.txt,./raw_data/setaria.length.txt,./raw_data/sorghum.length.txt --overwrite
+    ```
+
+    b)
+
+    ```command
+    quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g)" --overwrite
+    ```
+
+3. 根据你所提供newick格式的二叉树获得物种对文件和三元组。
+
+    ```command
+    quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k "maize" -ot ortholog_trios_maize.csv -op species_pairs.csv -t tree.txt --overwrite
+    ```
+
+    <table>
+    <tr>
+            <td width="15%" align =center>Species_1</td>
+            <td width="15%" align =center>Species_2</td>
+            <td width="10%" align =center>q_value</td>
+            <td width="10%" align =center>r_value</td>
+            <td width="20%" align =center>get_all_collinear_pairs</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>maize</td>
+            <td width="15%" align =center>setaria</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>maize</td>
+            <td width="15%" align =center>setaria</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>sorghum</td>
+            <td width="15%" align =center>setaria</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>maize</td>
+            <td width="15%" align =center>oryza</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>sorghum</td>
+            <td width="15%" align =center>oryza</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>setaria</td>
+            <td width="15%" align =center>oryza</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    </table>
+
+4. 对于每一个物种对产生其共线性结果及共线性基因对所对应的ks值。
+    注意:
+    1. `./scripts/ks_pipeline.py` 这个脚本在共线性过程使用`Species_1`列的值作为查询物种,使用Species_2`列的值作为参考物种。
+    2. `./scripts/ks_pipeline.py` 脚本会根据`species_pairs.csv`物种对文件的`q_value`,`r_value`和`get_all_collinear_pairs`调整共线性过程的参数。
+    3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义。
+
+    ```command
+    python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
+    ```
+
+5. 对于每个分化峰进行拟合，并且基于trios三元组将速率矫正到所关注物种玉米的进化速率上。
+    注意:
+    1. `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` 命令中的`0`表示物种对文件的`get_all_collinear_pairs` 列的值。
+    a)
+
+    ```bash
+    find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
+    ```
+
+   ```command
+    quota_Anchor correct -k "./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/setaria_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/sorghum_setaria0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
+   ```
+
+    b)
+
+    ```command
+    quota_Anchor correct -k "$(find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}')" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
+    ```
+
+6. 玉米全基因组复制事件ks峰的柱形图及高斯核密度评估曲线。
+
+    ```command
+    quota_Anchor pre_col -a diamond -rs ./output_dir/01longest/maize.longest.pep -qs ./output_dir/01longest/maize.longest.pep -db ./maize/maize.database.diamond -mts 20 -e 1e-10 -b ./maize/maize.maize.diamond -rg ./raw_data/maize.gff3 -qg ./raw_data/maize.gff3 -o ./maize/zm_zm.table -bs 100 -al 0 --overwrite
+
+    quota_Anchor dotplot -i ./maize/zm_zm.table -o ./maize/zm.zm.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
+
+    quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -a 1 -m 1000 -W 1 -D 25 -I 5 -E -0.01 -f 0 --overwrite
+
+    quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
+
+    quota_Anchor ks -i ./maize/zm_zm.collinearity -a mafft -p ./output_dir/01longest/maize.longest.pep -d ./output_dir/01longest/maize.longest.cds -o ./maize/zm.zm.ks -t 16  --overwrite  
+
+    quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.ks.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize --overwrite -ks ./maize/zm.zm.ks
+    ```
+
+    ```command
+    quota_Anchor kde -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kde.png -k ./maize/zm.zm.ks --overwrite 
+    ```
+
+    <p align="center">
+    <img src="./quota_anchor/plots/zm.zm.kde.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    </p>
+
+7. 对玉米全基因组复制事件ks进行核密度评估及高斯近似函数拟合, 并结合矫正后的物种分化ks峰值绘图。
+
+    ```command
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -kr 0,2
+    ```
+
+    <p align="center">
+    <img src="./quota_anchor/plots/zm.zm.kf.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    </p>
+
+    ```command
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,2
+    ```
+
+    <p align="center">
+    <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
     </p>

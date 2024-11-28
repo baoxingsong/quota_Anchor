@@ -1,7 +1,7 @@
-# This script is referenced from https://github.com/qiao-xin/DupGen_finder.
+# This script refers to https://github.com/qiao-xin/DupGen_finder.
 # We use AnchorWave based-gene syntenic algorithm rather than MCScanX to identify wgd gene pairs/wgd genes.
 # When you specify type=0, duplicates are permitted between different classes of genes to some extent.
-import os
+import os, sys
 import datetime
 from alive_progress import alive_bar
 from . import base
@@ -553,7 +553,7 @@ class ClassGene:
             df.to_csv(file, header=True, index=False, sep='\t')
 
     def run(self):
-        logger.info('Init class_gene and the following parameters are config information')
+        logger.info('Class_gene module init and the following parameters are config information')
         print()
         key_list = ["wgd_pair_file", "wgd_gene_file", "tandem_pair_file", "tandem_gene_file",
                     "proximal_pair_file", "proximal_gene_file", "transposed_pair_file", "transposed_gene_file",
@@ -562,6 +562,18 @@ class ClassGene:
             if key != "conf" and key not in key_list:
                 print(key, "=", value)
         print()
+        if not self.query_blast:
+            logger.error("Please specify your focal species's blast file")
+            sys.exit(1)
+        if not self.query_gff_file:
+            logger.error("Please specify your focal species's gff file")
+            sys.exit(1)
+        if not self.query_ref_collinearity:
+            logger.error("Please specify your collinearity file between focal species and outgroup species")
+            sys.exit(1)
+        if not self.out_directory:
+            logger.error("Please specify your output directory name, where the output files will be stored(If don't exist, the software will recursively create folders)")
+            sys.exit(1)
         #first
         file_exist(self.query_blast, self.query_gff_file, self.query_query_collinearity, self.query_ref_collinearity, self.out_directory)
         overwrite_exist([self.wgd_gene_file, self.tandem_gene_file, self.proximal_gene_file, self.transposed_gene_file, self.dispersed_gene_file,
@@ -608,7 +620,7 @@ class ClassGene:
         #nineth
         self.sort_file([self.wgd_gene_file, self.tandem_gene_file, self.proximal_gene_file, self.transposed_gene_file, self.dispersed_gene_file, self.singleton_gene_file],
                        [self.wgd_pair_file, self.tandem_pair_file, self.proximal_pair_file, self.transposed_pair_file, self.dispersed_pair_file])
-        logger.info("Count and plot the number of gene pairs and genes!")
+        logger.info("Count and visualize the number of genes and gene pairs!")
         #plot
         base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"]).run()
         logger.info("Gene and gene pair classification finished!")
@@ -976,7 +988,7 @@ class ClassGeneUnique:
             df.to_csv(file, header=True, index=False, sep='\t')
 
     def run(self):
-        logger.info("Init class_gene and the following parameters are config information")
+        logger.info("Class_gene module init and the following parameters are config information")
         print()
         key_list = ["wgd_pair_file", "wgd_gene_file", "tandem_pair_file", "tandem_gene_file",
                     "proximal_pair_file", "proximal_gene_file", "transposed_pair_file", "transposed_gene_file",
@@ -985,6 +997,18 @@ class ClassGeneUnique:
             if key != "conf" and key not in key_list:
                 print(key, "=", value)
         print()
+        if not self.query_blast:
+            logger.error("Please specify your focal species's blast file")
+            sys.exit(1)
+        if not self.query_gff_file:
+            logger.error("Please specify your focal species's gff file")
+            sys.exit(1)
+        if not self.query_ref_collinearity:
+            logger.error("Please specify your collinearity file between focal species and outgroup species")
+            sys.exit(1)
+        if not self.out_directory:
+            logger.error("Please specify your output directory name, where the output files will be stored(If don't exist, the software will recursively create folders)")
+            sys.exit(1)
         #first
         file_exist(self.query_blast, self.query_gff_file, self.query_query_collinearity, self.query_ref_collinearity, self.out_directory)
         overwrite_exist([self.wgd_gene_file, self.tandem_gene_file, self.proximal_gene_file, self.transposed_gene_file, self.dispersed_gene_file,

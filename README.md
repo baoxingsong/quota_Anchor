@@ -27,7 +27,8 @@
       - [Dotplot visualiztion](#dotplot-visualiztion)
       - [Circos visualiztion](#circos-visualiztion)
       - [Chromosome line style visualization](#chromosome-line-style-visualization)
-    - [Maize gene/gene pairs classification](#maize-genegene-pairs-classification)
+  - [Maize gene/gene pairs classification](#maize-genegene-pairs-classification)
+  - [Positioning wgd events relative to species divergent events based on ks peaks](#positioning-wgd-events-relative-to-species-divergent-events-based-on-ks-peaks)
 <!-- /TOC -->
 </details>
 Here are the documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
@@ -49,7 +50,9 @@ quota_Anchor -h
 ```
 
 ```text
-usage: quota_Anchor [-h] [-v] {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,line_proali,ks,class_gene,kde,kf,trios,correct} ...
+usage: quota_Anchor [-h] [-v] {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,ks,class_gene,kde,kf,trios,correct} ...
+
+Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path usage: quota_Anchor [-h] [-v] {longest_pep,longest_cds,get_chr_length,pre_col,col,ks,dotplot,circle,line,class_gene,kde,kf,trios,correct} ...
 
 Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
 
@@ -58,22 +61,25 @@ options:
   -v, --version         show program's version number and exit
 
 Gene collinearity analysis:
-  {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,line_proali,ks,class_gene,kde,kf,trios,correct}
-    longest_pep         Generate the longest protein sequence file from gffread result.
-    longest_cds         Generate the longest cds sequence file from gffread result.
-    pre_col             Generate input file of synteny analysis(table file).
-    col                 Generate gene collinearity result file.
-    get_chr_length      Generate chromosome length and total number of genes information from fai file.
-    dotplot             Generate collinearity dotplot or blast dotplot.
+  {longest_pep,longest_cds,get_chr_length,pre_col,col,ks,dotplot,circle,line,class_gene,kde,kf,trios,correct}
+    longest_pep         Call gffread to generate the protein sequence of the species based on the genome and gff files. The longest transcripts are then
+                        extracted based on the gff file and the protein sequence file.
+    longest_cds         Call gffread to generate the coding sequence of the species based on the genome and gff files. The longest cds are then extracted
+                        based on the gff file and the coding sequence file.
+    get_chr_length      Generate a length file containing chromosome length and total number of genes based on the fai file and gff file.
+    pre_col             Generates the input file for synteny analysis (called a table file or blast file containing gene position information).
+    col                 Generate a collinearity file based on the table file.
+    ks                  Synonymous/non-synonymous substitution rates for syntenic gene pairs calculated in parallel.
+    dotplot             Generate collinear gene pairs dotplot or homologous gene pairs dotplot.
     circle              Collinearity result visualization(circos).
     line                Collinearity result visualization(line style).
-    line_proali         Anchors file from AnchorWave proali to visualization(line style).
-    ks                  Syntenic gene pair synonymous/non-synonymous substitution rate using yn00.
-    class_gene          Genes/Pairs were classified as tandem, proximal, transposed, wgd/segmental, dispersed, and singleton.
-    kde                 Focal species all syntenic pairs ks / block ks median histogram / gaussian kde curve.
-    kf                  ks fitting plot.
-    trios               generate trios by nwk tree.
-    correct             Divergent ks peaks and correction.
+    class_gene          Genes or gene pairs are classified into whole genome duplication, tandem duplication, proximal duplication, transposed duplication,
+                        and dispersed duplication. For gene classification, there is also a single gene category (singleton) which has no homologous gene.
+    kde                 Focal species all syntenic pairs ks / block ks median histogram and gaussian kde curve.
+    kf                  Ks fitting plot of the focal species whole genome duplication or ks fitting plot including the corrected ks peaks of species
+                        divergence events.
+    trios               Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary newick tree.
+    correct             The peak ks of species divergence events were fitted and corrected to the evolutionary rate level of the focal species.
 ```
 
 ### Example of synteny analysis between maize and sorghum
@@ -103,7 +109,7 @@ For convenience, rename the file as follows:
 
 #### Generate the longest protein sequence files
 
-The process, implemented in the function `quota_Anchor longest_pep`, consists of two main steps:
+The process, implemented in the `quota_Anchor longest_pep` module, consists of two main steps:
 
 1. Protein sequences are extracted from genomes and annotation files based on genetic code tables.
 2. For each gene, the longest protein sequence was identified and extracted to ensure the most complete characterization for further analysis.
@@ -151,7 +157,7 @@ quota_Anchor pre_col -a diamond -rs sorghum.protein.fa -qs maize.protein.fa -db 
 
 #### Generate the longest cds sequence file
 
-The process, implemented in the function `quota_Anchor longest_cds`, consists of two main steps:
+The process, implemented in the `quota_Anchor longest_cds` module, consists of two main steps:
 
 1. Extract cds sequences from genome files and annotation files.
 2. Identify and extract the longest CDS sequence for each gene.
@@ -200,42 +206,6 @@ quota_Anchor ks -i sb_zm.collinearity -a muscle -p merged.pep.fa -d merged.cds.f
     <img src="./quota_anchor/plots/sb_zm.collinearity.ks.png" alt= sb_zm.ks.collinearity. png width="800px" background-color="#ffffff" />
     </p>
 
-4. Syntenic pairs visualization by R code.
-
-    This file of `sb_zm.collinearity` could be visualized via the following R code:
-
-    ```R
-    library(ggplot2)
-    changetoM <- function ( position ){
-      position=position/1000000;
-      paste(position, "M", sep="")
-    }
-
-    data = read.table("sb_zm.collinearity", header=T)
-    data = data[which(data$refChr %in% c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")),]
-    data = data[which(data$queryChr %in% c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10")),]
-    data$refChr = factor(data$refChr, levels=c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
-    data$queryChr = factor(data$queryChr, levels=c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10"))
-
-    plot = ggplot(data=data, aes(x=queryStart, y=referenceStart))+geom_point(size=0.5, aes(color=strand))+facet_grid(refChr~queryChr, scales="free", space="free" )+ 
-      theme_grey(base_size = 30) +
-      labs(x="maize", y="sorghum")+scale_x_continuous(labels=changetoM) + scale_y_continuous(labels=changetoM) +
-      theme(axis.line = element_blank(),
-            panel.background = element_blank(),
-            panel.border = element_rect(fill=NA,color="black", linewidth=0.5, linetype="solid"),
-            axis.text.y = element_text( colour = "black"),
-            legend.position='none',
-            axis.text.x = element_text(angle=300, hjust=0, vjust=1, colour = "black") )
-
-    png("sorghum.maize.colinearity.png" , width=2000, height=1500)
-    plot
-    dev.off()
-    ```
-
-    <p align="center">
-    <img src="./quota_anchor/plots/sorghum.maize.collinearity.png" alt= sb_zm.dotplot.collinearity width="800px" background-color="#ffffff" />
-    </p>
-
 #### Circos visualiztion
 
 Inter-species
@@ -280,7 +250,9 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     <img src="./quota_anchor/plots/os_sb_sv.line.png" alt= os_sb_sv.line.collinearity width="800px" background-color="#ffffff" />
     </p>
 
-### Maize gene/gene pairs classification
+## Maize gene/gene pairs classification
+
+This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finder), with some modifications to suit our specific requirements. In summary, the partitioning conditions in non-unique mode are more relaxed, whereas the conditions in unique mode are more stringent.
 
 1. Synteny Analysis of Maize and Maize
 
@@ -336,4 +308,178 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 
     <p align="center">
     <img src="./quota_anchor/plots/maize.stats.pair.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    </p>
+
+## Positioning wgd events relative to species divergent events based on ks peaks
+
+This pipeline refers to [ksrates](https://github.com/VIB-PSB/ksrates), with some differences between the two. In short, this pipeline uses the collinear gene pair ks value fitting results obtained based on the `-r_value -q_value` parameters as the species divergent peak, while ksrates uses the RBH gene pair ks value fitting results as the species divergent peak.
+The following is the current directory tree.
+
+```text
+├── raw_data
+│   ├── maize.fa
+│   ├── maize.gff3
+│   ├── oryza.fa
+│   ├── oryza.gff3
+│   ├── setaria.fa
+│   ├── setaria.gff3
+│   ├── sorghum.fa
+│   └── sorghum.gff3
+└── scripts
+    ├── ks_pipeline.py
+    └── longest_pipeline.py
+```
+
+1. Generate longest protein and longest cds sequence for each species in the input directory.
+
+    ```command
+    python ./scripts/longest_pipeline.py -i raw_data -o output_dir --overwrite
+    ```
+
+2. Get species chromosome length file.
+   You may want to look up the meaning of the `-s` parameter via `quota_Anchor get_chr_length` command.
+    a)
+
+    ```bash
+    find ./raw_data/*fai |awk '{printf "%s,", $1}'
+    find ./raw_data/*gff3 |awk '{printf "%s,", $1}'
+    find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g   
+    ```
+
+    ```command
+    quota_Anchor get_chr_length -f ./raw_data/maize.fa.fai,./raw_data/oryza.fa.fai,./raw_data/setaria.fa.fai,./raw_data/sorghum.fa.fai -g ./raw_data/maize.gff3,./raw_data/oryza.gff3,./raw_data/setaria.gff3,./raw_data/sorghum.gff3 -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o ./raw_data/maize.length.txt,./raw_data/oryza.length.txt,./raw_data/setaria.length.txt,./raw_data/sorghum.length.txt --overwrite
+    ```
+
+    b)
+
+    ```command
+    quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g)" --overwrite
+    ```
+
+3. According to binary newick tree get trios file and species pair file.
+
+    ```command
+    quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k "maize" -ot ortholog_trios_maize.csv -op species_pairs.csv -t tree.txt --overwrite
+    ```
+
+    <table>
+    <tr>
+            <td width="15%" align =center>Species_1</td>
+            <td width="15%" align =center>Species_2</td>
+            <td width="10%" align =center>q_value</td>
+            <td width="10%" align =center>r_value</td>
+            <td width="20%" align =center>get_all_collinear_pairs</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>maize</td>
+            <td width="15%" align =center>setaria</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>maize</td>
+            <td width="15%" align =center>setaria</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>sorghum</td>
+            <td width="15%" align =center>setaria</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>maize</td>
+            <td width="15%" align =center>oryza</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>sorghum</td>
+            <td width="15%" align =center>oryza</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>setaria</td>
+            <td width="15%" align =center>oryza</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    </table>
+
+4. Get synteny file and ks file for each species pair.
+    Note:
+    1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column as the query and the `Species_2` column as the reference in the collinearity procedure.
+    2. The `./scripts/ks_pipeline.py` script adjusts the parameters of the collinearity procedure based on the `r_value` `q_value` and `get_all_collinear_pairs` columns of the species pairs file.
+    3. You may want to look up the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command.
+
+    ```command
+    python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
+    ```
+
+5. Ks fitting and correction for each species ks divergent peak.
+    Note:
+    1. The `0` in `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` represents the value of the `get_all_collinear_pairs` column of the species pair file.
+    a)
+
+    ```bash
+    find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
+    ```
+
+   ```command
+    quota_Anchor correct -k "./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/setaria_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/sorghum_setaria0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
+   ```
+
+    b)
+
+    ```command
+    quota_Anchor correct -k "$(find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}')" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
+    ```
+
+6. Maize wgd ks peaks fitting
+
+    ```command
+    quota_Anchor pre_col -a diamond -rs ./output_dir/01longest/maize.longest.pep -qs ./output_dir/01longest/maize.longest.pep -db ./maize/maize.database.diamond -mts 20 -e 1e-10 -b ./maize/maize.maize.diamond -rg ./raw_data/maize.gff3 -qg ./raw_data/maize.gff3 -o ./maize/zm_zm.table -bs 100 -al 0 --overwrite
+
+    quota_Anchor dotplot -i ./maize/zm_zm.table -o ./maize/zm.zm.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
+
+    quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -a 1 -m 1000 -W 1 -D 25 -I 5 -E -0.01 -f 0 --overwrite
+
+    quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
+
+    quota_Anchor ks -i ./maize/zm_zm.collinearity -a mafft -p ./output_dir/01longest/maize.longest.pep -d ./output_dir/01longest/maize.longest.cds -o ./maize/zm.zm.ks -t 16  --overwrite  
+
+    quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.ks.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize --overwrite -ks ./maize/zm.zm.ks
+    ```
+
+    ```command
+    quota_Anchor kde -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kde.png -k ./maize/zm.zm.ks --overwrite
+    ```
+
+    <p align="center">
+    <img src="./quota_anchor/plots/zm.zm.kde.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    </p>
+
+    ```command
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png -k ./maize/zm.zm.ks -f maize -components 2 -kr 0,2 --overwrite
+    ```
+
+    <p align="center">
+    <img src="./quota_anchor/plots/zm.zm.kf.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    </p>
+7. The kernel density of the maize genome duplication event ks was estimated and fitted using a Gaussian approximation function, and the ks peak of the corrected species divergent events was plotted.
+
+    ```command
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,2 --overwrite
+    ```
+
+    <p align="center">
+    <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
