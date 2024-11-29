@@ -8,7 +8,7 @@
 
 ---
 <details open>
- <summary><strong>Table of Contents</strong></summary>
+ <summary><strong>目录</strong></summary>
 
 <!-- TOC -->
 - [quota\_Anchor  ](#quota_anchor)
@@ -478,3 +478,4 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     <p align="center">
     <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
+

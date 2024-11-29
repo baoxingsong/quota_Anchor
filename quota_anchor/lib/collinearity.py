@@ -13,7 +13,7 @@ class Collinearity:
         self.q_value = 1
         self.maximum_gap_size = 25
         self.tandem_length = 0
-        self.over_lap_window = 1
+        self.overlap_window = 1
         self.count_style = 0
         self.strict_strand = 1
         self.get_all_collinearity = 0
@@ -36,7 +36,7 @@ class Collinearity:
                 setattr(self, key, value)
 
     def convert_attr_type(self):
-        attr = ['r_value', 'q_value', 'maximum_gap_size', 'tandem_length', 'over_lap_window', 'count_style',
+        attr = ['r_value', 'q_value', 'maximum_gap_size', 'tandem_length', 'overlap_window', 'count_style',
                 'strict_strand', 'get_all_collinearity',  'minimum_chain_score', 'gap_extend_penalty', 'strict_remove_overlap']
         for i in attr:
             setattr(self, i, str(getattr(self, i)))
@@ -48,7 +48,7 @@ class Collinearity:
                         q_value,
                         maximum_gap_size,
                         tandem_length,
-                        over_lap_window,
+                        overlap_window,
                         count_style,
                         strict_strand,
                         get_all_collinearity,
@@ -64,7 +64,7 @@ class Collinearity:
                         '-Q', q_value,
                         '-D', maximum_gap_size,
                         '-m', tandem_length,
-                        '-W', over_lap_window,
+                        '-W', overlap_window,
                         '-c', count_style,
                         '-s', strict_strand,
                         '-a', get_all_collinearity,
@@ -122,7 +122,7 @@ class Collinearity:
                                 self.q_value,
                                 self.maximum_gap_size,
                                 self.tandem_length,
-                                self.over_lap_window,
+                                self.overlap_window,
                                 self.count_style,
                                 self.strict_strand,
                                 self.get_all_collinearity,

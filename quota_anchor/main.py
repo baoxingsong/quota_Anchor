@@ -388,7 +388,7 @@ parser_sub_col.add_argument('-i', '--input_file_name', dest='input_file_name', h
 parser_sub_col.add_argument('-o', '--output_coll_name', dest='output_coll_name', help="Output collinearity file.", metavar="")
 parser_sub_col.add_argument('-r', '--r_value', dest='r_value', help="Reference genome maximum alignment coverage.", metavar="", type=int)
 parser_sub_col.add_argument('-q', '--q_value', dest='q_value', help="Query genome maximum alignment coverage.", metavar="", type=int)
-parser_sub_col.add_argument('-s', '--strict_strand', dest='strict_strand', help="Specify whether the direction of the gene pairs within a block must be strictly the same or reverse as the block's direction. (1:yes;0:no. default: 1).", metavar="", type=int)
+parser_sub_col.add_argument('-s', '--strict_strand', dest='strict_strand', help="Specify whether the direction of the gene pairs within a block must be strictly the same or reverse as the block's direction(1:yes;0:no. default: 1).", metavar="", type=int)
 parser_sub_col.add_argument('-a', '--get_all_collinearity', dest='get_all_collinearity', help=
                          """Enable this flag to get all collinear results and disable r and q parameters (default: 0)
                             Options: 0:enable -r -q parameter; 1 or other integer: get all collinear result and disable -r -q parameter.""", metavar="", type=int)

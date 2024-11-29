@@ -439,7 +439,7 @@ if __name__ == '__main__':
                                         └── longest_pipeline.py
 
     3. Execute the following command in your system terminal to get the species chromosome length file. 
-       You may want to look up the meaning of the -s parameter via quota_Anchor get_chr_length command
+       You may need to understand the meaning of the -s parameter via quota_Anchor get_chr_length command
        
        quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\\.txt/g)" --overwrite
     
@@ -499,7 +499,7 @@ if __name__ == '__main__':
     a)When you simply want to get all syntenic pairs (disable r_value and q_value in collinearity procedure).
       you can manually modify the get_all_collinear_pairs column of species_pair_file to 1.
     b)The script adjusts the parameters of the collinearity procedure based on the r_value q_value and get_all_collinear_pairs columns of the species pairs file.
-      You may want to look up the meaning of the r_value, q_value and get_all_collinear_pairs parameter via quota_Anchor col command.
+      You may need to understand the meaning of the r_value, q_value and get_all_collinear_pairs parameter via quota_Anchor col command.
     
     Species_1	Species_2	r_value	q_value	get_all_collinear_pairs
     maize	sorghum	1	1	0                                                       
@@ -601,6 +601,7 @@ if __name__ == '__main__':
         SpeciesPair(species_1, species_2, R_VALUE_MAP, Q_VALUE_MAP, GET_ALL_COLLINEARITY_MAP, OVERWRITE).run()
         if PLOT_TABLE or PLOT_COLLINEARITY:
             SpeciesPairPlot(species_1, species_2, GET_ALL_COLLINEARITY_MAP, OVERWRITE).run()
+
 
 
 

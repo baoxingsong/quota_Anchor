@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[**English**](./README.md) | [**中文简体**](./README_zh.md)
+[**English**](./README.md) | [**Chinese**](./README_zh.md)
 
 </div>
 
@@ -32,7 +32,7 @@
 <!-- /TOC -->
 </details>
 Here are the documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
-
+For more information about the `quota_Anchor col`, refer to the [document](./quota_anchor/doc/longestPathAlogorithm.md)
 ## Installation
 
 You can simply install the software via conda:
@@ -317,14 +317,14 @@ The following is the current directory tree.
 
 ```text
 ├── raw_data
-│   ├── maize.fa
-│   ├── maize.gff3
-│   ├── oryza.fa
-│   ├── oryza.gff3
-│   ├── setaria.fa
-│   ├── setaria.gff3
-│   ├── sorghum.fa
-│   └── sorghum.gff3
+│   ├── maize.fa
+│   ├── maize.gff3
+│   ├── oryza.fa
+│   ├── oryza.gff3
+│   ├── setaria.fa
+│   ├── setaria.gff3
+│   ├── sorghum.fa
+│   └── sorghum.gff3
 └── scripts
     ├── ks_pipeline.py
     └── longest_pipeline.py
@@ -337,7 +337,7 @@ The following is the current directory tree.
     ```
 
 2. Get species chromosome length file.
-   You may want to look up the meaning of the `-s` parameter via `quota_Anchor get_chr_length` command.
+   You may need to run `quota_Anchor get_chr_length` to understand the meaning of the `-s` parameter.
     a)
 
     ```bash
@@ -418,7 +418,7 @@ The following is the current directory tree.
     Note:
     1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column as the query and the `Species_2` column as the reference in the collinearity procedure.
     2. The `./scripts/ks_pipeline.py` script adjusts the parameters of the collinearity procedure based on the `r_value` `q_value` and `get_all_collinear_pairs` columns of the species pairs file.
-    3. You may want to look up the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command.
+    3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command.
 
     ```command
     python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
@@ -483,3 +483,4 @@ The following is the current directory tree.
     <p align="center">
     <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
+
