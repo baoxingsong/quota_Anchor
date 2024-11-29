@@ -31,8 +31,10 @@
   - [Positioning wgd events relative to species divergent events based on ks peaks](#positioning-wgd-events-relative-to-species-divergent-events-based-on-ks-peaks)
 <!-- /TOC -->
 </details>
+
 Here are the documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
 For more information about the `quota_Anchor col`, refer to the [document](./quota_anchor/doc/longestPathAlogorithm.md)
+
 ## Installation
 
 You can simply install the software via conda:
