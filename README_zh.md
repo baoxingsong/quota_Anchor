@@ -423,8 +423,6 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     注意:
     1. `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` 命令中的`0`表示物种对文件的`get_all_collinear_pairs` 列的值。
 
-    a)
-
     ```bash
     find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
     ```
@@ -432,12 +430,6 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
    ```command
     quota_Anchor correct -k "./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/setaria_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/sorghum_setaria0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
    ```
-
-    b)
-
-    ```command
-    quota_Anchor correct -k "$(find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}')" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
-    ```
 
 6. 玉米全基因组复制事件ks峰的柱形图及高斯核密度评估曲线。
 
@@ -480,4 +472,3 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     <p align="center">
     <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
-
