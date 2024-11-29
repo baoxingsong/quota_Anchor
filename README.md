@@ -431,8 +431,6 @@ The following is the current directory tree.
     Note:
     1. The `0` in `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` represents the value of the `get_all_collinear_pairs` column of the species pair file.
 
-    a)
-
     ```bash
     find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
     ```
@@ -440,12 +438,6 @@ The following is the current directory tree.
    ```command
     quota_Anchor correct -k "./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/setaria_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/sorghum_setaria0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
    ```
-
-    b)
-
-    ```command
-    quota_Anchor correct -k "$(find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}')" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
-    ```
 
 6. Maize wgd ks peaks fitting
 
@@ -487,4 +479,3 @@ The following is the current directory tree.
     <p align="center">
     <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
-
