@@ -340,6 +340,7 @@ The following is the current directory tree.
 
 2. Get species chromosome length file.
    You may need to run `quota_Anchor get_chr_length` to understand the meaning of the `-s` parameter.
+
     a)
 
     ```bash
@@ -429,6 +430,7 @@ The following is the current directory tree.
 5. Ks fitting and correction for each species ks divergent peak.
     Note:
     1. The `0` in `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` represents the value of the `get_all_collinear_pairs` column of the species pair file.
+
     a)
 
     ```bash

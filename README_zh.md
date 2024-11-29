@@ -332,6 +332,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 
 2. 获得每个物种的染色体长度文件。
    你可能需要根据`quota_Anchor get_chr_length`来了解`-s`参数的含义。
+
     a)
 
     ```bash
@@ -421,6 +422,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 5. 对于每个分化峰进行拟合，并且基于trios三元组将速率矫正到所关注物种玉米的进化速率上。
     注意:
     1. `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` 命令中的`0`表示物种对文件的`get_all_collinear_pairs` 列的值。
+
     a)
 
     ```bash
