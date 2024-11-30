@@ -18,7 +18,7 @@
   - [玉米和高粱间共线性分析示例](#玉米和高粱间共线性分析示例)
     - [基因组和注释文件的准备](#基因组和注释文件的准备)
     - [产生每个基因的最长转录本](#产生每个基因的最长转录本)
-    - [产生染色体长度文件](#产生染色体长度文件)
+    - [产生物种染色体长度文件](#产生物种染色体长度文件)
     - [生成共线性分析的输入文件](#生成共线性分析的输入文件)
     - [进行基因共线性分析](#进行基因共线性分析)
     - [产生每个基因的最长编码序列](#产生每个基因的最长编码序列)
@@ -28,7 +28,7 @@
     - [物种内或者物种间圈图可视化](#物种内或者物种间圈图可视化)
     - [共线性基因对线形风格染色体可视化](#共线性基因对线形风格染色体可视化)
   - [玉米基因和基因对的分类](#玉米基因和基因对的分类)
-  - [基于ks峰值相对于物种分化事件定位全基因组复制事件](#基于ks峰值相对于物种分化事件定位全基因组复制事件)
+  - [基于同义替换率相对于物种分化事件定位全基因组复制事件](#基于同义替换率相对于物种分化事件定位全基因组复制事件)
 <!-- /TOC -->
 </details>
 以下是使用最长路径算法考虑基因方向和全基因组复制信息来识别一对基因组共线性基因的文档。
@@ -112,7 +112,7 @@ gunzip *gz
 quota_Anchor longest_pep -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.p.fa,zm.p.fa -l sorghum.protein.fa,maize.protein.fa -t 2 --overwrite -merge merged.pep.fa
 ```
 
-### 产生染色体长度文件
+### 产生物种染色体长度文件
 
 染色体长度文件除了记录了染色体名字外还记录了染色体长度和基因总数信息，随后可用于共线性分析和绘图。请使用`quota_Anchor get_chr_length`查看`-s`参数的含义。
 
@@ -287,7 +287,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     </p>
 
     <p align="center">
-    <img src="./quota_anchor/plots/maize-unique.stats.pair.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/maize-unique.stats.pair.png" alt= maize-unique.stats.pair.png width="800px" background-color="#ffffff" />
     </p>
 
     Non-unique模式
@@ -297,16 +297,16 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/maize.stats.gene.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/maize.stats.gene.png" alt= maize.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
 
     <p align="center">
-    <img src="./quota_anchor/plots/maize.stats.pair.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/maize.stats.pair.png" alt= maize.stats.pair.png width="800px" background-color="#ffffff" />
     </p>
 
-## 基于ks峰值相对于物种分化事件定位全基因组复制事件
+## 基于同义替换率相对于物种分化事件定位全基因组复制事件
 
-这个流程参考了 [ksrates](https://github.com/VIB-PSB/ksrates), 两者在一些地方有所不同。简单来说，该流程使用基于`-r_value -q_value`参数获得的共线性基因对ks值拟合结果作为物种分化峰,而ksrates使用RBH基因对ks值拟合结果作为物种分化峰。
+这个流程参考了 [ksrates](https://github.com/VIB-PSB/ksrates), 两者在一些地方有所不同。简单来说，该流程使用基于`-r_value -q_value`参数获得的共线性基因对ks值拟合结果作为物种分化峰,而ksrates使用RBH基因对ks值拟合结果作为物种分化峰。此外，拟合方法也有所不同。
 以下是当前目录信息。
 
 ```text
@@ -351,7 +351,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g)" --overwrite
     ```
 
-3. 根据你所提供newick格式的二叉树获得物种对文件和三元组。
+3. 根据提供的newick格式的二叉树获得物种对文件和trios文件。
 
     ```command
     quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k "maize" -ot ortholog_trios_maize.csv -op species_pairs.csv -t tree.txt --overwrite
@@ -413,7 +413,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     注意:
     1. `./scripts/ks_pipeline.py` 这个脚本在共线性过程使用`Species_1`列的值作为查询物种,使用Species_2`列的值作为参考物种。
     2. `./scripts/ks_pipeline.py` 脚本会根据`species_pairs.csv`物种对文件的`q_value`,`r_value`和`get_all_collinear_pairs`调整共线性过程的参数。
-    3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义。
+    3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义或者参考[文档](./quota_anchor/doc/longestPathAlogorithm.md)。
 
     ```command
     python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
@@ -452,7 +452,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/zm.zm.kde.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/zm.zm.kde.png" alt= zm.zm.kde.png width="800px" background-color="#ffffff" />
     </p>
 
 7. 对玉米全基因组复制事件ks进行核密度评估及高斯近似函数拟合, 并结合矫正后的物种分化ks峰值绘图。
@@ -462,7 +462,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/zm.zm.kf.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/zm.zm.kf.png" alt= zm.zm.kf.png width="800px" background-color="#ffffff" />
     </p>
 
     ```command
@@ -470,5 +470,5 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= zm.zm.kf.mix.png width="800px" background-color="#ffffff" />
     </p>

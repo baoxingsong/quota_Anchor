@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[**English**](./README.md) | [**Chinese**](./README_zh.md)
+[**English**](./README.md) | [**中文简体**](./README_zh.md)
 
 </div>
 
@@ -21,14 +21,14 @@
       - [Generate the chromosome length files from fai and gff file](#generate-the-chromosome-length-files-from-fai-and-gff-file)
       - [Generate the table files that will be used as the input file for synteny analysis](#generate-the-table-files-that-will-be-used-as-the-input-file-for-synteny-analysis)
       - [Performing synteny analysis](#performing-synteny-analysis)
-      - [Generate the longest cds sequence file](#generate-the-longest-cds-sequence-file)
+      - [Generate the longest coding sequence file](#generate-the-longest-coding-sequence-file)
       - [Calculate synonymous and non-synonymous substitution rates for syntenic pairs](#calculate-synonymous-and-non-synonymous-substitution-rates-for-syntenic-pairs)
     - [Homologous pairs and syntenic pairs visualization](#homologous-pairs-and-syntenic-pairs-visualization)
       - [Dotplot visualiztion](#dotplot-visualiztion)
       - [Circos visualiztion](#circos-visualiztion)
       - [Chromosome line style visualization](#chromosome-line-style-visualization)
   - [Maize gene/gene pairs classification](#maize-genegene-pairs-classification)
-  - [Positioning wgd events relative to species divergent events based on ks peaks](#positioning-wgd-events-relative-to-species-divergent-events-based-on-ks-peaks)
+  - [Positioning wgd events relative to species divergent events based on ks](#positioning-wgd-events-relative-to-species-divergent-events-based-on-ks)
 <!-- /TOC -->
 </details>
 
@@ -52,9 +52,7 @@ quota_Anchor -h
 ```
 
 ```text
-usage: quota_Anchor [-h] [-v] {longest_pep,longest_cds,pre_col,col,get_chr_length,dotplot,circle,line,ks,class_gene,kde,kf,trios,correct} ...
-
-Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path usage: quota_Anchor [-h] [-v] {longest_pep,longest_cds,get_chr_length,pre_col,col,ks,dotplot,circle,line,class_gene,kde,kf,trios,correct} ...
+usage: quota_Anchor [-h] [-v] {longest_pep,longest_cds,get_chr_length,pre_col,col,ks,dotplot,circle,line,line_proali,class_gene,kde,kf,trios,correct} ...
 
 Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
 
@@ -63,7 +61,7 @@ options:
   -v, --version         show program's version number and exit
 
 Gene collinearity analysis:
-  {longest_pep,longest_cds,get_chr_length,pre_col,col,ks,dotplot,circle,line,class_gene,kde,kf,trios,correct}
+  {longest_pep,longest_cds,get_chr_length,pre_col,col,ks,dotplot,circle,line,line_proali,class_gene,kde,kf,trios,correct}
     longest_pep         Call gffread to generate the protein sequence of the species based on the genome and gff files. The longest transcripts are then
                         extracted based on the gff file and the protein sequence file.
     longest_cds         Call gffread to generate the coding sequence of the species based on the genome and gff files. The longest cds are then extracted
@@ -75,12 +73,14 @@ Gene collinearity analysis:
     dotplot             Generate collinear gene pairs dotplot or homologous gene pairs dotplot.
     circle              Collinearity result visualization(circos).
     line                Collinearity result visualization(line style).
+    line_proali         Anchors file from AnchorWave proali to visualization(line style).
     class_gene          Genes or gene pairs are classified into whole genome duplication, tandem duplication, proximal duplication, transposed duplication,
                         and dispersed duplication. For gene classification, there is also a single gene category (singleton) which has no homologous gene.
     kde                 Focal species all syntenic pairs ks / block ks median histogram and gaussian kde curve.
     kf                  Ks fitting plot of the focal species whole genome duplication or ks fitting plot including the corrected ks peaks of species
                         divergence events.
-    trios               Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary newick tree.
+    trios               Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary newick
+                        tree.
     correct             The peak ks of species divergence events were fitted and corrected to the evolutionary rate level of the focal species.
 ```
 
@@ -157,12 +157,12 @@ quota_Anchor pre_col -a diamond -rs sorghum.protein.fa -qs maize.protein.fa -db 
     quota_Anchor col -i sb_zm.table -o sb_zm.collinearity -s 0 -a 1 --overwrite
     ```
 
-#### Generate the longest cds sequence file
+#### Generate the longest coding sequence file
 
 The process, implemented in the `quota_Anchor longest_cds` module, consists of two main steps:
 
-1. Extract cds sequences from genome files and annotation files.
-2. Identify and extract the longest CDS sequence for each gene.
+1. Extract coding sequences from genome files and annotation files.
+2. Identify and extract the longest cds for each gene.
 
 ```command
 quota_Anchor longest_cds -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.cds.fa,zm.cds.fa -l sorghum.cds.fa,maize.cds.fa -t 2 --overwrite -merge merged.cds.fa
@@ -254,9 +254,9 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 
 ## Maize gene/gene pairs classification
 
-This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finder), with some modifications to suit our specific requirements. In summary, the partitioning conditions in non-unique mode are more relaxed, whereas the conditions in unique mode are more stringent.
+This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finder), with some modifications to suit our specific requirements. In short, the partitioning conditions in non-unique mode are more relaxed, whereas the conditions in unique mode are more stringent.
 
-1. Synteny Analysis of Maize and Maize
+1. Synteny Analysis of intra-Maize
 
     ```command
     quota_Anchor pre_col -a diamond -rs maize.protein.fa -qs maize.protein.fa -db maize.database.diamond -mts 20 -e 1e-10 -b maize.maize.diamond -rg maize.gff3 -qg maize.gff3 -o zm_zm.table -bs 100 -al 0 -rl maize.length.txt -ql maize.length.txt --overwrite
@@ -274,7 +274,7 @@ This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finde
     └── banana.B.gff
     ```
 
-3. Synteny Analysis of Banana.B and Maize
+3. Synteny Analysis between Banana.B and Maize
 
     ```command
     quota_Anchor longest_pep -f banana.B.fa -g banana.B.gff -p B.p.pep -l banana.B.pep -t 1 --overwrite
@@ -295,7 +295,7 @@ This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finde
     </p>
 
     <p align="center">
-    <img src="./quota_anchor/plots/maize-unique.stats.pair.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/maize-unique.stats.pair.png" alt= maize-unique.stats.pair.png width="800px" background-color="#ffffff" />
     </p>
 
     Non-unique mode
@@ -305,16 +305,16 @@ This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finde
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/maize.stats.gene.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/maize.stats.gene.png" alt= maize.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
 
     <p align="center">
-    <img src="./quota_anchor/plots/maize.stats.pair.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/maize.stats.pair.png" alt= maize.stats.pair.png width="800px" background-color="#ffffff" />
     </p>
 
-## Positioning wgd events relative to species divergent events based on ks peaks
+## Positioning wgd events relative to species divergent events based on ks
 
-This pipeline refers to [ksrates](https://github.com/VIB-PSB/ksrates), with some differences between the two. In short, this pipeline uses the collinear gene pair ks value fitting results obtained based on the `-r_value -q_value` parameters as the species divergent peak, while ksrates uses the RBH gene pair ks value fitting results as the species divergent peak.
+This pipeline refers to [ksrates](https://github.com/VIB-PSB/ksrates), with some differences between two methods. In short, this pipeline uses the collinear gene pair ks value fitting results obtained based on the `-r_value -q_value` parameters as the species divergent peak, while ksrates uses the RBH gene pair ks value fitting results as the species divergent peak. And there are also some slight differences in the fitting methods.
 The following is the current directory tree.
 
 ```text
@@ -332,7 +332,7 @@ The following is the current directory tree.
     └── longest_pipeline.py
 ```
 
-1. Generate longest protein and longest cds sequence for each species in the input directory.
+1. Generate longest protein and longest cds for each species in the input directory.
 
     ```command
     python ./scripts/longest_pipeline.py -i raw_data -o output_dir --overwrite
@@ -359,7 +359,7 @@ The following is the current directory tree.
     quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g)" --overwrite
     ```
 
-3. According to binary newick tree get trios file and species pair file.
+3. Generate trios files and species pair files based on the binary Newick tree.
 
     ```command
     quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k "maize" -ot ortholog_trios_maize.csv -op species_pairs.csv -t tree.txt --overwrite
@@ -421,15 +421,16 @@ The following is the current directory tree.
     Note:
     1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column as the query and the `Species_2` column as the reference in the collinearity procedure.
     2. The `./scripts/ks_pipeline.py` script adjusts the parameters of the collinearity procedure based on the `r_value` `q_value` and `get_all_collinear_pairs` columns of the species pairs file.
-    3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command.
+    3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command or refer to [document](./quota_anchor/doc/longestPathAlogorithm.md).
 
     ```command
     python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
     ```
 
-5. Ks fitting and correction for each species ks divergent peak.
+5. Ks fitting and correction for each species divergent peak.
     Note:
     1. The `0` in `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` represents the value of the `get_all_collinear_pairs` column of the species pair file.
+    2. The order of species pairs in the species pair file(specify by -s parameter,species_pair_file) must be consistent with the order of the ks file(specify by -k parameter, species_pair_ks_file)
 
     ```bash
     find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
@@ -455,12 +456,14 @@ The following is the current directory tree.
     quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.ks.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize --overwrite -ks ./maize/zm.zm.ks
     ```
 
+    You need to provide the number of components according to `zm.zm.table.png` or other methods
+
     ```command
     quota_Anchor kde -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kde.png -k ./maize/zm.zm.ks --overwrite
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/zm.zm.kde.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/zm.zm.kde.png" alt= zm.zm.kde.png width="800px" background-color="#ffffff" />
     </p>
 
     ```command
@@ -470,7 +473,7 @@ The following is the current directory tree.
     <p align="center">
     <img src="./quota_anchor/plots/zm.zm.kf.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
     </p>
-7. The kernel density of the maize genome duplication event ks was estimated and fitted using a Gaussian approximation function, and the ks peak of the corrected species divergent events was plotted.
+7. The Gaussian mixture model was used to group wgd gene pairs ks, and kernel density estimation and Gaussian approximation fitting were performed on each component. The initial species divergent peak was obtained by taking the mode of 382 kernel density estimates, and the rate was corrected to the focal species level based on trios.
 
     ```command
     quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,2 --overwrite
