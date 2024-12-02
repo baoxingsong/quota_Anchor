@@ -29,13 +29,14 @@
     - [共线性基因对线形风格染色体可视化](#共线性基因对线形风格染色体可视化)
   - [玉米基因和基因对的分类](#玉米基因和基因对的分类)
   - [基于同义替换率相对于物种分化事件定位全基因组复制事件](#基于同义替换率相对于物种分化事件定位全基因组复制事件)
+  - [常见问题](#常见问题)
 <!-- /TOC -->
 </details>
 以下是使用最长路径算法考虑基因方向和全基因组复制信息来识别一对基因组共线性基因的文档。
 
 ## 安装
 
-你可以简单地通过conda安装这个软件:
+你可以简单地通过conda安装这个软件（AnchorWave还未发布新的版本v1.2.6,因此你可能需要手动从github下载开发版本的AnchorWave，并将二进制文件复制到你的conda环境的bin目录下）:
 
 ```command
 conda create -n quota_Anchor bioconda::quota_anchor
@@ -72,13 +73,13 @@ quota_Anchor -h
     class_gene          将基因或者基因对分类为全基因组复制重复、串联重复、近端重复、转座子重复以及离散重复，对于基因分类来说还有不存在同源基因的单基因类别(singleton)。
     kde                 焦点物种 所有共线性基因对ks/共线性区块中位数ks 的柱形图和高斯核密度评估曲线。
     kf                  对玉米全基因组复制事件ks进行核密度评估及高斯近似函数拟合并绘图或结合纠正后的物种分化ks峰值绘图。
-    trios               根据二叉newick树产生trios(焦点物种、姊妹物种以及外群物种组成的三元组)和物种对文件。
+    trios               根据newick格式的二叉树产生trios(焦点物种、姊妹物种以及外群物种组成的三元组)和物种对文件。
     correct             拟合物种分化事件的ks峰值并将其矫正到焦点物种的进化速率水平上。
 ```
 
 ## 玉米和高粱间共线性分析示例
 
-自从玉米与高粱分化以来，玉米相对高粱多经历了一次全基因组复制， 但随后的染色体融合导致这两个物种的染色体数目相同(n = 10)。AnchorWave 最多可以为每个高粱锚点提供两条共线性路径，而为每个玉米锚点提供一条共线性路径。
+自从玉米与高粱分化以来，玉米相对高粱多经历了一次全基因组复制， 但随后的染色体融合导致这两个物种的染色体数目相同(n = 10)。AnchorWave 最多可以为每个高粱基因提供两条共线性路径，而为每个玉米基因提供一条共线性路径。更多信息请参考[文档](./quota_anchor/doc/longestPathAlogorithm_zh.md)。
 
 ### 基因组和注释文件的准备
 
@@ -122,7 +123,7 @@ quota_Anchor get_chr_length -f sorghum.fa.fai,maize.fa.fai -g sorghum.gff3,maize
 
 ### 生成共线性分析的输入文件
 
-1. 使用 DIAMOND/BLASTP/BLASTN 进行蛋白或者cds序列局部比对。
+1. 使用 DIAMOND/BLASTP/BLASTN 进行蛋白或者编码序列局部比对。
 2. 将 BLAST 结果和 GFF 文件信息整合到一个表格文件中。
 
 ```command
@@ -131,10 +132,10 @@ quota_Anchor pre_col -a diamond -rs sorghum.protein.fa -qs maize.protein.fa -db 
 
 ### 进行基因共线性分析
 
-1. 通过指定 `-r -q` 参数， 生成共线性结果.
+1. 通过指定 `-r -q` 参数， 生成共线性结果。
 
     ```command
-    quota_Anchor col -i sb_zm.table -o sb_zm.collinearity -r 2 -q 1 -s 0 --overwrite 
+    quota_Anchor col -i sb_zm.table -o sb_zm.collinearity -r 2 -q 1 -s 0 --overwrite
     ```
 
 2. `移除`相对倒位基因对，生成`所有`共线性结果（不指定`-r -q`）。
@@ -246,7 +247,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 
 ## 玉米基因和基因对的分类
 
-该流程参考了[DupGen_finder](https://github.com/qiao-xin/DupGen_finder)，流程在一些方面有所不同。简单来说，我们在非unique模式下的划分条件更加宽松，而在unique模式下的划分条件更加严格。
+该流程参考了[DupGen_finder](https://github.com/qiao-xin/DupGen_finder)，二者在一些方面有所不同。简单来说，我们在非unique模式下的划分条件更加宽松，而在unique模式下的划分条件更加严格。
 
 1. 玉米和玉米的共线性分析
 
@@ -307,7 +308,14 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 ## 基于同义替换率相对于物种分化事件定位全基因组复制事件
 
 这个流程参考了 [ksrates](https://github.com/VIB-PSB/ksrates), 两者在一些地方有所不同。简单来说，该流程使用基于`-r_value -q_value`参数获得的共线性基因对ks值拟合结果作为物种分化峰,而ksrates使用RBH基因对ks值拟合结果作为物种分化峰。此外，拟合方法也有所不同。
-以下是当前目录信息。
+以下是当前目录信息以及水稻和狗尾草的数据来源。
+
+```bash
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/oryza_sativa/dna/Oryza_sativa.IRGSP-1.0.dna_rm.toplevel.fa.gz
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/oryza_sativa/Oryza_sativa.IRGSP-1.0.59.gff3.gz
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/setaria_viridis/dna/Setaria_viridis.Setaria_viridis_v2.0.dna.toplevel.fa.gz
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_viridis/Setaria_viridis.Setaria_viridis_v2.0.59.gff3.gz
+```
 
 ```text
 ├── raw_data
@@ -324,7 +332,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     └── longest_pipeline.py
 ```
 
-1. 对于`raw_data(input_dir)`的每一个物种产生其最长转录本和最长编码序列。
+1. 对于`raw_data(input_dir)`的每一个物种生成其最长转录本和最长编码序列。
 
     ```command
     python ./scripts/longest_pipeline.py -i raw_data -o output_dir --overwrite
@@ -410,17 +418,17 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     </table>
 
 4. 对于每一个物种对产生其共线性结果及共线性基因对所对应的ks值。
-    注意:
-    1. `./scripts/ks_pipeline.py` 这个脚本在共线性过程使用`Species_1`列的值作为查询物种,使用Species_2`列的值作为参考物种。
+    注:
+    1. `./scripts/ks_pipeline.py` 这个脚本在共线性过程使用`species_pairs.csv`的`Species_1`列的值作为查询物种,使用Species_2`列的值作为参考物种。
     2. `./scripts/ks_pipeline.py` 脚本会根据`species_pairs.csv`物种对文件的`q_value`,`r_value`和`get_all_collinear_pairs`调整共线性过程的参数。
-    3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义或者参考[文档](./quota_anchor/doc/longestPathAlogorithm.md)。
+    3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义或者参考[文档](./quota_anchor/doc/longestPathAlogorithm_zh.md)。
 
     ```command
     python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
     ```
 
 5. 对于每个分化峰进行拟合，并且基于trios三元组将速率矫正到所关注物种玉米的进化速率上。
-    注意:
+    注:
     1. `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` 命令中的`0`表示物种对文件的`get_all_collinear_pairs` 列的值。
 
     ```bash
@@ -431,7 +439,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     quota_Anchor correct -k "./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/setaria_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/sorghum_setaria0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
    ```
 
-6. 玉米全基因组复制事件ks峰的柱形图及高斯核密度评估曲线。
+6. 玉米全基因组复制事件共线性基因对ks值柱形图及高斯核密度评估曲线。
 
     ```command
     quota_Anchor pre_col -a diamond -rs ./output_dir/01longest/maize.longest.pep -qs ./output_dir/01longest/maize.longest.pep -db ./maize/maize.database.diamond -mts 20 -e 1e-10 -b ./maize/maize.maize.diamond -rg ./raw_data/maize.gff3 -qg ./raw_data/maize.gff3 -o ./maize/zm_zm.table -bs 100 -al 0 --overwrite
@@ -455,7 +463,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     <img src="./quota_anchor/plots/zm.zm.kde.png" alt= zm.zm.kde.png width="800px" background-color="#ffffff" />
     </p>
 
-7. 对玉米全基因组复制事件ks进行核密度评估及高斯近似函数拟合, 并结合矫正后的物种分化ks峰值绘图。
+    你需要根据`zm.zm.table.png`或者其他方法提供玉米wgd峰值的数量。
 
     ```command
     quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -kr 0,2
@@ -465,6 +473,8 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     <img src="./quota_anchor/plots/zm.zm.kf.png" alt= zm.zm.kf.png width="800px" background-color="#ffffff" />
     </p>
 
+7. 利用高斯混合模型对wgd基因对ks进行分组，对各组分进行核密度估计和高斯近似拟合，取382次核密度估计的众数为最初的物种分化峰，并基于三重奏将分化峰校正至焦点物种水平。
+
     ```command
     quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,2
     ```
@@ -472,3 +482,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
     <p align="center">
     <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= zm.zm.kf.mix.png width="800px" background-color="#ffffff" />
     </p>
+
+## 常见问题
+
+常见问题请看[FAQ_zh.md](./quota_anchor/doc/FAQ_zh.md)。

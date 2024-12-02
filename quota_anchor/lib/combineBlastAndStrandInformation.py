@@ -14,7 +14,7 @@ def read_length(conf):
     return chr_list
 
 def anchorwave_quota(refGffFile, queryGffFile, blastpresult, outputFile, bit_score, align_length, query_length, ref_length):
-    logger.info(f"Combine the Blast result and GFF file information to generate {outputFile} that can be used as input for synteny analysis.")
+    logger.info(f"Combine the blast result and gff file information to generate {outputFile} that can be used as input for synteny analysis.")
     if query_length:
         query_chr_list = read_length(query_length)
     if ref_length:

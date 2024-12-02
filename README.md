@@ -29,6 +29,7 @@
       - [Chromosome line style visualization](#chromosome-line-style-visualization)
   - [Maize gene/gene pairs classification](#maize-genegene-pairs-classification)
   - [Positioning wgd events relative to species divergent events based on ks](#positioning-wgd-events-relative-to-species-divergent-events-based-on-ks)
+  - [FAQ](#faq)
 <!-- /TOC -->
 </details>
 
@@ -37,7 +38,7 @@ For more information about the algorithm, refer to the [document](./quota_anchor
 
 ## Installation
 
-You can simply install the software via conda:
+You can simply install the software via conda（AnchorWave has not yet released a new version v1.2.6, so you may need to manually download the development version of AnchorWave from GitHub and copy the binary file to the bin directory of your conda environment）:
 
 ```command
 conda create -n quota_Anchor bioconda::quota_anchor
@@ -73,14 +74,13 @@ Gene collinearity analysis:
     dotplot             Generate collinear gene pairs dotplot or homologous gene pairs dotplot.
     circle              Collinearity result visualization(circos).
     line                Collinearity result visualization(line style).
-    line_proali         Anchors file from AnchorWave proali to visualization(line style).
     class_gene          Genes or gene pairs are classified into whole genome duplication, tandem duplication, proximal duplication, transposed duplication,
                         and dispersed duplication. For gene classification, there is also a single gene category (singleton) which has no homologous gene.
     kde                 Focal species all syntenic pairs ks / block ks median histogram and gaussian kde curve.
     kf                  Ks fitting plot of the focal species whole genome duplication or ks fitting plot including the corrected ks peaks of species
                         divergence events.
-    trios               Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary newick
-                        tree.
+    trios               Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary
+                        tree in newick format.
     correct             The peak ks of species divergence events were fitted and corrected to the evolutionary rate level of the focal species.
 ```
 
@@ -315,7 +315,14 @@ This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finde
 ## Positioning wgd events relative to species divergent events based on ks
 
 This pipeline refers to [ksrates](https://github.com/VIB-PSB/ksrates), with some differences between two methods. In short, this pipeline uses the collinear gene pair ks value fitting results obtained based on the `-r_value -q_value` parameters as the species divergent peak, while ksrates uses the RBH gene pair ks value fitting results as the species divergent peak. And there are also some slight differences in the fitting methods.
-The following is the current directory tree.
+The following is the current directory tree and oryza sativa and setaria viridis data soucre.
+
+```bash
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/oryza_sativa/dna/Oryza_sativa.IRGSP-1.0.dna_rm.toplevel.fa.gz
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/oryza_sativa/Oryza_sativa.IRGSP-1.0.59.gff3.gz
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/setaria_viridis/dna/Setaria_viridis.Setaria_viridis_v2.0.dna.toplevel.fa.gz
+wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_viridis/Setaria_viridis.Setaria_viridis_v2.0.59.gff3.gz
+```
 
 ```text
 ├── raw_data
@@ -359,7 +366,7 @@ The following is the current directory tree.
     quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g)" --overwrite
     ```
 
-3. Generate trios files and species pair files based on the binary Newick tree.
+3. Generate trios files and species pair files based on the binary tree in newick format.
 
     ```command
     quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k "maize" -ot ortholog_trios_maize.csv -op species_pairs.csv -t tree.txt --overwrite
@@ -419,7 +426,7 @@ The following is the current directory tree.
 
 4. Get synteny file and ks file for each species pair.
     Note:
-    1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column as the query and the `Species_2` column as the reference in the collinearity procedure.
+    1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column of `species_pairs.csv` as the query and the `Species_2` column of `species_pairs.csv` as the reference in the collinearity procedure.
     2. The `./scripts/ks_pipeline.py` script adjusts the parameters of the collinearity procedure based on the `r_value` `q_value` and `get_all_collinear_pairs` columns of the species pairs file.
     3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command or refer to [document](./quota_anchor/doc/longestPathAlogorithm.md).
 
@@ -471,7 +478,7 @@ The following is the current directory tree.
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/zm.zm.kf.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/zm.zm.kf.png" alt= zm.zm.kf.png width="800px" background-color="#ffffff" />
     </p>
 7. The Gaussian mixture model was used to group wgd gene pairs ks, and kernel density estimation and Gaussian approximation fitting were performed on each component. The initial species divergent peak was obtained by taking the mode of 382 kernel density estimates, and the rate was corrected to the focal species level based on trios.
 
@@ -480,5 +487,9 @@ The following is the current directory tree.
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= maize-unique.stats.gene.png width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/zm.zm.kf.mix.png" alt= zm.zm.kf.mix.png width="800px" background-color="#ffffff" />
     </p>
+
+## FAQ
+
+The FAQ document is available at [FAQ.md](./quota_anchor/doc/FAQ.md).

@@ -32,12 +32,12 @@ class Trios:
         focal_species = self.focal_species
         # species name check
         tree = ksrates.get_newick_tree(self.nwk_tree)
-        logger.info("The following is raw nwk tree")
+        logger.info("The following is raw binary tree in newick format")
         print(tree)
         # binary tree check
         ksrates.check_integrity_newick_tree(tree)
         ordered_tree = ksrates.reorder_tree_leaves(tree, focal_species)
-        logger.info("The following is ordered tree")
+        logger.info("The following is ordered binary tree in newick format")
         print(ordered_tree)
         species_of_interest_node = ksrates.get_species_node(focal_species, ordered_tree)
         # get the list of ancestors (as tree node objects) in the lineage that lead to the focal species
@@ -45,7 +45,7 @@ class Trios:
 
         if len(sp_history)-2 == 0:
             logger.error("")
-            logger.error(f"Species [{focal_species}] has no outgroup in the provided Newick tree "
+            logger.error(f"Species [{focal_species}] has no outgroup in the provided newick tree "
                         f"and the rate-adjustment can't be performed.")
             logger.error(f"Please add at least one outgroup species or change the focal species.")
             sys.exit(1)
@@ -129,7 +129,7 @@ class Trios:
         base.output_file_parentdir_exist(self.outfile_species_pair_file, self.overwrite)
 
     def run(self):
-        logger.info("Init trios and the following parameters are config information")
+        logger.info("Trios module init and the following parameters are config information")
         self.trios_init()
         df, trios_array = self.get_trios(self.outfile_trios_path)
         self.get_necessary_pairs(trios_array, self.outfile_species_pair_file)

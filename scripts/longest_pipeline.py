@@ -1,5 +1,5 @@
 import subprocess
-import os, sys, argparse, logging
+import os, sys, argparse, logging, re
 from argparse import ArgumentParser
 
 
@@ -40,6 +40,14 @@ def search_input_dir_files(input_directory):
     _species_lst.sort()
     return _genome_lst, _gff_lst, _species_lst
 
+def output_info(info):
+    if info:
+        info_list = info.split("\n")
+        for i in info_list:
+            if i:
+               print(f'{i}')
+    print()
+    return
 
 class Longest:
     def __init__(self, overwrite):
@@ -91,9 +99,23 @@ class Longest:
                             '-t', species_number
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
-            # For compatibility with --overwrite
+            # For debugging, output will be delayed
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_pep = result.stderr
+            stdout_pep = result.stdout
+            output_info(stderr_pep)
+            output_info(stdout_pep)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def quota_anchor_longest_cds(self, fasta, gff3, raw_cds_var, longest_cds_var, merged_cds_var, species_number):
@@ -119,8 +141,22 @@ class Longest:
                             '-t', species_number
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_cds = result.stderr
+            stdout_cds = result.stdout
+            output_info(stderr_cds)
+            output_info(stdout_cds)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def run(self):
@@ -135,7 +171,7 @@ class Longest:
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser(usage="Generate longest protein and longest cds sequence for each species in the input directory.", formatter_class=argparse.RawDescriptionHelpFormatter, description=
+    parser = ArgumentParser(usage="Generate longest protein and longest cds for each species in the input directory.", formatter_class=argparse.RawDescriptionHelpFormatter, description=
     """
     The initial goal of this script is to simplify the user pipeline of quota_Anchor positioning wgd events relative to species divergent events.
     Note:
@@ -222,4 +258,3 @@ if __name__ == '__main__':
     OVERWRITE = args.overwrite
 
     SPECIES_LST = Longest(OVERWRITE).run()
-

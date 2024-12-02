@@ -234,8 +234,8 @@ class Correct:
         logger.info("Trios module init and the following parameters are config information")
         pair_mode_info_df = self.get_fitting_info()
 
-        logger.info("Divergent ks peak between focal species and sister psecies correction start")
+        logger.info("Divergent peak based on ks between focal species and sister species correction start")
         pre_select_trios, sisters_per_node = self.correct_trios(pair_mode_info_df)
         pair_corrected = self.mean_or_best_strategy(pre_select_trios)
-        logger.info("Divergent ks peak between focal species and sister psecies correction end")
+        logger.info("Divergent peak based on ks between focal species and sister species correction end")
         logger.info(f"Generate {self.outfile_divergent_peaks} done!")
