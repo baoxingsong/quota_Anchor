@@ -1,5 +1,5 @@
 import subprocess
-import os, sys, argparse, logging
+import os, sys, argparse, logging, re
 from argparse import ArgumentParser
 import pandas as pd
 
@@ -79,8 +79,8 @@ def output_info(info):
         info_list = info.split("\n")
         for i in info_list:
             if i:
-                print(f'{i}')
-                print()
+               print(f'{i}')
+    print()
     return
 
 
@@ -154,8 +154,22 @@ class SpeciesPair:
                             '-ql', self.query_length,
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_pre_col = result.stderr
+            stdout_pre_col = result.stdout
+            output_info(stdout_pre_col)
+            output_info(stderr_pre_col)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def quota_anchor_col(self):
@@ -182,8 +196,8 @@ class SpeciesPair:
                             'col',
                             '-i', self.table_path,
                             '-o', self.collinearity_path,
-                            '-r', self.r_value_map[self.ref_species + "\t" + self.query_species],
-                            '-q', self.q_value_map[self.ref_species + "\t" + self.query_species],
+                            '-r', self.r_value_map[self.query_species + "\t" + self.ref_species],
+                            '-q', self.q_value_map[self.query_species + "\t" + self.ref_species],
                             '--strict_strand', "1",
                             '--get_all_collinearity', self.get_all_collinearity_map[self.query_species + "\t" + self.ref_species],
                             '--count_style', "0",
@@ -195,8 +209,23 @@ class SpeciesPair:
                             '--strict_remove_overlap', "0",
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_col = result.stderr
+            stdout_col = result.stdout
+            output_info(stdout_col)
+            output_info(stderr_col)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(
+                r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def quota_anchor_ks(self):
@@ -222,8 +251,23 @@ class SpeciesPair:
                             '-t', str(KS_PROCESS),
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_ks = result.stderr
+            stdout_ks = result.stdout
+            output_info(stdout_ks)
+            output_info(stderr_ks)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(
+                r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def run(self):
@@ -280,8 +324,23 @@ class SpeciesPairPlot:
                             '-use_identity',
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_identity = result.stderr
+            stdout_identity = result.stdout
+            output_info(stdout_identity)
+            output_info(stderr_identity)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(
+                r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def quota_anchor_dotplot_ks(self, input_file, ks_file):
@@ -309,8 +368,23 @@ class SpeciesPairPlot:
                             '-ks', ks_file ,
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_ks = result.stderr
+            stdout_ks = result.stdout
+            output_info(stdout_ks)
+            output_info(stderr_ks)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(
+                r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def quota_anchor_circle(self, input_file):
@@ -344,8 +418,23 @@ class SpeciesPairPlot:
                             '-fs',  "14,14",
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_circle = result.stderr
+            stdout_circle = result.stdout
+            output_info(stdout_circle)
+            output_info(stderr_circle)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(
+                r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def quota_anchor_line(self, input_file):
@@ -375,8 +464,23 @@ class SpeciesPairPlot:
                             '-fs',  "14,14"
                             ]
         try:
-            subprocess.run(command_line, check=True)
-        except subprocess.CalledProcessError:
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_line = result.stderr
+            stdout_line = result.stdout
+            output_info(stdout_line)
+            output_info(stderr_line)
+
+        except subprocess.CalledProcessError as e:
+            pattern = re.compile(
+                r'(set)\s+\'(--overwrite)\'\s+(in)\s+(the)\s+(command)\s+(line)\s+(to)\s+(overwrite)\s+(it)\.')
+            error_message = e.stderr
+            output_info(error_message)
+
+            output_message = e.stdout
+            output_info(output_message)
+
+            if not re.search(pattern, error_message) and not re.search(pattern, output_message):
+                sys.exit(1)
             pass
 
     def run(self):
@@ -541,7 +645,7 @@ if __name__ == '__main__':
     parser.add_argument("-skip_table", "--skip_table",
                         dest="skip_table",
                         action='store_true',
-                        help="Skip generating table file. for each specie pair")
+                        help="Skip generating table file for each specie pair")
     parser.add_argument("-skip_collinearity", "--skip_collinearity",
                         dest="skip_collinearity",
                         action='store_true',
@@ -601,7 +705,6 @@ if __name__ == '__main__':
         SpeciesPair(species_1, species_2, R_VALUE_MAP, Q_VALUE_MAP, GET_ALL_COLLINEARITY_MAP, OVERWRITE).run()
         if PLOT_TABLE or PLOT_COLLINEARITY:
             SpeciesPairPlot(species_1, species_2, GET_ALL_COLLINEARITY_MAP, OVERWRITE).run()
-
 
 
 

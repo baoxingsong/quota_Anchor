@@ -122,7 +122,7 @@ class Lens:
             logger.error("Please specify your fai file path")
             sys.exit(1)
         if not self.output_length_file:
-            logger.error("Please specify your output file name")
+            logger.error("Please specify your output file path")
             sys.exit(1)
         if not self.gff_file:
             logger.error("Please specify your gff file path")

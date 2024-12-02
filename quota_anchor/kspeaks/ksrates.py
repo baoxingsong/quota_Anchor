@@ -1,4 +1,4 @@
-# This module is copied from ksrates(https://github.com/VIB-PSB/ksrates)
+# this module slightly modified from ksrates(https://github.com/VIB-PSB/ksrates)
 
 import logging
 import sys
@@ -17,12 +17,12 @@ def get_newick_tree(tree_string):
     if not (tree_string.endswith(';')):
         tree_string += ";"
     if tree_string == "();" or tree_string == ";":
-        logger.error('Field "newick_tree" in configuration file is empty, please fill in')
+        logger.error('Parameter "newick_tree" is empty, please fill in')
         sys.exit(1)
     try:
         tree = Tree(tree_string)
     except Exception:
-        logger.error('Unrecognized format for field "newick_tree" in configuration file (for example, parentheses do not match)')
+        logger.error('Unrecognized format for parameter "newick_tree" (for example, parentheses do not match)')
         sys.exit(1)
 
     # Check if species' informal names contain illegal characters (underscore or spaces)
@@ -82,16 +82,16 @@ def check_integrity_newick_tree(tree):
                 internal_nodes_with_three_children.append(node)
 
     if len(internal_nodes_with_one_child) != 0:
-        logger.error(f'The tree structure provided in "newick_tree" configuration file field has one ore more incomplete internal nodes:')
+        logger.error(f'The tree structure has one ore more incomplete internal nodes:')
         logger.error(f"likely there are unnecessary pairs of parentheses that generate internal nodes with only one child node instead of two children nodes")
-        logger.error(f"Please adjust the input tree in the configuration file as suggested below and rerun the analysis")
+        logger.error(f"Please adjust the input tree as suggested below and rerun the analysis")
         logger.error(f"Such syntax error can be solved by removing the unnecessary outermost pair of parentheses in the following subtree(s):\n")
         for node in internal_nodes_with_one_child:
             logger.error(f'Subtree {internal_nodes_with_one_child.index(node)+1}: {node.write(format=9).rstrip(";")}{node}\n')
         trigger_exit = True
 
     if len(internal_nodes_with_three_children) != 0:
-        logger.error(f'The tree structure provided in "newick_tree" configuration file field contains unresolved phylogenetic relationships')
+        logger.error(f'The tree structure contains unresolved phylogenetic relationships')
         logger.error(f"Please adjust the tree so that each internal node has exactly two children nodes")
         logger.error(f"Such structural issue has been encountered at the base of the following subtree(s):\n")
         for node in internal_nodes_with_three_children:

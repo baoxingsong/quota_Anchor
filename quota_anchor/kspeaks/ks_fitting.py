@@ -507,4 +507,4 @@ class Kf:
                 ax.set_ylim(0, y_max)
             self.save_mixed_plot(fig, ax, wgd_handles, wgd_labels, super_title) # type: ignore
             plt.show()
-        logger.info("Plot ks fitting info finished!")
+        logger.info("Plot ks fitting info about wgd events and species divergent events finished!")

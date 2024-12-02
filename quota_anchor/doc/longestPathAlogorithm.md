@@ -33,8 +33,7 @@ quota_Anchor col -h
                         within a block(default: 0).
   -m , --tandem_length 
                         This parameter is useful only for self vs self synteny alignment. Options: 0 means retain tandem gene pairs; 1 or any other integer
-                        means remove gene pairs with a tandem length shorter than the specified integer value(default: 0). When you are doing ks peaks
-                        analysis about WGD/Divergent event, you need set this parameter(e.g. -m 500).
+                        means remove gene pairs with a tandem length shorter than the specified integer value(default: 0). When you are doing positioning wgd event relative to species divergent events based ks, you need set this parameter(e.g. -m 500).
   -W , --overlap_window 
                         Collapse BLAST matches. Specify the maximum distance allowed, and only retain best homology pair to synteny analysis under this
                         distance condition(default: 1).
@@ -65,12 +64,12 @@ quota_Anchor col -h
 
     Note:
     a)block direction:
-    `POSITIVE`: ref gene position and query gene position all increase.
-    `NEGATIVE`: ref gene position increase and query gene position decrease.
+    `POSITIVE`: reference gene position and query gene position all increase.
+    `NEGATIVE`: reference gene position increase and query gene position decrease.
 
     b)strand column:
-    `+`: ref gene strand is the same as query gene strand.
-    `-`: ref gene strand is opposite to query gene strand.
+    `+`: reference gene strand is the same as query gene strand.
+    `-`: reference gene strand is opposite to query gene strand.
 
     ```text
     #anchorwave pro -i sb_zm.table -o sb_zm.collinearity -R 2 -Q 1 -D 25 -m 0 -W 1 -c 0 -s 0 -a 1 -I 3 -E -0.005 -f 0
@@ -92,7 +91,7 @@ quota_Anchor col -h
     Specify whether the direction of the gene pairs within a block must be strictly the same or reverse as the block's direction.(1:yes;0:no. default: 1).
 
     Note:
-    If you set `--strict_strand 1`. For POSITIVE blocks, in addition to requiring that both the reference gene position and the query gene position all increase, the algorithm also needs to restrict the strand of the gene pair to `+`, which means that the reference gene strand is the same as the query gene strand. For NEGATIVE blocks, in addition to requiring that the reference gene position increase and the query gene position is decrease, the algorithm also needs to restrict the strand of the gene pair to `-`, which means that the reference gene strand is the spposite as the query gene strand. To some extent, the relative inversion syntenic gene pairs are removed and block more stable.
+    If you set `--strict_strand 1`. For POSITIVE blocks, in addition to requiring that both the reference gene position and the query gene position all increase, the algorithm also needs to restrict the strand of the gene pair to `+`, which means that the reference gene strand is the same as the query gene strand. For NEGATIVE blocks, in addition to requiring that the reference gene position increase and the query gene position decrease, the algorithm also needs to restrict the strand of the gene pair to `-`, which means that the reference gene strand is the opposite as the query gene strand. To some extent, the relative inversion syntenic gene pairs are removed and block more stable.
 
     If you set `--strict_strand 0`. For POSITIVE blocks, reference gene position and query gene position all increase. For NEGATIVE blocks, reference gene position increase and query gene position decrease. This is similar to [DAGchainer](https://sourceforge.net/projects/dagchainer/), [MCScanX](https://github.com/wyp1125/MCScanX) and [WGDI](https://github.com/SunPengChuan/wgdi).
 
@@ -102,10 +101,10 @@ quota_Anchor col -h
    Note: If you set `--get_all_collinearity 1`, the algorithm will search all blocks regardless of whether you set `--r_value` and `q_value`. Theoretically, you can also get all collinear blocks by setting -q -r to extremely large numbers, but the speed is very slow. We provide this option to speed up the process of getting all collinear results.
 
 6. --tandem_length
-   This parameter is useful only for self vs self synteny alignment. Options: 0 means retain tandem gene pairs; 1 or any other integer means remove gene pairs with a tandem length shorter than the specified integer value(default: 0). When you are doing ks peaks analysis about WGD/Divergent event, you need set this parameter(e.g. -m 500).
+   This parameter is useful only for self vs self synteny alignment. Options: 0 means retain tandem gene pairs; 1 or any other integer means remove gene pairs with a tandem length shorter than the specified integer value(default: 0). When you are doing positioning wgd events relative to species divergent events based ks, you need set this parameter(e.g. -m 500).
 
    Note:
-   1. The part table file of maize vs maize is as follows. The software will capture the gene pairs with the same ref gene name and query gene name, so that the software will identify query vs ref as self vs self. Only in this case will the parameter `--tandem_length` take effect, otherwise the software will ignore this parameter. If the ref gene and the query gene are located on the same chromosome and the `absolute value of queryId - refId` (`Abbreviated as abs(queryId - refId)`) is less than or equal to 500, the software will ignore the gene pair.
+   1. The part table file of maize vs maize is as follows. The software will search the gene pairs with the same reference gene name and query gene name, so that the software will identify query vs ref as self vs self. Only in this case will the parameter `--tandem_length` take effect, otherwise the software will ignore this parameter. If the reference gene and the query gene are located on the same chromosome and the `absolute value of queryId - refId` (`Abbreviated as abs(queryId - refId)`) is less than or equal to 500, the software will ignore the gene pair.
    2. If `--tandem_length 500` is set, but the reference gene name cannot possibly be the same as the query gene name, this parameter is useless.
 
        ```text
@@ -122,7 +121,7 @@ quota_Anchor col -h
 
     Note:
     For every chromosome pair(refChr & queryChr)
-    1. For a query gene, if two different reference genes can match this query gene and two ref genes distance `abs(refId1 - refId2)` <= `--overlap_window`, the software will retain a match which has maximum `pident` and remove another match.
+    1. For a query gene, if two different reference genes can match this query gene and two reference genes distance `abs(refId1 - refId2)` <= `--overlap_window`, the software will retain a match which has maximum `pident` and remove another match.
     2. For a ref gene, if two different query genes can match this reference gene and two query genes distance `abs(queryId1 - queryId2)` <= `--overlap_window`, the software will retain a match which has maximum `pident` and remove another match.
 
 8. --maximum_gap_size
@@ -130,20 +129,20 @@ quota_Anchor col -h
     And (`abs(refId1-refId2) - 1` + `abs(queryId1-queryId2) - 1`) / 2 as distance between two gene pairs(matches).
 
 9. --gap_extend_penalty
-    `gap_penalty` between two matches is equal to `gap_open_penalty + disatance * gap_extend_penalty`.
+    If gap exists, `gap_penalty` between two matches is equal to `gap_open_penalty + disatance * gap_extend_penalty`.
 
     Note:
-    Without careful parameter adjustment, most synteny software based gene and dynamic programming will often have some gene pairs with poor match scores at the edge of the syntenic block. If your reference and query species are closely related and you want to get higher quality syntenic blocks, you can set this value to `-0.02`, `-0.03` and so on, but not too high so that no matches are retained.
+    Without careful parameter adjustment, most synteny software based gene and dynamic programming seem often have some gene pairs with poor match scores at the edge of the syntenic block. If your reference and query species are closely related and you want to get higher quality syntenic blocks, you can set this value to `-0.02`, `-0.03` and so on, but not too high so that no matches are retained.
 10. --minimum_chain_score
     minimum chain score (default: 3).
 
     Note:
-    For the default value of 3, since the match score is `pident/100` (<1), the number of syntenic gene pairs for any block is greater than or equal to 3.
+    For the default value of 3, since the match score is `pident/100` (<=1), the number of syntenic gene pairs for any block is greater than or equal to 3.
 11. --count_style
-    -r -q parameter's count style for a block, 0: count only the syntenic genes within a block; 1 or other integer: count all genes.
+    -r -q parameter's count style for a block(default: 0). 0: count only the syntenic genes within a block; 1 or other integer: count all genes.
 
     Note:
-    Under the premise that the --r_value parameter is set to 1 and the --q_value parameter is set to 2, if --count_style is set to 1, take the following figure as an example, if the number of genes contained in the chromosome region of the reference species corresponding to the square area surrounded by the dotted line in the blue area is less than or equal to `--maximum_gap_size -1`, and the number of genes contained in the chromosome region of the corresponding query species is also less than or equal to --maximum_gap_size-1, then the two collinear regions between chromosome a and chromosome 1 should be one block instead of two blocks(if `matchscore + gap_penalty` > 0), and the software will count all the genes between the two reference genes at both ends of the block, and of course, it will also count all the genes between the two query genes at both ends of the block.
+    Under the premise that the --r_value parameter is set to 2 and the --q_value parameter is set to 1, if --count_style is set to 1, take the following figure as an example, if the number of genes contained in the chromosome region of the reference species corresponding to the square area surrounded by the dotted line in the blue area is less than or equal to `--maximum_gap_size - 1`, and the number of genes contained in the chromosome region of the corresponding query species is also less than or equal to `--maximum_gap_size - 1`, then the two collinear regions between chromosome a and chromosome 1 should be one block instead of two blocks(if `matchscore + gap_penalty` > 0), and the software will count all the genes between the two reference genes at both ends of the block, and of course, it will also count all the genes between the two query genes at both ends of the block.
     If count_style is set to 0, the software will only count the syntenic genes between the genes at both ends.
     <p align="center">
     <img src="../plots/count_style.png" alt= count_style.png width="800px" background-color="#ffffff" />
@@ -152,7 +151,7 @@ quota_Anchor col -h
 12. --strict_remove_overlap
     Specify whether to strictly remove square region gene pairs for a block to avoid overlap. (1:yes;0:no. default: 0).
     Note:
-    If there are a large number of so-called tandem duplications or proximal duplications gene pairs between the two chromosomes, as shown in the figure below, there may be a large number of colinear regions between the two chromosomes. If this parameter is set to 1. When the software identifies a block based on the maximum block score, the gene pairs obtained by crossing the two gene sets corresponding to the two(reference and query) chromosome regions of the block will be ignored, so that only this block is retained. When using this parameter, you may need to increase --gap_extend_penalty (e.g. -0.02 or -0.03) to prevent poorer gene pairs on either side of the block from affecting the results.
+    If there are a large number of so-called tandem duplications or proximal duplications gene pairs for the two chromosomes being compared, as shown in the figure below, there may be a large number of colinear regions between the two chromosomes. If this parameter is set to 1. When the software identifies a block based on the maximum block score, the gene pairs obtained by crossing the two gene sets corresponding to the two(reference and query) chromosome regions of the block will be ignored, so that only this block is retained. When using this parameter, you may need to increase --gap_extend_penalty (e.g. -0.02 or -0.03) to prevent poorer gene pairs on either side of the block from affecting the results.
     In general, `--overlap_window` is sufficient, so there is no need to set this parameter.
     <p align="center">
     <img src="../plots/tandem.png" alt= tandem.png width="800px" background-color="#ffffff" />

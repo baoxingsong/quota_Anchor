@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 import os
 import sys
-from .lib import base, collinearity, dotplot, circle, get_chr_length, line, line_proali_pangenome, classification_gene
+from .lib import base, collinearity, dotplot, circle, get_chr_length, line, classification_gene
 from .lib import get_longest_pep, pre_collinearity, get_longest_cds, ks
 from .kspeaks import kde, ks_fitting, trios, correct
 
@@ -91,14 +91,6 @@ def run_line(parameter):
     line.Line(config_par, parameter).run()
 
 
-def run_line_3(parameter):
-    # global base_dir
-    config_par = configparser.ConfigParser()
-    config_par.read(parameter.conf)
-    base.file_empty(parameter.conf)
-    line_proali_pangenome.Line(config_par).run()
-
-
 def run_ks(parameter):
     global base_dir
     config_par = configparser.ConfigParser()
@@ -153,7 +145,7 @@ def run_correct(parameter):
     correct.Correct(config_par, parameter).run()
 
 parser = argparse.ArgumentParser(description='Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.', prog="quota_Anchor")
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1b1')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
 
 
 subparsers = parser.add_subparsers(title='Gene collinearity analysis', dest='analysis')
@@ -390,19 +382,19 @@ parser_sub_col.add_argument('-r', '--r_value', dest='r_value', help="Reference g
 parser_sub_col.add_argument('-q', '--q_value', dest='q_value', help="Query genome maximum alignment coverage.", metavar="", type=int)
 parser_sub_col.add_argument('-s', '--strict_strand', dest='strict_strand', help="Specify whether the direction of the gene pairs within a block must be strictly the same or reverse as the block's direction(1:yes;0:no. default: 1).", metavar="", type=int)
 parser_sub_col.add_argument('-a', '--get_all_collinearity', dest='get_all_collinearity', help=
-                         """Enable this flag to get all collinear results and disable r and q parameters (default: 0)
-                            Options: 0:enable -r -q parameter; 1 or other integer: get all collinear result and disable -r -q parameter.""", metavar="", type=int)
-parser_sub_col.add_argument('-t', '--count_style', dest='count_style', type=int, help="-r -q parameter's count style for a block, 0: count only the syntenic genes within a block; 1 or other integer: count all genes within a block(default: 0).", metavar="")
+                         """Enable this flag to disable r and q parameters and get all collinear result(default: 0). 
+                         Options: 0: enable -r -q parameter; 1 or other integer: disable -r -q parameter and get all collinear result.""", metavar="", type=int)
 parser_sub_col.add_argument('-m', '--tandem_length', dest='tandem_length',metavar="", type=int,
                             help=
                          """ This parameter is useful only for self vs self synteny alignment. Options: 0 means retain tandem gene pairs;
-                             1 or any other integer means remove gene pairs with a tandem length shorter than the specified integer value.(default: 0)
-                             When you are doing ks peaks analysis about WGD/Divergent event, you need set this parameter(e.g. -m 500).""")
-parser_sub_col.add_argument('-W', '--over_lap_window', dest='over_lap_window', type=int, help="Collapse BLAST matches. Specify the maximum distance allowed, and only retain best homology pair to synteny analysis under this distance condition(default: 1).", metavar="")
-parser_sub_col.add_argument('-D', '--maximum_gap_size', dest='maximum_gap_size', type=int, help="Maximum gap size for chain (default: 25).", metavar="")
+                             1 or any other integer means remove gene pairs with a tandem length shorter than the specified integer value(default: 0).
+                             When you are doing positioning wgd events relative to species divergent events, you need set this parameter(e.g. -m 500).""")
 parser_sub_col.add_argument('-I', '--minimum_chain_score', dest='minimum_chain_score', type=float, help="minimum chain score (default: 3).", metavar="")
-parser_sub_col.add_argument('-E', '--gap_extend_penalty', dest='gap_extend_penalty', type=float, help="chain gap extend penalty (default: -0.005).", metavar="")
+parser_sub_col.add_argument('-W', '--overlap_window', dest='overlap_window', type=int, help="Collapse BLAST matches. Specify the maximum distance allowed, and only retain best homology pair to synteny analysis under this distance condition(default: 1).", metavar="")
+parser_sub_col.add_argument('-D', '--maximum_gap_size', dest='maximum_gap_size', type=int, help="Maximum gap size for chain (default: 25).", metavar="")
+parser_sub_col.add_argument('-E', '--gap_extend_penalty', dest='gap_extend_penalty', type=float, help="Chain gap extend penalty (default: -0.005).", metavar="")
 parser_sub_col.add_argument('-f', '--strict_remove_overlap', dest='strict_remove_overlap', type=int, help="Specify whether to strictly remove square region gene pairs for a block to avoid overlap. (1:yes;0:no. default:  0).", metavar="")
+parser_sub_col.add_argument('-t', '--count_style', dest='count_style', type=int, help="-r -q parameter's count style for a block, 0: count only the syntenic genes within a block; 1 or other integer: count all genes within a block(default: 0).", metavar="")
 parser_sub_col.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
 parser_sub_ks = subparsers.add_parser('ks',
@@ -553,12 +545,6 @@ parser_sub_line.add_argument('-fs', '--figsize', dest='figsize', help="Figure si
 parser_sub_line.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
 
-# collinearity AnchorWave proali anchors plot
-parser_sub_line_proali = subparsers.add_parser('line_proali', help='Anchors file from AnchorWave proali to visualization(line style).')
-parser_sub_line_proali.set_defaults(func=run_line_3)
-parser_sub_line_proali.add_argument('-c', '--conf', dest='conf', help="Configure file.", metavar="")
-
-
 parser_sub_class_gene = subparsers.add_parser('class_gene', help='Genes or gene pairs are classified into whole genome duplication, tandem duplication, proximal duplication, transposed duplication, and dispersed duplication. For gene classification, there is also a single gene category (singleton) which has no homologous gene.',
                                       formatter_class=argparse.RawDescriptionHelpFormatter, description="""                                           
     You can execute this command in three ways: 
@@ -663,7 +649,7 @@ parser_sub_ks_fitting.add_argument('-correct_file', '--correct_file', dest='corr
 parser_sub_ks_fitting.add_argument('-disable_arrow', '--disable_arrow', dest='disable_arrow', help="Disable arrow in the figure if you specify -correct_file parameter.", action='store_true')
 parser_sub_ks_fitting.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
-parser_sub_trios = subparsers.add_parser('trios', help='Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary newick tree.',
+parser_sub_trios = subparsers.add_parser('trios', help='Generate trios (consist of focal species, sister species, and outgroup species) and species pair files based on the binary tree in newick format.',
 formatter_class = argparse.RawDescriptionHelpFormatter, description = """                                           
    
    You can execute this command in three ways: 
@@ -720,8 +706,8 @@ formatter_class = argparse.RawDescriptionHelpFormatter, description = """
 #TODO: add collinearity parameter rather than only ks file (speed).
 parser_sub_correct.set_defaults(func=run_correct)
 parser_sub_correct.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
-parser_sub_correct.add_argument('-t', '--trios_file', dest='trios_file', help="Trios file based on newick tree information.", metavar="")
-parser_sub_correct.add_argument('-s', '--species_pair_file', dest='species_pair_file', help="Species pair file based on newick tree information.", metavar="")
+parser_sub_correct.add_argument('-t', '--trios_file', dest='trios_file', help="Trios file based on binary tree in newick format.", metavar="")
+parser_sub_correct.add_argument('-s', '--species_pair_file', dest='species_pair_file', help="Species pair file based on binary tree in newick format.", metavar="")
 parser_sub_correct.add_argument('-k', '--species_pair_ks_file', dest='species_pair_ks_file', help="Ks file for each species pair(Separator: ','). You may need to use quotes around the option.", metavar="")
 parser_sub_correct.add_argument('-kr', '--ks_range', dest='ks_range', help="Ks range for plot(default:0,3).", metavar="")
 parser_sub_correct.add_argument('-ot', '--outfile_divergent_peaks', dest='outfile_divergent_peaks', help="The output file contains species ks divergent peak information.", metavar="")
@@ -740,7 +726,6 @@ def copy_config_file():
         "dotplot": "dotplot.conf",
         "circle": "circle.conf",
         "line": "line.conf",
-        "line_proali": "line_proali.conf",
         "ks": "ks.conf",
         "class_gene": "class_gene.conf",
         "kde": "kde.conf",
