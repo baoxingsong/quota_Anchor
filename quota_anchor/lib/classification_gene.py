@@ -194,6 +194,10 @@ def read_blast_gff(blast, gff):
     return data_info
 
 
+def sort_key(col):
+    return col.str.split("-").map(lambda x: (x[1], int(x[2])))
+
+
 class ClassGene:
     def __init__(self, config_pra, parameter):
         self.query_blast = ""
@@ -545,11 +549,11 @@ class ClassGene:
     def sort_file(gene_file, pair_file):
         for file in gene_file:
             df = pd.read_csv(file, sep="\t", header=0, index_col=None)
-            df.sort_values(by=df.columns[1], inplace=True)
+            df.sort_values(by=df.columns[1], inplace=True, key=sort_key)
             df.to_csv(file, header=True, index=False, sep='\t')
         for file in pair_file:
             df = pd.read_csv(file, sep="\t", header=0, index_col=None)
-            df.sort_values(by=df.columns[1], inplace=True)
+            df.sort_values(by=df.columns[1], inplace=True, key=sort_key)
             df.to_csv(file, header=True, index=False, sep='\t')
 
     def run(self):
@@ -980,11 +984,11 @@ class ClassGeneUnique:
     def sort_file(gene_file, pair_file):
         for file in gene_file:
             df = pd.read_csv(file, sep="\t", header=0, index_col=None)
-            df.sort_values(by=df.columns[1], inplace=True)
+            df.sort_values(by=df.columns[1], inplace=True, key=sort_key)
             df.to_csv(file, header=True, index=False, sep='\t')
         for file in pair_file:
             df = pd.read_csv(file, sep="\t", header=0, index_col=None)
-            df.sort_values(by=df.columns[1], inplace=True)
+            df.sort_values(by=df.columns[1], inplace=True, key=sort_key)
             df.to_csv(file, header=True, index=False, sep='\t')
 
     def run(self):
@@ -1056,3 +1060,4 @@ class ClassGeneUnique:
         #plot
         base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"]).run()
         logger.info("Gene and gene pairs classification finished!")
+
