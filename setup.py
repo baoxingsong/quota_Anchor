@@ -12,7 +12,7 @@ required = ['pandas', 'numpy', 'biopython', 'matplotlib', 'scipy', 'seaborn', 'p
 
 setup(
     name="quota_anchor",
-    version="0.0.1b2",
+    version="0.0.1rc",
     author="XiaoDong Li",
     author_email="xiaodongli2405@gmail.com",
     description="Conduct strand and WGD aware syntenic identification",
@@ -27,7 +27,7 @@ setup(
     include_package_data=True,
     python_requires=">=3, <4",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 3 - RC",
         "Intended Audience :: Comparative genomics/Evolution researcher",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
