@@ -437,14 +437,14 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 5. Ks fitting and correction for each species divergent peak.
     Note:
     1. The `0` in `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` represents the value of the `get_all_collinear_pairs` column of the species pair file.
-    2. The order of species pairs in the species pair file(specify by -s parameter,species_pair_file) must be consistent with the order of the ks file(specify by -k parameter, species_pair_ks_file)
+    2. The order of species pairs in the species pair file(specify by -s parameter, species_pairs.csv) must be consistent with the order of the ks file(specify by -k parameter)
 
     ```bash
     find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
     ```
 
    ```command
-    quota_Anchor correct -k "./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/setaria_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/sorghum_setaria0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv --overwrite
+    quota_Anchor correct -k "./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/sorghum_setaria0.ks,./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/setaria_oryza0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,2 -ot outfile_divergent_peaks.csv --overwrite
    ```
 
 6. Maize wgd ks peaks fitting
