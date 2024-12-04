@@ -312,7 +312,7 @@ class ClassGene:
                         if query_gene + "\t" + ref_gene not in tandem_pair_set:
                             tandem_pair_set.add(ref_gene + "\t" + query_gene)
                             tandem_pair_set.add(query_gene + "\t" + ref_gene)
-                            tandem_pair_file.write(query_gene + "\t" + output_prefix + "-" + query_chr + "-" + query_order + query_start + "\t" +
+                            tandem_pair_file.write(query_gene + "\t" + output_prefix + "-" + query_chr + "-" + query_order + "-" + query_start + "\t" +
                                                    ref_gene + "\t" + output_prefix + "-" + ref_chr + "-" + ref_order + "-" + ref_start + "\n")
                             tandem_pair_number += 1
                             tandem_gene_set, tandem_gene_number, homo_gn_md = write_gene_to_file(ref_gene, ref_chr, ref_order, ref_start, homo_gn_md,
