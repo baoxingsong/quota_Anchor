@@ -148,9 +148,9 @@ def readGff(gffFilePath):
 
                     chromosome_transcript_dict[chromosome_name][transcript_name].add_cds(start, end)
 
-                m = re.search(r'^(\S+)\t(\S+)\t\S+\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([\s\S]+?);Parent=([\s\S]+?);', line)
+                m = re.search(r'^(\S+)\t(\S+)\t\S+\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([\s\S]+?);[\s\S]*Parent=([\s\S]+?);', line)
                 if m is None:
-                    m = re.search(r'^(\S+)\t(\S+)\t\S+\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([\s\S]+?);Parent=([\s\S]+?)$', line)
+                    m = re.search(r'^(\S+)\t(\S+)\t\S+\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([\s\S]+?);[\s\S]*Parent=([\s\S]+?)$', line)
                 if m is not None:
                     fake_transcript_name = m.group(8)
                     fake_gene_name = m.group(9)
@@ -197,3 +197,4 @@ def update_sequence_information_onechromosome(fastas, chromosome_gene_dict, chro
 def update_sequence_information(fastas, chromosome_gene_dict):
     for chromosome_name in fastas:
         update_sequence_information_onechromosome(fastas, chromosome_gene_dict, chromosome_name)
+

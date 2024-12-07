@@ -67,19 +67,19 @@ class Prepare:
         command_line = [self.diamond, 'makedb', '--in', ref_protein, '--db', database]
         try:
             logger.info(f"Run diamond makedb and generate {database} start.")
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,  text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
             logger.info(f"Run diamond makedb and generate {database} end.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Run diamond makedb and generate {database} failed!")
 
-            error_message = e.stderr.decode()
+            error_message = e.stderr
             base.output_info(error_message)
 
-            output_message = e.stdout.decode()
+            output_message = e.stdout
             base.output_info(output_message)
             sys.exit(1)
 
@@ -87,19 +87,19 @@ class Prepare:
         command_line = [self.diamond, 'blastp', '--db', database, '-q', query_file, '-o', blast_file, '-k', max_target, '-e', e_value]
         try:
             logger.info(f"Run diamond blastp and generate {blast_file} start.")
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,  text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
             logger.info(f"Run diamond blastp and generate {blast_file} end.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Run diamond blastp and generate {blast_file} failed!")
 
-            error_message = e.stderr.decode()
+            error_message = e.stderr
             base.output_info(error_message)
 
-            output_message = e.stdout.decode()
+            output_message = e.stdout
             base.output_info(output_message)
             sys.exit(1)
     
@@ -107,19 +107,19 @@ class Prepare:
         command_line = [self.makeblastdb, '-in', ref_seq, '-dbtype', dtype, '-out', database]
         try:
             logger.info(f"Run makeblastdb and generate {database} start.")
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,  text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
             logger.info(f"Run makeblastdb and generate {database} end.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Run makeblastdb and generate {database} failed!")
 
-            error_message = e.stderr.decode()
+            error_message = e.stderr
             base.output_info(error_message)
 
-            output_message = e.stdout.decode()
+            output_message = e.stdout
             base.output_info(output_message)
             sys.exit(1)
 
@@ -128,19 +128,19 @@ class Prepare:
                         '-db', blast_database, '-num_threads', thread, '-max_target_seqs', max_target_seqs, '-outfmt', outfmt, '-strand', strand]
         try:
             logger.info(f"Run blastn and generate {blast_file} start.")
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,  text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
             logger.info(f"Run blastn and generate {blast_file} end.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Run blastn and generate {blast_file} failed!")
 
-            error_message = e.stderr.decode()
+            error_message = e.stderr
             base.output_info(error_message)
 
-            output_message = e.stdout.decode()
+            output_message = e.stdout
             base.output_info(output_message)
             sys.exit(1)
 
@@ -149,19 +149,19 @@ class Prepare:
                         '-db', blast_database, '-num_threads', thread, '-max_target_seqs', max_target_seqs, '-outfmt', outfmt]
         try:
             logger.info(f"Run blastp and generate {blast_file} start.")
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,  text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
             logger.info(f"Run blastp and generate {blast_file} end.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Run blastp and generate {blast_file} failed!")
 
-            error_message = e.stderr.decode()
+            error_message = e.stderr
             base.output_info(error_message)
 
-            output_message = e.stdout.decode()
+            output_message = e.stdout
             base.output_info(output_message)
             sys.exit(1)
 

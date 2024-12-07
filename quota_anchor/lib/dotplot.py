@@ -60,12 +60,25 @@ class Dotplot:
     def major_formatter(breaks):
         return [f'{int(b)}M' for b in breaks]
 
+    def prefix_rm(self, query_length, ref_length, df):
+        query_df = self.read_length(query_length)
+        ref_df = self.read_length(ref_length)
+        if hasattr(self, "remove_chromosome_prefix"):
+            prefix_list = self.remove_chromosome_prefix.split(",")
+            for prf in prefix_list:
+                df['queryChr'] = df['queryChr'].str.replace(rf'^{prf}', '', regex=True)
+                df['refChr'] = df['refChr'].str.replace(rf'^{prf}', '', regex=True)
+                query_df['chr'] = query_df['chr'].str.replace(rf'^{prf}', '', regex=True)
+                ref_df['chr'] = ref_df['chr'].str.replace(rf'^{prf}', '', regex=True)
+            return query_df, ref_df, df
+        else:
+            return query_df, ref_df, df
+
     @staticmethod
     def read_length(conf):
         df = pd.read_csv(conf, sep="\t", header=0, index_col=None)
         df['chr'] = df['chr'].astype(str)
-        chr_list = df['chr'].to_list()
-        return chr_list
+        return df
 
     @staticmethod
     def read_ks(file, col):
@@ -85,16 +98,23 @@ class Dotplot:
 
     def run_coll_dotplot(self, query_length, ref_length):
         dict2 = {"color": "strand"}
-        query_chr = self.read_length(query_length)
-        ref_chr = self.read_length(ref_length)
         coll_df = pd.read_csv(self.input_file, header=0, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
+
+        query_df, ref_df, coll_df = self.prefix_rm(query_length, ref_length, coll_df)
+        blank_df = base.get_blank_chr(query_df, ref_df)
+
+        query_chr = query_df['chr'].to_list()
+        ref_chr = ref_df['chr'].to_list()
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
+
         coll_df['queryChr'] = pd.Categorical(coll_df['queryChr'], categories=query_chr, ordered=True)
         coll_df['refChr'] = pd.Categorical(coll_df['refChr'], categories=ref_chr, ordered=True)
-        blank_df = base.get_blank_chr(query_length, ref_length)
+        blank_df['queryChr'] = pd.Categorical(blank_df['queryChr'], categories=query_chr, ordered=True)
+        blank_df['refChr'] = pd.Categorical(blank_df['refChr'], categories=ref_chr, ordered=True)
+
         custom_colors = {"+": "red", "-": "blue"}
         if self.type == 'order':
             dict1 = {"x": "queryId", "y": "refId"}
@@ -128,18 +148,23 @@ class Dotplot:
     def run_coll_ks_dotplot(self, query_length, ref_length):
         dict2 = {"color": "ks"}
         ks_df = self.read_ks(self.ks, self.col)
-        query_chr = self.read_length(query_length)
-        ref_chr = self.read_length(ref_length)
         coll_df = pd.read_csv(self.input_file, header=0, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
+
+        query_df, ref_df, coll_df = self.prefix_rm(query_length, ref_length, coll_df)
+        blank_df = base.get_blank_chr(query_df, ref_df)
+
+        query_chr = query_df['chr'].to_list()
+        ref_chr = ref_df['chr'].to_list()
         coll_df = pd.merge(coll_df, ks_df, how="left", left_on=["refGene", "queryGene"], right_on=["id1", "id2"])
         coll_df = coll_df[(coll_df['ks'] <= float(self.ks_area[1])) & (coll_df['ks'] >= float(self.ks_area[0]))]
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
         coll_df['queryChr'] = pd.Categorical(coll_df['queryChr'], categories=query_chr, ordered=True)
         coll_df['refChr'] = pd.Categorical(coll_df['refChr'], categories=ref_chr, ordered=True)
-        blank_df = base.get_blank_chr(query_length, ref_length)
+        blank_df['queryChr'] = pd.Categorical(blank_df['queryChr'], categories=query_chr, ordered=True)
+        blank_df['refChr'] = pd.Categorical(blank_df['refChr'], categories=ref_chr, ordered=True)
 
         if self.type == 'order':
             dict1 = {"x": "queryId", "y": "refId"}
@@ -184,19 +209,25 @@ class Dotplot:
 
     def run_blast_dotplot(self, query_length, ref_length):
         dict2 = {"color": "strand"}
-        query_chr = self.read_length(query_length)
-        ref_chr = self.read_length(ref_length)
         coll_df = pd.read_csv(self.input_file, header=None, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df.columns = ["refGene", "refChr", "refId", "referenceStart", "referenceEnd", "refStrand",
                            "queryGene",	"queryChr", "queryId", "queryStart", "queryEnd", "queryStrand", "identity"]
         coll_df["strand"] = np.where(coll_df["refStrand"] == coll_df["queryStrand"], '+', '-')
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
+
+        query_df, ref_df, coll_df = self.prefix_rm(query_length, ref_length, coll_df)
+        blank_df = base.get_blank_chr(query_df, ref_df)
+
+        query_chr = query_df['chr'].to_list()
+        ref_chr = ref_df['chr'].to_list()
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
         coll_df['queryChr'] = pd.Categorical(coll_df['queryChr'], categories=query_chr, ordered=True)
         coll_df['refChr'] = pd.Categorical(coll_df['refChr'], categories=ref_chr, ordered=True)
-        blank_df = base.get_blank_chr(query_length, ref_length)
+        blank_df['queryChr'] = pd.Categorical(blank_df['queryChr'], categories=query_chr, ordered=True)
+        blank_df['refChr'] = pd.Categorical(blank_df['refChr'], categories=ref_chr, ordered=True)
+
         custom_colors = {"+": "red", "-": "blue"}
         if self.type == "order":
             dict1 = {"x": "queryId", "y": "refId"}
@@ -229,19 +260,25 @@ class Dotplot:
 
     def run_blast_identity_dotplot(self, query_length, ref_length):
         dict2 = {"color": "identity"}
-        query_chr = self.read_length(query_length)
-        ref_chr = self.read_length(ref_length)
         table_df = pd.read_csv(self.input_file, header=None, index_col=None, sep="\t", comment="#", low_memory=False)
         table_df.columns = ["refGene", "refChr", "refId", "referenceStart", "referenceEnd", "refStrand",
                            "queryGene",	"queryChr", "queryId", "queryStart", "queryEnd", "queryStrand", "identity"]
         table_df["queryChr"] = table_df["queryChr"].astype(str)
         table_df["refChr"] = table_df["refChr"].astype(str)
         table_df["identity"] = table_df["identity"].astype(float) / 100
+
+        query_df, ref_df, table_df = self.prefix_rm(query_length, ref_length, table_df)
+        blank_df = base.get_blank_chr(query_df, ref_df)
+
+        query_chr = query_df['chr'].to_list()
+        ref_chr = ref_df['chr'].to_list()
         table_df = table_df[table_df['queryChr'].isin(query_chr)]
         table_df = table_df[table_df['refChr'].isin(ref_chr)]
         table_df['queryChr'] = pd.Categorical(table_df['queryChr'], categories=query_chr, ordered=True)
         table_df['refChr'] = pd.Categorical(table_df['refChr'], categories=ref_chr, ordered=True)
-        blank_df = base.get_blank_chr(query_length, ref_length)
+        blank_df['queryChr'] = pd.Categorical(blank_df['queryChr'], categories=query_chr, ordered=True)
+        blank_df['refChr'] = pd.Categorical(blank_df['refChr'], categories=ref_chr, ordered=True)
+
         if self.type == "order":
             dict1 = {"x": "queryId", "y": "refId"}
             plot = (ggplot(table_df, aes(**dict1)) +
@@ -286,16 +323,21 @@ class Dotplot:
 
     def run_coll_identity_dotplot(self, query_length, ref_length):
         dict2 = {"color": "score"}
-        query_chr = self.read_length(query_length)
-        ref_chr = self.read_length(ref_length)
         coll_df = pd.read_csv(self.input_file, header=0, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
+
+        query_df, ref_df, coll_df = self.prefix_rm(query_length, ref_length, coll_df)
+        blank_df = base.get_blank_chr(query_df, ref_df)
+
+        query_chr = query_df['chr'].to_list()
+        ref_chr = ref_df['chr'].to_list()
         coll_df = coll_df[coll_df['queryChr'].isin(query_chr)]
         coll_df = coll_df[coll_df['refChr'].isin(ref_chr)]
         coll_df['queryChr'] = pd.Categorical(coll_df['queryChr'], categories=query_chr, ordered=True)
         coll_df['refChr'] = pd.Categorical(coll_df['refChr'], categories=ref_chr, ordered=True)
-        blank_df = base.get_blank_chr(query_length, ref_length)
+        blank_df['queryChr'] = pd.Categorical(blank_df['queryChr'], categories=query_chr, ordered=True)
+        blank_df['refChr'] = pd.Categorical(blank_df['refChr'], categories=ref_chr, ordered=True)
 
         if self.type == 'order':
             dict1 = {"x": "queryId", "y": "refId"}

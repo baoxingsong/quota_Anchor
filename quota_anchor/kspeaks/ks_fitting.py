@@ -159,11 +159,11 @@ class Kf:
 
     @staticmethod
     def gmm(all_medians_list, n_wgds, max_iter=618, n_init=1):
-        all_medians_list_logtransformed = np.log(all_medians_list)
-        # all_medians_list = np.array(all_medians_list)
+        # all_medians_list_logtransformed = np.log(all_medians_list)
+        all_medians_list = np.array(all_medians_list)
         gmm = GaussianMixture(n_components=n_wgds, covariance_type="spherical", max_iter=max_iter, n_init=n_init)
-        gmm.fit(all_medians_list_logtransformed.reshape(len(all_medians_list_logtransformed), 1))
-        labels = gmm.predict(all_medians_list_logtransformed.reshape(len(all_medians_list_logtransformed), 1))
+        gmm.fit(all_medians_list.reshape(len(all_medians_list), 1))
+        labels = gmm.predict(all_medians_list.reshape(len(all_medians_list), 1))
         return labels
 
     @staticmethod

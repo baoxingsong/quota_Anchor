@@ -74,9 +74,9 @@ class Collinearity:
                         ]
         try:
             logger.info(f"Run AnchorWave and generate {output_file} start.")
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
             logger.info(f"Run AnchorWave and generate {output_file} end.")
@@ -84,10 +84,10 @@ class Collinearity:
         except subprocess.CalledProcessError as e:
             logger.error(f"Run AnchorWave and generate {output_file} failed!")
 
-            error_message = e.stderr.decode()
+            error_message = e.stderr
             base.output_info(error_message)
 
-            output_message = e.stdout.decode()
+            output_message = e.stdout
             base.output_info(output_message)
             sys.exit(1)
 

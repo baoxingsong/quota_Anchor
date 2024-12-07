@@ -49,6 +49,8 @@ class Correct:
             sys.exit(1)
         if not self.trios_file:
             logger.error("Please specify your trios file path")
+        if not self.species_pair_collinearity_file:
+            logger.error(r'Please specify your species pair collinearity file path(Separator ",")')
         if not self.species_pair_ks_file:
             logger.error(r'Please specify your species pair ks file path(Separator ",")')
         if not self.outfile_divergent_peaks:
@@ -64,22 +66,28 @@ class Correct:
         pair_df["Species_2"] = pair_df["Species_2"].astype(str)
 
         ks_file_list = base.split_conf(self.species_pair_ks_file, ",")
+        coll_file_list = base.split_conf(self.species_pair_collinearity_file, ",")
         try:
-            assert len(ks_file_list) == len(pair_df)    
+            assert len(ks_file_list) == len(pair_df) == len(coll_file_list)
         except AssertionError:
-            logger.error("The number of ks file is not equal to the number of species pairs")
+            logger.error("The number of ks file and collinearity file is not equal to the number of species pairs")
             sys.exit(1)
-        return pair_df, ks_file_list
+        return pair_df, ks_file_list, coll_file_list
     
     @staticmethod
-    def get_pair_ks_map(pair_df, ks_file_list):
+    def get_pair_ks_map(pair_df, ks_file_list, coll_file_list):
         pair_ks_dict = {}
+        pair_coll_dict = {}
         pair_list = pair_df.apply(lambda row: str(row['Species_1']) + '_' + str(row['Species_2']), axis=1).tolist()
         species_pair_to_ks_file = zip(pair_list, ks_file_list)
         for pr, ks in species_pair_to_ks_file:
             pair_ks_dict[pr] = ks
-        return pair_ks_dict
-    
+
+        species_pair_to_coll_file = zip(pair_list, coll_file_list)
+        for pr, coll in species_pair_to_coll_file:
+            pair_coll_dict[pr] = coll
+        return pair_ks_dict, pair_coll_dict
+
     def compute_kde(self, ks_list, ks_min, ks_max):
         kde = gaussian_kde(ks_list, bw_method='scott')
         variable_bw = kde.factor * np.random.uniform(0.5, 0.9)
@@ -108,20 +116,37 @@ class Correct:
         std_median = np.std(median_list, dtype=np.float64)
         return mean_mode, std_mode, mean_median, std_median
     
+    @staticmethod
+    def read_ks(file, col):
+        df = pd.read_csv(file, sep="\t", header=0, index_col=None, low_memory=False)
+        df["id1"] = df["id1"].astype(str)
+        df["id2"] = df["id2"].astype(str)
+
+        df = df[["id1", "id2", col]]
+        df_reverse = df[["id2", "id1", col]]
+        df_reverse.rename(columns={"id2": "id1", "id1": "id2"}, inplace=True)
+
+        merged_df = pd.concat([df, df_reverse], axis=0)
+        merged_df.drop_duplicates(subset=["id1", "id2"] ,inplace=True)
+        merged_df.reset_index(inplace=True, drop=True)
+        return merged_df
+
     def get_fitting_info(self):
         logger.info(r"The order of species pairs in the species pair file(specify by -s parameter/species_pair_file) must be consistent with the order of the ks file(specify by -k parameter/species_pair_ks_file)")
-        pair_df, ks_file_list = self.init_process()
+        pair_df, ks_file_list, coll_file_list = self.init_process()
         ks_min, ks_max = self.get_ks_limit()
         col = self.col
-        pair_ks_dict = self.get_pair_ks_map(pair_df, ks_file_list)
+        pair_ks_dict, pair_coll_dict = self.get_pair_ks_map(pair_df, ks_file_list, coll_file_list)
         
         mode_sd = []
         for pair in pair_ks_dict:
-            df = pd.read_csv(pair_ks_dict[pair], header=0, index_col=None, sep="\t")
-            df['id1'] = df['id1'].astype(str)
-            df['id2'] = df['id2'].astype(str)
-            ks_df = df[(df[col] >= max(ks_min, 0)) & (df[col] <= ks_max) & (df[col] != -1)]
-            ks_list = ks_df[col].tolist()
+            df = self.read_ks(pair_ks_dict[pair], col)
+            df = df[(df[col] >= max(ks_min, 0)) & (df[col] <= ks_max) & (df[col] != -1)]
+            coll_df = pd.read_csv(pair_coll_dict[pair], header=0, index_col=None, sep="\t", comment="#")
+            merged_df = pd.merge(coll_df, df, how="inner", left_on=["refGene", "queryGene"], right_on=["id1", "id2"])
+            # merged_df.dropna(axis=0, how='inner', inplace=True, ignore_index=True)
+            ks_list = merged_df[col].tolist()
+
             logger.info(f"{pair} kernel density estimation start")
             mode_mean, mode_sd_mean, median_mean, median_sd_mean = self.get_mode_sd(ks_list, ks_min, ks_max, self.n_replicates)
             logger.info(f"{pair} kernel density estimation end")
