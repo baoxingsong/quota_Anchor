@@ -5,7 +5,7 @@
 
 import subprocess
 import pandas as pd
-import os, re, datetime
+import os, re, datetime, sys
 import logging
 from . import base
 import shutil
@@ -58,6 +58,7 @@ class Ks:
         self.yn00_ctl = "yn00.ctl"
 
         self.process = 6
+        self.add_ks = False
 
         self.cds_file = ""
         self.pep_file = ""
@@ -85,8 +86,11 @@ class Ks:
         self.process = int(self.process)
 
     def merge_ks_file(self):
-        output_file = open(self.ks_file, 'w')
-        output_file.write('\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'omega_NG86', 'ka_YN00', 'ks_YN00', 'omega_YN00', 't'])+'\n')
+        if self.add_ks and os.path.exists(self.ks_file) and os.path.getsize(self.ks_file) > 0:
+            output_file = open(self.ks_file, 'a')
+        else:
+            output_file = open(self.ks_file, 'w')
+            output_file.write('\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'omega_NG86', 'ka_YN00', 'ks_YN00', 'omega_YN00', 't'])+'\n')
         for i in range(int(self.process)):
             path = os.path.join(self.work_dir, 'tmp', 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i))
             file_handler = open(path, 'r')
@@ -149,6 +153,7 @@ class Ks:
                     c_index = content.index(line)
             sub_content = content[a_index:c_index]
             for line in sub_content:
+                # this regex is from biopython.
                 matrix_row_res = re.match(r"^(\S+?)(\s+-?\d+\.\d+.*$|\s*$|-1.0000\s*\(.*$)", line)
                 if matrix_row_res is not None:
                     line_floats_res = re.findall(r"-*\d+\.\d+", matrix_row_res.group(2))
@@ -174,6 +179,28 @@ class Ks:
         cpu_number = cpu_count()
         thread_number = min([self.process, cpu_number])
         setattr(self, 'process', thread_number)
+    
+    def output_file_parentdir_exist(self, path, overwrite):
+        if os.path.exists(path):
+            logger.info(f"Output file {path} already exist.")
+            if overwrite:
+                os.remove(path)
+                logger.info(f"Output file {path} will be overwrote.")
+                return
+            else:
+                if self.add_ks:
+                    logger.info(f"Output file {path} will add extra syntenic pairs rather than overwrite it.")
+                    return
+                else:
+                    logger.info(f"Output file {path} will not be overwrote, and you can set '--overwrite'/'--add_ks' in the command line to overwrite it or add extra syntenic pairs.")
+                    sys.exit(1)
+        path = os.path.abspath(path)
+        dir_name = os.path.dirname(path)
+        if os.path.isdir(dir_name):
+            pass
+        else:
+            logger.info(f"{dir_name} does not exist and the software will recursively create the directory.")
+            os.makedirs(dir_name, exist_ok=True)
 
     def ks_init(self):
         print()
@@ -185,15 +212,21 @@ class Ks:
         print()
 
         base.file_empty(self.collinearity)
-        base.file_empty(self.cds_file)
-        base.file_empty(self.pep_file)
-        base.output_file_parentdir_exist(self.ks_file, self.overwrite)
+        cds_file_list = base.split_conf(self.cds_file, ",")
+        for cds_fl in cds_file_list:
+            base.file_empty(cds_fl)
+        pep_file_list = base.split_conf(self.pep_file, ",")
+        for pep_fl in pep_file_list:
+            base.file_empty(pep_fl)
+        self.output_file_parentdir_exist(self.ks_file, self.overwrite)
 
         self.get_thread()
 
         if os.path.exists("tmp"):
             shutil.rmtree('tmp')
         os.mkdir("tmp")
+
+        return pep_file_list, cds_file_list
 
     @staticmethod
     def drop_duplicate_pair(pairs):
@@ -250,17 +283,34 @@ class Ks:
 
     def first_layer_run(self):
         logger.info("ks module init and the following parameters are config information.")
-        self.ks_init()
-        cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
-        pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
+        pep_file_list, cds_file_list = self.ks_init()
+        cds = dict()
+        pep = dict()
+        for cds_fl in cds_file_list:
+            sub_cds = SeqIO.to_dict(SeqIO.parse(cds_fl, "fasta"))
+            cds.update(sub_cds)
+        for pep_fl in pep_file_list:
+            sub_pep = SeqIO.to_dict(SeqIO.parse(pep_fl, "fasta"))
+            pep.update(sub_pep)
         df_pairs, _ = read_collinearity(self.collinearity)
         df_pairs = df_pairs[(df_pairs[0].isin(cds.keys())) & (df_pairs[1].isin(
             cds.keys())) & (df_pairs[0].isin(pep.keys())) & (df_pairs[1].isin(pep.keys()))]
-        pairs = df_pairs[[0, 1]].to_numpy()
+        pairs = list(zip(df_pairs[0], df_pairs[1]))
         if len(pairs) > 0:
             pairs = self.drop_duplicate_pair(pairs)
         else:
             logger.error("Gene names do not match between collinearity file and cds/pep file.")
+            sys.exit(1)
+        if self.add_ks and os.path.exists(self.ks_file) and os.path.getsize(self.ks_file) > 0:
+            ks_df = pd.read_csv(self.ks_file, header=0, index_col=None, sep="\t")
+            ks_df['id1'] = ks_df['id1'].astype(str)
+            ks_df['id2'] = ks_df['id2'].astype(str)
+            used_pairs = list(zip(ks_df['id1'], ks_df['id2'])) + list(zip(ks_df['id2'], ks_df['id1']))
+            retained_pairs = set(pairs).difference(set(used_pairs))
+            pairs = np.array(list(retained_pairs))
+            if len(pairs) == 0:
+                logger.info("No additional syntenic pairs are required to calculate ks.")
+                sys.exit(0)
         n = int(np.ceil(len(pairs) / self.process))
         os.chdir(os.path.join(self.work_dir, 'tmp'))
         pool = Pool(self.process)

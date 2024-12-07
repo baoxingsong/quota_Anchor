@@ -66,13 +66,18 @@ class Longest:
     def run_gffread_get_cds(self, fasta, gff, output_cds_file):
         command_line = [self.gffread, '-g', fasta, '-x', output_cds_file, gff]
         try:
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
         except subprocess.CalledProcessError as e:
             logger.error(f"Generate {output_cds_file} failed by gffread!")
+            error_message = e.stderr
+            base.output_info(error_message)
+
+            output_message = e.stdout
+            base.output_info(output_message)
             sys.exit(1)
 
     def sub_run(self, sub_run_number, genome_list, gff_list, out_cds_list, out_longest_cds_name_list, idx):

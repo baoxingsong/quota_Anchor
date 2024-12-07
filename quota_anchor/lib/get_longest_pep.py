@@ -59,13 +59,18 @@ class Longest:
     def run_gffread_get_protein(self, fasta, gff, output_protein_file):
         command_line = [self.gffread, '-g', fasta, '-y', output_protein_file, gff, '-S']
         try:
-            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stderr_gff_read = result.stderr.decode()
-            stdout_gff_read = result.stdout.decode()
+            result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            stderr_gff_read = result.stderr
+            stdout_gff_read = result.stdout
             base.output_info(stderr_gff_read)
             base.output_info(stdout_gff_read)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             logger.error(f"Generate {output_protein_file} failed by gffread!")
+            error_message = e.stderr
+            base.output_info(error_message)
+
+            output_message = e.stdout
+            base.output_info(output_message)
             sys.exit(1)
     
     @staticmethod

@@ -408,15 +408,15 @@ parser_sub_ks = subparsers.add_parser('ks',
 
     2. Using command-line arguments:
        quota_Anchor ks -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
-                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6[--overwrite] 
+                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6 [--overwrite] [--add_ks]
        quota_Anchor ks -a muscle -i zm_zm.collinearity -p zm.pep.fa
-                                           -d zm.cds.fa -o zm_zm.ks -t 6[--overwrite]                                
+                                           -d zm.cds.fa -o zm_zm.ks -t 6[--overwrite] [--add_ks]                  
     3. Using both a configuration file and command-line arguments:
        The configuration file has lower priority than other command-line parameters. 
        Parameters specified in the configuration file will be replaced by those provided via the command line.
 
        quota_Anchor ks -c ks.conf -a mafft -i sb_zm.collinearity -p sb_zm.pep.fa
-                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6[--overwrite] 
+                                           -d sb_zm.cds.fa -o sb_zm.ks -t 6[--overwrite] [--add_ks]
  """)
 parser_sub_ks.set_defaults(func=run_ks)
 parser_sub_ks.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.",
@@ -425,12 +425,14 @@ parser_sub_ks.add_argument('-i', '--collinearity', dest='collinearity', help="Co
 parser_sub_ks.add_argument('-a', '--align_software', dest='align_software',
                            help="Align software for every syntenic gene pair(muscle/mafft).",
                            choices=["mafft", "muscle"], metavar="")
-parser_sub_ks.add_argument('-p', '--pep_file', dest='pep_file', help="Species longest protein sequence file.",
+parser_sub_ks.add_argument('-p', '--pep_file', dest='pep_file', help="Species longest protein sequence file(Separator: ',').",
                            metavar="")
-parser_sub_ks.add_argument('-d', '--cds_file', dest='cds_file', help="Species longest cds sequence file.", metavar="")
+parser_sub_ks.add_argument('-d', '--cds_file', dest='cds_file', help="Species longest cds sequence file(Separator: ',').", metavar="")
 parser_sub_ks.add_argument('-o', '--ks_file', dest='ks_file', help="Output ks file.", metavar="")
 parser_sub_ks.add_argument('-t', '--process', dest='process', help="Number of parallel processes.", metavar="",
                            type=int)
+parser_sub_ks.add_argument('-add_ks', '--add_ks', dest='add_ks', help="Add extra syntenic pairs rather than overwrite it",
+                           action='store_true')
 parser_sub_ks.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.",
                            action='store_true')
 
@@ -441,12 +443,12 @@ parser_sub_dotplot = subparsers.add_parser('dotplot', help='Generate collinear g
                                        
     1. Using configuration file:
        a)quota_Anchor dotplot -c [\\?, example, help] >> dotplot.conf 
-       b)quota_Anchor dotplot -c dotplot.conf [--overwrite]    
+       b)quota_Anchor dotplot -c dotplot.conf [--overwrite] [-rm "chr"]    
                                        
     2. Using command-line arguments:
        quota_Anchor dotplot -i sb_zm.table -o sb_zm.table.png -r sb_length.txt -q zm_length.txt 
                                            -t order -r_label "Sorghum bicolor" -q_label "Zea mays"  -w 1500 -e 2000 
-                                           [--overwrite] [-disable] [-use_identity] [-ks zm_sb.ks] [-a "0,3"]    
+                                           [--overwrite] [-disable] [-use_identity] [-ks zm_sb.ks] [-a "0,3"] [-rm "chr"]   
                                        
     3. Using both a configuration file and command-line arguments:
        The configuration file has lower priority than other command-line parameters. 
@@ -454,7 +456,7 @@ parser_sub_dotplot = subparsers.add_parser('dotplot', help='Generate collinear g
       
        quota_Anchor dotplot -c dotplot.conf -i sb_zm.table -o sb_zm.table.png -r sb_length.txt -q zm_length.txt 
                                             -t order -r_label "Sorghum bicolor" -q_label "Zea mays"  -w 1500 -e 2000 
-                                            [--overwrite] [-disable] [-use_identity] [-ks zm_sb.ks] [-a "0,3"]                                         
+                                            [--overwrite] [-disable] [-use_identity] [-ks zm_sb.ks] [-a "0,3"] [-r "chr"]                                        
  """)
 parser_sub_dotplot.set_defaults(func=run_dotplot)
 parser_sub_dotplot.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
@@ -467,7 +469,7 @@ parser_sub_dotplot.add_argument('-r_label', '--ref_name', dest='ref_name', help=
 parser_sub_dotplot.add_argument('-q_label', '--query_name', dest='query_name', help="Query species coordinate axis label.", metavar="")
 parser_sub_dotplot.add_argument('-w', '--plotnine_figure_width', dest='plotnine_figure_width', help="Plotnine module figure width (defaults: 1500)(unit: mm).", metavar="", type=int)
 parser_sub_dotplot.add_argument('-e', '--plotnine_figure_height', dest='plotnine_figure_height', help="Plotnine module figure height (defaults: 1200)(unit: mm).", metavar="", type=int)
-
+parser_sub_dotplot.add_argument('-rm', '--remove_chromosome_prefix', dest='remove_chromosome_prefix', help="Remove chromosome prefix to plot(e.g. chr,Chr,CHR)(Separator: ',').", metavar="")
 parser_sub_dotplot.add_argument('-ks', '--ks', dest='ks', help="Collinearity gene pair ks file for collinearity plot(Optional).", metavar="")
 parser_sub_dotplot.add_argument('-a', '--ks_area', dest='ks_area', help="ks area to plot if you specify -ks parameter for collinearity plot(Optional, default: 0,3).", metavar="")
 parser_sub_dotplot.add_argument('-disable', '--disable_axis_text', dest='disable_axis_text', help="Optional, disable_axis_text for dotplot.", action='store_true')
@@ -688,7 +690,9 @@ formatter_class = argparse.RawDescriptionHelpFormatter, description = """
 
    2. Using command-line arguments:
       quota_Anchor correct -k "maize_sorghum.collinearity.ks,maize_setaria.collinearity.ks,
-      sorghum_setaria.collinearity.ks,maize_oryza.collinearity.ks,sorghum_oryza.collinearity.ks,setaria_oryza.collinearity.ks" 
+      sorghum_setaria.collinearity.ks,maize_oryza.collinearity.ks,sorghum_oryza.collinearity.ks,setaria_oryza.collinearity.ks"
+      -col "maize_sorghum.collinearity,maize_setaria.collinearity,
+      sorghum_setaria.collinearity,maize_oryza.collinearity,sorghum_oryza.collinearity,setaria_oryza.collinearity" 
       -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv [--overwrite]
 
    3. Using both a configuration file and command-line arguments:
@@ -699,15 +703,18 @@ formatter_class = argparse.RawDescriptionHelpFormatter, description = """
       must be consistent with the order of the ks file(specify by -k parameter/species_pair_ks_file)
       
       quota_Anchor correct -k "maize_sorghum.collinearity.ks,maize_setaria.collinearity.ks,
-      sorghum_setaria.collinearity.ks,maize_oryza.collinearity.ks,sorghum_oryza.collinearity.ks,setaria_oryza.collinearity.ks" 
+      sorghum_setaria.collinearity.ks,maize_oryza.collinearity.ks,sorghum_oryza.collinearity.ks,setaria_oryza.collinearity.ks"
+      -col "maize_sorghum.collinearity,maize_setaria.collinearity,
+      sorghum_setaria.collinearity,maize_oryza.collinearity,sorghum_oryza.collinearity,setaria_oryza.collinearity" 
       -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,1 -ot outfile_divergent_peaks.csv -c correct.conf [--overwrite]
 
 """)
-#TODO: add collinearity parameter rather than only ks file (speed).
+
 parser_sub_correct.set_defaults(func=run_correct)
 parser_sub_correct.add_argument('-c', '--conf', dest='conf', help="Configuration files have the lowest priority.", metavar="")
 parser_sub_correct.add_argument('-t', '--trios_file', dest='trios_file', help="Trios file based on binary tree in newick format.", metavar="")
 parser_sub_correct.add_argument('-s', '--species_pair_file', dest='species_pair_file', help="Species pair file based on binary tree in newick format.", metavar="")
+parser_sub_correct.add_argument('-col', '--species_pair_collinearity_file', dest='species_pair_collinearity_file', help="Collinearity file for each species pair(Separator: ','). You may need to use quotes around the option.", metavar="")
 parser_sub_correct.add_argument('-k', '--species_pair_ks_file', dest='species_pair_ks_file', help="Ks file for each species pair(Separator: ','). You may need to use quotes around the option.", metavar="")
 parser_sub_correct.add_argument('-kr', '--ks_range', dest='ks_range', help="Ks range for plot(default:0,3).", metavar="")
 parser_sub_correct.add_argument('-ot', '--outfile_divergent_peaks', dest='outfile_divergent_peaks', help="The output file contains species ks divergent peak information.", metavar="")

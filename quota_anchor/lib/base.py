@@ -157,12 +157,7 @@ def output_file_parentdir_exist(path, overwrite):
         logger.info(f"{dir_name} does not exist and the software will recursively create the directory.")
         os.makedirs(dir_name, exist_ok=True)
 
-def get_blank_chr(query_length, ref_length):
-    query_df = pd.read_csv(query_length, sep="\t", header=0, index_col=None)
-    query_df['chr'] = query_df['chr'].astype(str)
-
-    ref_df = pd.read_csv(ref_length, sep="\t", header=0, index_col=None)
-    ref_df['chr'] = ref_df['chr'].astype(str)
+def get_blank_chr(query_df, ref_df):
     chr_margin = pd.merge(left=ref_df, right=query_df, how="cross")
     chr_margin.columns = ["refChr", "referenceStart",  "refId", "queryChr", "queryStart", "queryId"]
     return chr_margin

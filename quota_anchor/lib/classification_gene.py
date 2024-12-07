@@ -1060,4 +1060,3 @@ class ClassGeneUnique:
         #plot
         base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"]).run()
         logger.info("Gene and gene pairs classification finished!")
-
