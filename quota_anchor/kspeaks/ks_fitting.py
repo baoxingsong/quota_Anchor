@@ -24,6 +24,7 @@ class Kf:
         self.correct_file = ""
         self.focal_species = ""
         self.disable_arrow = True
+        self.method = "best"
 
         self.ks_range = "0,3"
         self.figsize = "12,7"
@@ -489,13 +490,21 @@ class Kf:
             ax.set_ylim(-move_tick, y_max)
             ax.spines['left'].set_bounds(0, y_max)
 
-            to_plot = df[["Node", "Focal_Species", "Sister_Species", "Adjusted_Mode_Best", "Adjusted_Mode_Best_SD", "Original_Mode"]]
+            if self.method.upper() == "BEST":
+                to_plot = df[["Node", "Focal_Species", "Sister_Species", "Adjusted_Mode_Best", "Adjusted_Mode_Best_SD", "Original_Mode"]]
+            else:
+                to_plot = df[["Node", "Focal_Species", "Sister_Species", "Adjusted_Mode_Mean", "Adjusted_Mode_Mean_SD", "Original_Mode"]]
+
             arrow_y = -gap_scale
             z_order = -10
             for index, row in to_plot.iterrows():
                 per_node_number = len(to_plot[to_plot["Node"] == row["Node"]])
                 z_order -= 2
-                node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Best"], row.at["Adjusted_Mode_Best_SD"], row.at["Original_Mode"]
+                if self.method.upper() == "BEST":
+                    node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Best"], row.at["Adjusted_Mode_Best_SD"], row.at["Original_Mode"]
+                else:
+                    node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Mean"], row.at["Adjusted_Mode_Mean_SD"], row.at["Original_Mode"]
+
                 node_index = row.at["Node"] - 1
                 color = color_list[node_index]
 
