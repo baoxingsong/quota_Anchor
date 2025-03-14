@@ -422,6 +422,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     1. `./scripts/ks_pipeline.py` 这个脚本在共线性过程使用`species_pairs.csv`的`Species_1`列的值作为查询物种,使用Species_2`列的值作为参考物种。
     2. `./scripts/ks_pipeline.py` 脚本会根据`species_pairs.csv`物种对文件的`q_value`,`r_value`和`get_all_collinear_pairs`调整共线性过程的参数。
     3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义或者参考[文档](./quota_anchor/doc/longestPathAlogorithm_zh.md)。
+    4. 假如你的计算资源紧张且你的`species_pairs.csv`中有20个物种对，你可以分多次运行，比如分五次，一个运行四个物种对（仅仅删除其他十六行的物种对即可）。
 
     ```command
     python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
@@ -430,14 +431,14 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 5. 对于每个分化峰进行拟合，并且基于trios三元组将速率矫正到所关注物种玉米的进化速率上。
     注:
     1. `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` 命令中的`0`表示物种对文件的`get_all_collinear_pairs` 列的值。
-    2. 物种对文件（由-s参数指定，species_pairs.csv）中物种对的顺序必须与ks文件（由-k参数指定）的顺序一致
+    2. 物种对文件（由-s参数指定，species_pairs.csv）中物种对的顺序必须与ks文件以及共线性文件（由-k和-col参数指定）的顺序一致
 
     ```bash
     find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
     ```
 
    ```command
-    quota_Anchor correct -k "./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/sorghum_setaria0.ks,./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/setaria_oryza0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,2 -ot outfile_divergent_peaks.csv --overwrite
+    quota_Anchor correct -k "./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/sorghum_setaria0.ks,./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/setaria_oryza0.ks" -col "./output_dir/02synteny/maize_sorghum0.collinearity,./output_dir/02synteny/maize_setaria0.collinearity,./output_dir/02synteny/sorghum_setaria0.collinearity,./output_dir/02synteny/maize_oryza0.collinearity,./output_dir/02synteny/sorghum_oryza0.collinearity,./output_dir/02synteny/setaria_oryza0.collinearity" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,3 -ot outfile_divergent_peaks.csv --overwrite
    ```
 
 6. 玉米全基因组复制事件共线性基因对ks值柱形图及高斯核密度评估曲线。
@@ -447,7 +448,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 
     quota_Anchor dotplot -i ./maize/zm_zm.table -o ./maize/zm.zm.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
 
-    quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -a 1 -m 1000 -W 1 -D 25 -I 5 -E -0.01 -f 0 --overwrite
+    quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -r 3 -q 3 -m 500 -W 1 -D 25 -I 5 -E -0.005 -f 0 --overwrite
 
     quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
 
@@ -467,7 +468,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     你需要根据`zm.zm.table.png`或者其他方法提供玉米wgd峰值的数量。
 
     ```command
-    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -kr 0,2
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -kr 0,3
     ```
 
     <p align="center">
@@ -477,7 +478,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 7. 利用高斯混合模型对wgd基因对ks进行分组，对各组分进行核密度估计和高斯近似拟合，取382次核密度估计的众数为最初的物种分化峰，并基于三重奏将分化峰校正至焦点物种水平。
 
     ```command
-    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,2
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png --overwrite -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,3
     ```
 
     <p align="center">
