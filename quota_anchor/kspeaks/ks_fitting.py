@@ -41,7 +41,7 @@ class Kf:
         self.bins_number = 100
         self.components = int(self.components)
         self.col = "ks_NG86"
-        self.min_block_length = 10
+        self.min_block_length = 5
 
     def fitting_init(self):
         if not self.query_length:
@@ -385,11 +385,11 @@ class Kf:
         axis.axvspan(xmin=peak - sd, xmax=peak + sd, ymin=y_min_ratio, ymax=height, facecolor=line_color,
                     alpha=0.3, capstyle='butt', joinstyle='miter', zorder=z_order - 2)
         # dashed line in correspondence of the distribution peak
-        axis.axvline(x=peak, ymin=y_min_ratio, ymax=height, color=line_color, alpha=0.618,
+        axis.axvline(x=peak, ymin=y_min_ratio, ymax=height, color=line_color, alpha=1,
                     linestyle=(0, (6, 6)), linewidth=1.1, solid_capstyle='butt', solid_joinstyle='miter',
                     zorder=z_order - 1, label=label)
         # additional transparent white dashed line on top of previous to lighten line on plot but not the lines in legend
-        axis.axvline(x=peak, ymin=y_min_ratio, ymax=height, color='w', alpha=0.3,
+        axis.axvline(x=peak, ymin=y_min_ratio, ymax=height, color='w', alpha=0.1,
                     linestyle=(0, (6, 6)), linewidth=1.1, solid_capstyle='butt', solid_joinstyle='miter',
                     zorder=z_order)
 
@@ -478,7 +478,9 @@ class Kf:
             divergent_peaks_number = len(df)
             cmap = plt.get_cmap('gist_rainbow')
 
-            color_list = [cmap(i) for i in np.linspace(0, 1, divergent_peaks_number)]
+            node_number = len(set(df["Node"].to_list()))
+            color_list = [cmap(i) for i in np.linspace(0, 1, node_number)]
+
             super_title = fig.suptitle("Rate-adjusted mixed " + r'${K_s}$' + f" distribution for {self.focal_species}", y=0.98)
             y_max = ax.get_ylim()[1]
 
@@ -494,7 +496,9 @@ class Kf:
                 per_node_number = len(to_plot[to_plot["Node"] == row["Node"]])
                 z_order -= 2
                 node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Best"], row.at["Adjusted_Mode_Best_SD"], row.at["Original_Mode"]
-                color = color_list[index]
+                node_index = row.at["Node"] - 1
+                color = color_list[node_index]
+
                 if original < mode:
                     means_label = "{:.3f}".format(round(original, 3)) + r'$\rightarrow$' + "{:.3f}".format(round(mode, 3))
                 else:
