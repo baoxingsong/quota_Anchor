@@ -160,6 +160,13 @@ def output_file_parentdir_exist(path, overwrite):
 def get_blank_chr(query_df, ref_df):
     chr_margin = pd.merge(left=ref_df, right=query_df, how="cross")
     chr_margin.columns = ["refChr", "referenceStart",  "refId", "queryChr", "queryStart", "queryId"]
+    chr_margin_copy =  chr_margin.copy()
+    length = len(chr_margin)
+    chr_margin_copy["referenceStart"] = [0] *  length
+    chr_margin_copy["queryStart"] = [0] *  length
+    chr_margin_copy["refId"] = [0] *  length
+    chr_margin_copy["queryId"] = [0] *  length
+    chr_margin = pd.concat([chr_margin, chr_margin_copy], axis=0)
     return chr_margin
 
 def output_info(info):

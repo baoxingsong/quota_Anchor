@@ -3,7 +3,6 @@ import sys
 
 from plotnine import *
 from plotnine.exceptions import PlotnineWarning
-from matplotlib.colors import to_rgba
 import pandas as pd
 import numpy as np
 from . import base
@@ -53,7 +52,7 @@ class Dotplot:
 
                 strip_text=element_text(size=50),
                 # strip_background=element_blank()
-                strip_background = element_rect(fill=to_rgba('#C0C0C0', 0.4), color=to_rgba('#696969', 1))
+                strip_background = element_rect(fill="silver", color="black")
             )
 
     @staticmethod

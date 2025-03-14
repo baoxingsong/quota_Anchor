@@ -159,7 +159,7 @@ class Kf:
 
     @staticmethod
     def gmm(all_medians_list, n_wgds, max_iter=618, n_init=1):
-        # all_medians_list_logtransformed = np.log(all_medians_list)
+        #all_medians_list = np.log(all_medians_list)
         all_medians_list = np.array(all_medians_list)
         gmm = GaussianMixture(n_components=n_wgds, covariance_type="spherical", max_iter=max_iter, n_init=n_init)
         gmm.fit(all_medians_list.reshape(len(all_medians_list), 1))
@@ -347,8 +347,9 @@ class Kf:
             ctr = float(paras[1])
             # wgd marker zorder > histogram zorder > curve fitting line zorder
             _, _, patches = ax.hist(np.array(cluster_to_all_ks[cluster_id]), linewidth=2, bins=self.bins_number, alpha=0.3,
-                                    color=cluster_color[cluster_id][0], density=True, label=f"Cluster {cluster_color[cluster_id][1]} (mode {round(ctr, 3)})", zorder=zorder-8)
-            map_handle_label.append((patches[0], f"Cluster {cluster_color[cluster_id][1]} (mode {round(ctr, 3)})"))
+                                    color=cluster_color[cluster_id][0], density=True, label=f"Cluster {cluster_color[cluster_id][1]} (mode {round(ctr, 3):.3f})", zorder=zorder-8)
+            map_handle_label.append((patches[0], f"Cluster {cluster_color[cluster_id][1]} (mode {round(ctr, 3):.3f})"))
+
             cluster_info = self.determine_marker_position(cluster_id, paras, cluster_info)
             
             cluster_info[cluster_id].append(zorder-7)
@@ -486,18 +487,18 @@ class Kf:
             ax.set_ylim(-move_tick, y_max)
             ax.spines['left'].set_bounds(0, y_max)
 
-            to_plot = df[["Node", "Focal_Species", "Sister_Species", "Adjusted_Mode_Mean", "Adjusted_Mode_Mean_SD", "Original_Mode"]]
+            to_plot = df[["Node", "Focal_Species", "Sister_Species", "Adjusted_Mode_Best", "Adjusted_Mode_Best_SD", "Original_Mode"]]
             arrow_y = -gap_scale
             z_order = -10
             for index, row in to_plot.iterrows():
                 per_node_number = len(to_plot[to_plot["Node"] == row["Node"]])
                 z_order -= 2
-                node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Mean"], row.at["Adjusted_Mode_Mean_SD"], row.at["Original_Mode"]
+                node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Best"], row.at["Adjusted_Mode_Best_SD"], row.at["Original_Mode"]
                 color = color_list[index]
                 if original < mode:
-                    means_label = str(round(original, 2)) + r'$\rightarrow$' + str(round(mode, 2))
+                    means_label = "{:.3f}".format(round(original, 3)) + r'$\rightarrow$' + "{:.3f}".format(round(mode, 3))
                 else:
-                    means_label = str(round(mode, 2)) + r'$\leftarrow$' + str(round(original, 2))
+                    means_label = "{:.3f}".format(round(mode, 3)) + r'$\leftarrow$' + "{:.3f}".format(round(original, 3))
                 label = f"({node}) {sister_species} ({means_label})"
                 self.plot_divergence_line(ax, mode, sd, color, label, -300, y_min_ratio, height=0.88)
                 self.plot_arrow(ax, original, mode, arrow_y, color)
@@ -508,3 +509,4 @@ class Kf:
             self.save_mixed_plot(fig, ax, wgd_handles, wgd_labels, super_title) # type: ignore
             plt.show()
         logger.info("Plot ks fitting info about wgd events and species divergent events finished!")
+

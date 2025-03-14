@@ -183,10 +183,10 @@ class SpeciesPair:
                             '--strict_strand', "1",
                             '--get_all_collinearity', self.get_all_collinearity_map[self.query_species + "\t" + self.ref_species],
                             '--count_style', "0",
-                            '--tandem_length', "1000",
+                            '--tandem_length', "500",
                             '--overlap_window', "1",
                             '--maximum_gap_size', "25",
-                            '--minimum_chain_score', "3",
+                            '--minimum_chain_score', "4",
                             '--gap_extend_penalty', "-0.005",
                             '--strict_remove_overlap', "0",
                             '--overwrite'
@@ -201,10 +201,10 @@ class SpeciesPair:
                             '--strict_strand', "1",
                             '--get_all_collinearity', self.get_all_collinearity_map[self.query_species + "\t" + self.ref_species],
                             '--count_style', "0",
-                            '--tandem_length', "1000",
+                            '--tandem_length', "500",
                             '--overlap_window', "1",
                             '--maximum_gap_size', "25",
-                            '--minimum_chain_score', "3",
+                            '--minimum_chain_score', "4",
                             '--gap_extend_penalty', "-0.005",
                             '--strict_remove_overlap', "0",
                             ]
@@ -249,6 +249,7 @@ class SpeciesPair:
                             '-d', self.cds_path,
                             '-o', self.ks_path,
                             '-t', str(KS_PROCESS),
+                            '--add_ks'
                             ]
         try:
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)

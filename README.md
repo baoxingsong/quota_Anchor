@@ -429,6 +429,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column of `species_pairs.csv` as the query and the `Species_2` column of `species_pairs.csv` as the reference in the collinearity procedure.
     2. The `./scripts/ks_pipeline.py` script adjusts the parameters of the collinearity procedure based on the `r_value` `q_value` and `get_all_collinear_pairs` columns of the species pairs file.
     3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command or refer to [document](./quota_anchor/doc/longestPathAlogorithm.md).
+    4. If your computing resources are limited and there are 20 species pairs in your `species_pairs.csv`, you can run it multiple times, for example, five times, each running four species pairs (just delete the other 16 rows of species pairs).
 
     ```command
     python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table       
@@ -437,14 +438,14 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 5. Ks fitting and correction for each species divergent peak.
     Note:
     1. The `0` in `find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'` represents the value of the `get_all_collinear_pairs` column of the species pair file.
-    2. The order of species pairs in the species pair file(specify by -s parameter, species_pairs.csv) must be consistent with the order of the ks file(specify by -k parameter)
+    2. The order of species pairs in the species pair file(specify by -s parameter, species_pairs.csv) must be consistent with the order of the ks and collinearity file(specify by -k/-col parameter)
 
     ```bash
     find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
     ```
 
    ```command
-    quota_Anchor correct -k "./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/sorghum_setaria0.ks,./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/setaria_oryza0.ks" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,2 -ot outfile_divergent_peaks.csv --overwrite
+    quota_Anchor correct -k "./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/sorghum_setaria0.ks,./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/setaria_oryza0.ks" -col "./output_dir/02synteny/maize_sorghum0.collinearity,./output_dir/02synteny/maize_setaria0.collinearity,./output_dir/02synteny/sorghum_setaria0.collinearity,./output_dir/02synteny/maize_oryza0.collinearity,./output_dir/02synteny/sorghum_oryza0.collinearity,./output_dir/02synteny/setaria_oryza0.collinearity" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,3 -ot outfile_divergent_peaks.csv --overwrite
    ```
 
 6. Maize wgd ks peaks fitting
@@ -454,7 +455,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 
     quota_Anchor dotplot -i ./maize/zm_zm.table -o ./maize/zm.zm.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
 
-    quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -a 1 -m 1000 -W 1 -D 25 -I 5 -E -0.01 -f 0 --overwrite
+    quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -r 3 -q 3 -m 500 -W 1 -D 25 -I 5 -E -0.005 -f 0 --overwrite
 
     quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
 
@@ -474,7 +475,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     </p>
 
     ```command
-    quota_Anchor kf -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png -k ./maize/zm.zm.ks -f maize -components 2 -kr 0,2 --overwrite
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png -k ./maize/zm.zm.ks -f maize -components 2 -kr 0,3 --overwrite
     ```
 
     <p align="center">
@@ -483,7 +484,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 7. The Gaussian mixture model was used to group wgd gene pairs ks, and kernel density estimation and Gaussian approximation fitting were performed on each component. The initial species divergent peak was obtained by taking the mode of 382 kernel density estimates, and the rate was corrected to the focal species level based on trios.
 
     ```command
-    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,2 --overwrite
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,3 --overwrite
     ```
 
     <p align="center">

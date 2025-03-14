@@ -98,6 +98,7 @@ def tandem_init(ref_gene, ref_chr, ref_order, query_gene, query_chr, query_order
     condition = tandem_condition1 and tandem_condition2
     return condition, homo_gn_md, anc, used_gp_dict
 
+# redundant code
 def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order ,query_start, bitscore_dict, identity_dict, pre_df, line_bitscore, line_identity, anc, homo_gn_md):
     if not anc[ref_gene] and anc[query_gene] and homo_gn_md[ref_gene] not in [1, 2, 3]:
         try:
@@ -109,7 +110,7 @@ def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query
         except KeyError:
             if query_gene + '\t' + ref_gene in bitscore_dict:
                 pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
-            else: 
+            else:
                 pre_df.append([ref_gene, ref_chr, ref_order ,ref_start, query_gene, query_chr, query_order ,query_start, float(line_bitscore), float(line_identity)])
         return pre_df
     if not anc[query_gene] and anc[ref_gene] and homo_gn_md[query_gene] not in [1, 2, 3]:
