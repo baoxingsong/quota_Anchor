@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import gaussian_kde
 
+MIN_BLOCK_LENGTH = 5
 logger = logging.getLogger('main.kde')
 class Kde:
     def __init__(self, config_pra, parameter):
@@ -78,7 +79,7 @@ class Kde:
         for key, values in collinearity_dict.items():
             block_dict[key] = []
             if last_key != -1:
-                if len(block_dict[last_key]) >= 5:
+                if len(block_dict[last_key]) >= MIN_BLOCK_LENGTH:
                     median_one[last_key] = np.median(block_dict[last_key])
                 else:
                     block_dict.pop(last_key)
@@ -89,7 +90,7 @@ class Kde:
                     continue
                 block_dict[key].append(ks)
             last_key = key
-        if len(block_dict[last_key]) >= 5:
+        if len(block_dict[last_key]) >= MIN_BLOCK_LENGTH:
             median_one[last_key] = np.median(block_dict[last_key])
         else:
             block_dict.pop(last_key)
@@ -174,6 +175,6 @@ class Kde:
         ax.set_xlabel(r'${K_s}$')
         ax.set_ylabel('Density')
         plt.setp(ax.yaxis.get_majorticklabels(), rotation=90, va='center')
-        plt.savefig(self.output_file, dpi=500, bbox_inches='tight', transparent=True)
+        plt.savefig(self.output_file, dpi=500, bbox_inches='tight', transparent=False)
         plt.show()
         logger.info("Plot histogram and kde curve finished!")

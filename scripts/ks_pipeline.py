@@ -98,6 +98,8 @@ class SpeciesPair:
 
         self.query_protein_path =  os.path.join(OUTPUT_DIR, "01longest", self.query_species + LONGEST_PEP_SUFFIX)
         self.ref_protein_path = os.path.join(OUTPUT_DIR, "01longest", self.ref_species + LONGEST_PEP_SUFFIX)
+        self.query_cds_path = os.path.join(OUTPUT_DIR, "01longest", self.query_species + LONGEST_CDS_SUFFIX)
+        self.ref_cds_path = os.path.join(OUTPUT_DIR, "01longest", self.ref_species + LONGEST_CDS_SUFFIX)
         self.ref_db_path = os.path.join(OUTPUT_DIR, "02synteny", "tmp", self.ref_species + "_" + f'{ALIGN}' + ".db")
         self.blast_path = os.path.join(OUTPUT_DIR, "02synteny", "tmp", self.query_species + "_" + self.ref_species + ".blast")
         self.table_path = os.path.join(OUTPUT_DIR, "02synteny", self.query_species + "_" + self.ref_species + ".table")
@@ -106,8 +108,8 @@ class SpeciesPair:
         name = self.query_species + "_" + self.ref_species + self.get_all_collinearity_map[self.query_species + "\t" + self.ref_species]
         self.collinearity_path =  os.path.join(OUTPUT_DIR, "02synteny", name + ".collinearity")
         self.ks_path = os.path.join(OUTPUT_DIR, "02synteny", name + ".ks")
-        self.pep_path = os.path.join(OUTPUT_DIR, "01longest", "merged.longest.pep")
-        self.cds_path = os.path.join(OUTPUT_DIR, "01longest", "merged.longest.cds")
+        self.pep_path = str(self.query_protein_path) + "," + str(self.ref_protein_path)
+        self.cds_path = str(self.query_cds_path) + "," + str(self.ref_cds_path)
 
     def quota_anchor_pre_col(self):
         if self.overwrite:
