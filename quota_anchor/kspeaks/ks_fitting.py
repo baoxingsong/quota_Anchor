@@ -28,6 +28,8 @@ class Kf:
 
         self.ks_range = "0,3"
         self.figsize = "12,7"
+        self.latin_names = ""
+        self.latin_map = {}
         for i in config_pra.sections():
             if i == 'ks_fitting':
                 for key in config_pra[i]:
@@ -66,6 +68,15 @@ class Kf:
         base.file_empty(self.ks_file)
         base.file_empty(self.collinearity_file)
         base.output_file_parentdir_exist(self.output_file, self.overwrite)
+
+    def set_latin_map(self):
+        latin_map_list = base.split_conf(self.latin_names, ",")
+        for pr in latin_map_list:
+            pr_list = base.split_conf(pr, ":")
+            key = str(pr_list[0])
+            value = str(pr_list[1])
+            value_add_escape = re.sub(r"(\s)", r"\\\1", value)
+            self.latin_map[key] = value_add_escape
 
     @staticmethod
     def read_ks_get_map(ks_file, col, ks_min, ks_max):
@@ -160,7 +171,8 @@ class Kf:
 
     @staticmethod
     def gmm(all_medians_list, n_wgds, max_iter=618, n_init=1):
-        #all_medians_list = np.log(all_medians_list)
+        # new_all_medians_list = [i+0.0005 for i in all_medians_list]
+        # all_medians_list = np.log(new_all_medians_list)
         all_medians_list = np.array(all_medians_list)
         gmm = GaussianMixture(n_components=n_wgds, covariance_type="spherical", max_iter=max_iter, n_init=n_init)
         gmm.fit(all_medians_list.reshape(len(all_medians_list), 1))
@@ -317,7 +329,7 @@ class Kf:
         block_dict_ks, block_dict_median = self.get_all_median_dict(ks_min, ks_max, ref_chr_list, query_chr_list)
 
         plt.rcParams['ytick.major.pad'] = 0
-        plt.rcParams['mathtext.default'] = 'regular'
+#        plt.rcParams['mathtext.default'] = 'regular'
         plt.rcParams['font.size'] = 14
 
         all_median_list = list(block_dict_median.values())
@@ -329,7 +341,8 @@ class Kf:
         fig, ax = plt.subplots(1, 1, figsize=(figsize[0], figsize[1]))
         ax.set_xlim(ks_min, ks_max)
 
-        ax.set_xlabel(r'${K_s}$')
+#        ax.set_xlabel(r'${K_s}$')
+        ax.set_xlabel(r'$\mathrm{K_s}$')
         ax.set_ylabel('Density')
         plt.setp(ax.yaxis.get_majorticklabels(), rotation=90, va='center')        
         ax.spines['right'].set_visible(False)
@@ -374,7 +387,12 @@ class Kf:
         if not self.correct_file:
             ax.spines['bottom'].set_position(('outward', self.move_distance))
             ax.legend(handles=handles, labels=labels, frameon=False)
-            fig.suptitle(f'Clustering of syntenic pairs from {self.focal_species}')
+#            fig.suptitle(f'Clustering of syntenic pairs from ${self.focal_species}$')
+            if self.latin_names:
+                self.focal_species = self.latin_map.get(self.focal_species, self.focal_species)
+                fig.suptitle(r'Clustering of syntenic pairs from $\mathit{' + self.focal_species + '}$')
+            else:
+                fig.suptitle(f'Clustering of syntenic pairs from {self.focal_species}')
             fig.savefig(self.output_file, transparent=True, dpi=300)
             plt.show()
         return fig, ax, y_min_ratio, handles, labels
@@ -467,9 +485,11 @@ class Kf:
         logger.info("Ks_fitting module init and the following parameters are config information")
         print()
         for key, value in vars(self).items():
-            if key not in ["conf", "minus_axis_ratio", "move_distance", "col", "min_block_length", "bins_number"]:
+            if key not in ["conf", "minus_axis_ratio", "move_distance", "col", "min_block_length", "bins_number", "latin_map"]:
                 print(key, "=", value)
         print()
+        if self.latin_names:
+            self.set_latin_map()
         fig, ax, y_min_ratio, wgd_handles, wgd_labels = self.focal_species_first_run()
 
         if self.correct_file:
@@ -481,8 +501,12 @@ class Kf:
 
             node_number = len(set(df["Node"].to_list()))
             color_list = [cmap(i) for i in np.linspace(0, 1, node_number)]
+            if self.latin_names:
+                self.focal_species = self.latin_map.get(self.focal_species, self.focal_species)
+                super_title = fig.suptitle("Rate-adjusted mixed " + r'$\mathrm{K_s}$' + " distribution for " + r'$\mathit{' + self.focal_species + '}$', y=0.98)
+            else:
+                super_title = fig.suptitle("Rate-adjusted mixed " + r'$\mathrm{K_s}$' + f" distribution for {self.focal_species}", y=0.98)
 
-            super_title = fig.suptitle("Rate-adjusted mixed " + r'${K_s}$' + f" distribution for {self.focal_species}", y=0.98)
             y_max = ax.get_ylim()[1]
 
             ax.spines['bottom'].set_position(('outward', self.move_distance))
@@ -512,7 +536,11 @@ class Kf:
                     means_label = "{:.3f}".format(round(original, 3)) + r'$\rightarrow$' + "{:.3f}".format(round(mode, 3))
                 else:
                     means_label = "{:.3f}".format(round(mode, 3)) + r'$\leftarrow$' + "{:.3f}".format(round(original, 3))
-                label = f"({node}) {sister_species} ({means_label})"
+                if self.latin_names:
+                    sister_species = self.latin_map.get(sister_species, sister_species)
+                    label = f"({node}) " + r'$\mathit{' + sister_species + '}$' + f" ({means_label})"
+                else:
+                    label = f"({node}) {sister_species} ({means_label})"
                 self.plot_divergence_line(ax, mode, sd, color, label, -300, y_min_ratio, height=0.88)
                 self.plot_arrow(ax, original, mode, arrow_y, color)
                 self.plot_divergence_id(ax, node, mode, y_max, per_node_number, color, z_order)
