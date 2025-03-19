@@ -40,6 +40,16 @@ def search_input_dir_files(input_directory):
     _species_lst.sort()
     return _genome_lst, _gff_lst, _species_lst
 
+def split_conf(conf, separator):
+    new_conf = []
+    split_lt = conf.split(separator)
+    for ele in split_lt:
+        ele = ele.strip()
+        if len(ele) == 0:
+            continue
+        new_conf.append(ele)
+    return new_conf
+
 def output_info(info):
     if info:
         info_list = info.split("\n")
@@ -72,11 +82,9 @@ class Longest:
             longest_pep_str = longest_pep_str + os.path.join(longest_path, str(i) + LONGEST_PEP_SUFFIX) + ","
             raw_cds_str = raw_cds_str + os.path.join(longest_path, str(i) + RAW_CDS_SUFFIX) + ","
             longest_cds_str = longest_cds_str + os.path.join(longest_path, str(i) + LONGEST_CDS_SUFFIX) + ","
-        merged_pep = os.path.join(longest_path, "merged.longest.pep")
-        merged_cds = os.path.join(longest_path, "merged.longest.cds")
-        return genome_str, gff_str, raw_pep_str, longest_pep_str, raw_cds_str, longest_cds_str, merged_pep, merged_cds
+        return genome_str, gff_str, raw_pep_str, longest_pep_str, raw_cds_str, longest_cds_str
 
-    def quota_anchor_longest_pep(self, fasta, gff3, raw_pep_var, longest_pep_var, merged_pep_var, species_number):
+    def quota_anchor_longest_pep(self, fasta, gff3, raw_pep_var, longest_pep_var):
         if self.overwrite:
             command_line = [SOFTWARE,
                             'longest_pep',
@@ -84,8 +92,6 @@ class Longest:
                             '-g', gff3,
                             '-p', raw_pep_var,
                             '-l', longest_pep_var,
-                            '-t', species_number,
-                            '-merge', merged_pep_var,
                             '--overwrite'
                             ]
         else:
@@ -95,8 +101,6 @@ class Longest:
                             '-g', gff3,
                             '-p', raw_pep_var,
                             '-l', longest_pep_var,
-                            '-merge', merged_pep_var,
-                            '-t', species_number
                             ]
         try:
             # For debugging, output will be delayed
@@ -118,7 +122,7 @@ class Longest:
                 sys.exit(1)
             pass
 
-    def quota_anchor_longest_cds(self, fasta, gff3, raw_cds_var, longest_cds_var, merged_cds_var, species_number):
+    def quota_anchor_longest_cds(self, fasta, gff3, raw_cds_var, longest_cds_var):
         if self.overwrite:
             command_line = [SOFTWARE,
                             'longest_cds',
@@ -126,8 +130,6 @@ class Longest:
                             '-g', gff3,
                             '-p', raw_cds_var,
                             '-l', longest_cds_var,
-                            '-merge', merged_cds_var,
-                            '-t', species_number,
                             '--overwrite'
                             ]
         else:
@@ -137,8 +139,6 @@ class Longest:
                             '-g', gff3,
                             '-p', raw_cds_var,
                             '-l', longest_cds_var,
-                            '-merge', merged_cds_var,
-                            '-t', species_number
                             ]
         try:
             result = subprocess.run(command_line, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
@@ -161,12 +161,22 @@ class Longest:
 
     def run(self):
         genome_files, gff_files, species_lst = search_input_dir_files(INPUT_DIR)
-        parallel_number = str(len(species_lst))
-        genome_str, gff_str, raw_pep_str, longest_pep_str, raw_cds_str, longest_cds_str, merged_pep, merged_cds = self.get_longest_four_parameters(genome_files, gff_files, species_lst, OUTPUT_DIR)
+        genome_str, gff_str, raw_pep_str, longest_pep_str, raw_cds_str, longest_cds_str = self.get_longest_four_parameters(genome_files, gff_files, species_lst, OUTPUT_DIR)
+        genome_list = split_conf(genome_str, ",")
+        gff_list = split_conf(gff_str, ",")
+        raw_pep_list = split_conf(raw_pep_str, ",")
+        longest_pep_list = split_conf(longest_pep_str, ",")
+        raw_cds_list = split_conf(raw_cds_str, ",")
+        longest_cds_list = split_conf(longest_cds_str, ",")
+
         if not SKIP_LONGEST_PEP:
-            self.quota_anchor_longest_pep(genome_str, gff_str, raw_pep_str, longest_pep_str, merged_pep, parallel_number)
+            zipped_pep_list = zip(genome_list, gff_list, raw_pep_list, longest_pep_list)
+            for genome, gff, raw_pep, longest_pep in zipped_pep_list:
+                self.quota_anchor_longest_pep(genome, gff, raw_pep, longest_pep)
         if not SKIP_LONGEST_CDS:
-            self.quota_anchor_longest_cds(genome_str, gff_str, raw_cds_str, longest_cds_str, merged_cds, parallel_number)
+            zipped_cds_list = zip(genome_list, gff_list, raw_cds_list, longest_cds_list)
+            for genome, gff, raw_cds, longest_cds in zipped_cds_list:
+                self.quota_anchor_longest_cds(genome, gff, raw_cds, longest_cds)
         return species_lst
 
 
