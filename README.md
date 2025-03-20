@@ -34,7 +34,7 @@
 </details>
 
 Here are the documents to conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.
-For more information about the algorithm, refer to the [document](./quota_anchor/doc/longestPathAlogorithm.md)
+For more information about the algorithm, refer to the [document](./quota_anchor/doc/longestPathAlgorithm.md)
 
 ## Installation
 
