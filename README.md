@@ -117,7 +117,7 @@ The process, implemented in the `quota_Anchor longest_pep` module, consists of t
 2. For each gene, the longest protein sequence was identified and extracted to ensure the most complete characterization for further analysis.
 
 ```command
-quota_Anchor longest_pep -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.p.fa,zm.p.fa -l sorghum.protein.fa,maize.protein.fa -t 2 --overwrite -merge merged.pep.fa
+quota_Anchor longest_pep -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.p.fa,zm.p.fa -l sorghum.protein.fa,maize.protein.fa -t 2 --overwrite
 ```
 
 #### Generate the chromosome length files from fai and gff file
@@ -165,13 +165,13 @@ The process, implemented in the `quota_Anchor longest_cds` module, consists of t
 2. Identify and extract the longest cds for each gene.
 
 ```command
-quota_Anchor longest_cds -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.cds.fa,zm.cds.fa -l sorghum.cds.fa,maize.cds.fa -t 2 --overwrite -merge merged.cds.fa
+quota_Anchor longest_cds -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.cds.fa,zm.cds.fa -l sorghum.cds.fa,maize.cds.fa -t 2 --overwrite
 ```
 
 #### Calculate synonymous and non-synonymous substitution rates for syntenic pairs
 
 ```command
-quota_Anchor ks -i sb_zm.collinearity -a muscle -p merged.pep.fa -d merged.cds.fa  -o sb_zm.ks -t 16 --overwrite 
+quota_Anchor ks -i sb_zm.collinearity -a muscle -p sorghum.protein.fa,maize.protein.fa -d sorghum.cds.fa,maize.cds.fa -o sb_zm.ks -t 16 --overwrite 
 ```
 
 ### Homologous pairs and syntenic pairs visualization

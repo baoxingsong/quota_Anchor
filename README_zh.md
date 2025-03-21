@@ -110,7 +110,7 @@ gunzip *gz
 2. 对于每个基因，提取其最长转录本。
 
 ```command
-quota_Anchor longest_pep -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.p.fa,zm.p.fa -l sorghum.protein.fa,maize.protein.fa -t 2 --overwrite -merge merged.pep.fa
+quota_Anchor longest_pep -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.p.fa,zm.p.fa -l sorghum.protein.fa,maize.protein.fa -t 2 --overwrite
 ```
 
 ### 产生物种染色体长度文件
@@ -158,13 +158,13 @@ quota_Anchor pre_col -a diamond -rs sorghum.protein.fa -qs maize.protein.fa -db 
 2. 对于每个基因，提取其最长编码序列。
 
 ```command
-quota_Anchor longest_cds -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.cds.fa,zm.cds.fa -l sorghum.cds.fa,maize.cds.fa -t 2 --overwrite -merge merged.cds.fa
+quota_Anchor longest_cds -f sorghum.fa,maize.fa -g sorghum.gff3,maize.gff3 -p sb.cds.fa,zm.cds.fa -l sorghum.cds.fa,maize.cds.fa -t 2 --overwrite 
 ```
 
 ### 并行计算共线性基因对的同义和非同义替换率
 
 ```command
-quota_Anchor ks -i sb_zm.collinearity -a muscle -p merged.pep.fa -d merged.cds.fa  -o sb_zm.ks -t 16 --overwrite 
+quota_Anchor ks -i sb_zm.collinearity -a muscle -p sorghum.protein.fa,maize.protein.fa -d sorghum.cds.fa,maize.cds.fa  -o sb_zm.ks -t 16 --overwrite 
 ```
 
 ## 同源基因对和共线性基因对可视化
