@@ -245,11 +245,11 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 2. Multi-species syntenic pairs visualization
 
     ```command
-    quota_Anchor line -i os_sb.collinearity,sb_sv.collinearity -o os_sb_sv.line.png -l os.length.txt,sb.length.txt,sv.length.txt -n "Oryza sativa, Sorghum bicolor,Zea mays" -rm "chr,Chr" -cf 7 -sf 10 -fs 14,14 --overwrite
+    quota_Anchor line -i Brachypodium.distachyon_Bromus.tectorum.collinearity,Bromus.tectorum_Eragrostis.tef.collinearity,Eragrostis.tef_Leersia.perrieri.collinearity,Leersia.perrieri_Oryza.sativa.collinearity,Oryza.sativa_Panicum.hallii.collinearity,Panicum.hallii_Poa.annua.collinearity,Poa.annua_Secale.cereale.collinearity,Secale.cereale_Setaria.viridis.collinearity,Setaria.viridis_Sorghum.bicolor.collinearity,Sorghum.bicolor_Zea.mays.collinearity -l Brachypodium.distachyon.length.txt,Bromus.tectorum.length.txt,Eragrostis.tef.length.txt,Leersia.perrieri.length.txt,Oryza.sativa.length.txt,Panicum.hallii.length.txt,Poa.annua.length.txt,Secale.cereale.length.txt,Setaria.viridis.length.txt,Sorghum.bicolor.length.txt,Zea.mays.length.txt -n "Brachypodium.distachyon,Bromus.tectorum,Eragrostis.tef,Leersia.perrieri,Oryza.sativa,Panicum.hallii,Poa.annua,Secale.cereale,Setaria.viridis,Sorghum.bicolor,Zea.mays" -sc "red" -cs "rainbow" -it -rm "Bt,Pa" -o line10.png --overwrite
     ```
 
     <p align="center">
-    <img src="./quota_anchor/plots/os_sb_sv.line.png" alt= os_sb_sv.line.collinearity width="800px" background-color="#ffffff" />
+    <img src="./quota_anchor/plots/line10.png" alt= line10.collinearity width="800px" background-color="#ffffff" />
     </p>
 
 ## Maize gene/gene pairs classification

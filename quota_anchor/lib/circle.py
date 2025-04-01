@@ -308,7 +308,7 @@ class Circle:
             plt.text(label_x, label_y, ch, ha="center", va="center", fontsize=self.chr_font_size, color='black', rotation=angle)
             i += 1
         try:
-            data, gene_pos_dict, ref_chr_list, query_chr_list = base.read_collinearity(self.query_name, self.ref_name, self.input_file, chr_list, chr_to_start)
+            data, gene_pos_dict, ref_chr_list, query_chr_list, _ = base.read_collinearity(self.query_name, self.ref_name, self.input_file, chr_list, chr_to_start)
             assert len(data) > 0 and len(ref_chr_list) > 0 and len(query_chr_list) > 0 and len(gene_pos_dict) > 0
         except AssertionError:
             logger.error(f'Please check your {self.input_file}, {self.ref_length} and {self.query_length}.')
@@ -376,3 +376,4 @@ class Circle:
         plt.savefig(self.output_file_name, dpi=DPI, bbox_inches='tight', transparent=True)
         logger.info(f"Plot {self.output_file_name} finished!")
         sys.exit(0)
+

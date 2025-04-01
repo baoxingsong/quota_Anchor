@@ -329,7 +329,7 @@ class Kf:
         block_dict_ks, block_dict_median = self.get_all_median_dict(ks_min, ks_max, ref_chr_list, query_chr_list)
 
         plt.rcParams['ytick.major.pad'] = 0
-#        plt.rcParams['mathtext.default'] = 'regular'
+        # plt.rcParams['mathtext.default'] = 'regular'
         plt.rcParams['font.size'] = 14
 
         all_median_list = list(block_dict_median.values())
@@ -340,8 +340,7 @@ class Kf:
         figsize = [float(k) for k in self.figsize.split(',')]
         fig, ax = plt.subplots(1, 1, figsize=(figsize[0], figsize[1]))
         ax.set_xlim(ks_min, ks_max)
-
-#        ax.set_xlabel(r'${K_s}$')
+        # ax.set_xlabel(r'${K_s}$')
         ax.set_xlabel(r'$\mathrm{K_s}$')
         ax.set_ylabel('Density')
         plt.setp(ax.yaxis.get_majorticklabels(), rotation=90, va='center')        
@@ -387,13 +386,13 @@ class Kf:
         if not self.correct_file:
             ax.spines['bottom'].set_position(('outward', self.move_distance))
             ax.legend(handles=handles, labels=labels, frameon=False)
-#            fig.suptitle(f'Clustering of syntenic pairs from ${self.focal_species}$')
+            # fig.suptitle(f'Clustering of syntenic pairs from ${self.focal_species}$')
             if self.latin_names:
                 self.focal_species = self.latin_map.get(self.focal_species, self.focal_species)
                 fig.suptitle(r'Clustering of syntenic pairs from $\mathit{' + self.focal_species + '}$')
             else:
                 fig.suptitle(f'Clustering of syntenic pairs from {self.focal_species}')
-            fig.savefig(self.output_file, transparent=True, dpi=300)
+            fig.savefig(self.output_file, transparent=False, dpi=300)
             plt.show()
         return fig, ax, y_min_ratio, handles, labels
 
@@ -469,7 +468,7 @@ class Kf:
         wgd_labels.extend(["", "Divergence with:"])
 
         sorted_handles, sorted_labels = wgd_handles + sorted_handles, wgd_labels + sorted_labels
-        lgd = axis.legend(sorted_handles, sorted_labels, loc="upper left", handlelength=1.618, facecolor="w", frameon=False, mode="expand",
+        lgd = axis.legend(sorted_handles, sorted_labels, loc="center left", handlelength=1.618, facecolor="w", frameon=False, mode="expand",
                         bbox_to_anchor=legend_size)
         
         return lgd
@@ -479,7 +478,7 @@ class Kf:
         chart_box = ax_corr.get_position()
         ax_corr.set_position([chart_box.x0, chart_box.y0, chart_box.width*0.65, chart_box.height])
         lgd = Kf.create_legend(ax_corr, legend_size, self.components, wgd_handles, wgd_labels)
-        fig_corr.savefig(self.output_file, bbox_extra_artists=(lgd, super_title), transparent=True)
+        fig_corr.savefig(self.output_file, bbox_extra_artists=(lgd, super_title), transparent=False)
         
     def run(self):
         logger.info("Ks_fitting module init and the following parameters are config information")
@@ -501,24 +500,22 @@ class Kf:
 
             node_number = len(set(df["Node"].to_list()))
             color_list = [cmap(i) for i in np.linspace(0, 1, node_number)]
+
             if self.latin_names:
                 self.focal_species = self.latin_map.get(self.focal_species, self.focal_species)
                 super_title = fig.suptitle("Rate-adjusted mixed " + r'$\mathrm{K_s}$' + " distribution for " + r'$\mathit{' + self.focal_species + '}$', y=0.98)
             else:
                 super_title = fig.suptitle("Rate-adjusted mixed " + r'$\mathrm{K_s}$' + f" distribution for {self.focal_species}", y=0.98)
-
             y_max = ax.get_ylim()[1]
 
             ax.spines['bottom'].set_position(('outward', self.move_distance))
             move_tick, gap_scale =self.determine_coordinate_gap(y_max, divergent_peaks_number)
             ax.set_ylim(-move_tick, y_max)
             ax.spines['left'].set_bounds(0, y_max)
-
             if self.method.upper() == "BEST":
                 to_plot = df[["Node", "Focal_Species", "Sister_Species", "Adjusted_Mode_Best", "Adjusted_Mode_Best_SD", "Original_Mode"]]
             else:
                 to_plot = df[["Node", "Focal_Species", "Sister_Species", "Adjusted_Mode_Mean", "Adjusted_Mode_Mean_SD", "Original_Mode"]]
-
             arrow_y = -gap_scale
             z_order = -10
             for index, row in to_plot.iterrows():
@@ -528,14 +525,13 @@ class Kf:
                     node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Best"], row.at["Adjusted_Mode_Best_SD"], row.at["Original_Mode"]
                 else:
                     node, focal_species, sister_species, mode, sd, original = row.at["Node"], row.at["Focal_Species"], row.at["Sister_Species"], row.at["Adjusted_Mode_Mean"], row.at["Adjusted_Mode_Mean_SD"], row.at["Original_Mode"]
-
                 node_index = row.at["Node"] - 1
                 color = color_list[node_index]
-
                 if original < mode:
                     means_label = "{:.3f}".format(round(original, 3)) + r'$\rightarrow$' + "{:.3f}".format(round(mode, 3))
                 else:
                     means_label = "{:.3f}".format(round(mode, 3)) + r'$\leftarrow$' + "{:.3f}".format(round(original, 3))
+
                 if self.latin_names:
                     sister_species = self.latin_map.get(sister_species, sister_species)
                     label = f"({node}) " + r'$\mathit{' + sister_species + '}$' + f" ({means_label})"
