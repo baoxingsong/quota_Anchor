@@ -339,7 +339,7 @@ class Line:
             start_x = start_list[i] / chr_plus_gap_length
             end_x = end_list[i] / chr_plus_gap_length
             x, y = self.plot_line_chr(start_x, end_x, CAP_DIAMETER, height)
-            plt.fill(x, y, facecolor=chr_color_dict[sp_name], alpha=0.7, edgecolor=chr_color_dict[sp_name], linewidth=1, zorder=2)
+            plt.fill(x, y, facecolor=chr_color_dict[sp_name], alpha=0.8, edgecolor=chr_color_dict[sp_name], linewidth=1, zorder=2)
             label_x = (start_x + end_x) / 2
             label_y = height + CAP_DIAMETER / 2
             text_chr = self.delete_prefix(chr_list[i], sp_name, strip_chr_abbr)
@@ -382,7 +382,7 @@ class Line:
         judge_fake_query_start_x, judge_fake_query_end_x = self.get_judge_se(cap_judge_query_chr, query_chr)
         judge_fake_ref_start_x, judge_fake_ref_end_x = self.get_judge_se(cap_judge_ref_chr, ref_chr)
         x, y = self.plot_collinearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height, judge_fake_query_start_x, judge_fake_query_end_x, judge_fake_ref_start_x, judge_fake_ref_end_x)
-        plt.fill(x, y, facecolor=color, alpha=1, zorder=1.5)
+        plt.fill(x, y, facecolor=color, alpha=0.5, zorder=1.5)
         i += 1
         return i
 
