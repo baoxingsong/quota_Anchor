@@ -15,6 +15,7 @@ logger = logging.getLogger('main.dotplot')
 class Dotplot:
     def __init__(self, config_pra, parameter):
         self.overwrite = False
+        self.italic = False
         self.type = "order"
         self.ref_name = "Reference species"
         self.query_name = "Query species"
@@ -39,22 +40,38 @@ class Dotplot:
                 setattr(self, key, value)
 
         self.col = "ks_NG86"
-        self.my_theme = theme(
-                panel_background=element_rect(fill='white'),
-                panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
-                panel_spacing=0,
+        if self.italic:
+            self.my_theme = theme(
+                    panel_background=element_rect(fill='white'),
+                    panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
+                    panel_spacing=0,
 
-                axis_title=element_text(size=90),
-                
-                legend_text=element_text(size=40, ha='left', va='center'),
-                legend_title=element_text(size=40, ha='center', va='center'),
-                legend_ticks=element_line(size=4),
+                    axis_title=element_text(size=90, face = "italic"),
+                    
+                    legend_text=element_text(size=40, ha='left', va='center'),
+                    legend_title=element_text(size=40, ha='center', va='center'),
+                    legend_ticks=element_line(size=4),
 
-                strip_text=element_text(size=50),
-                # strip_background=element_blank()
-                strip_background = element_rect(fill="silver", color="black")
-            )
+                    strip_text=element_text(size=50),
+                    # strip_background=element_blank()
+                    strip_background = element_rect(fill="silver", color="black")
+                ) 
+        else:
+            self.my_theme = theme(
+                    panel_background=element_rect(fill='white'),
+                    panel_border=element_rect(fill=None, color="black", linewidth=2, linetype="solid"),
+                    panel_spacing=0,
 
+                    axis_title=element_text(size=90),
+                    
+                    legend_text=element_text(size=40, ha='left', va='center'),
+                    legend_title=element_text(size=40, ha='center', va='center'),
+                    legend_ticks=element_line(size=4),
+
+                    strip_text=element_text(size=50),
+                    # strip_background=element_blank()
+                    strip_background = element_rect(fill="silver", color="black")
+                )
     @staticmethod
     def major_formatter(breaks):
         return [f'{int(b)}M' for b in breaks]

@@ -1,7 +1,8 @@
 import logging
 import sys
 from . import base
-import subprocess    
+import subprocess
+import os
 from . import combineBlastAndStrandInformation
 
 logger = logging.getLogger('main.pre_collinearity')
@@ -208,6 +209,16 @@ class Prepare:
             logger.error("Please specify your blast file name")
             sys.exit(1)
 
+    @staticmethod
+    def blast_path(path):
+        path = os.path.abspath(path)
+        dir_name = os.path.dirname(path)
+        if os.path.isdir(dir_name):
+            pass
+        else:
+            logger.info(f"{dir_name} does not exist and the software will recursively create the directory.")
+            os.makedirs(dir_name, exist_ok=True)
+
     def run_all_process(self):
         logger.info("Pre_collinearity module init and the following parameters are config information.")
         self.print_config()
@@ -219,6 +230,7 @@ class Prepare:
 
         base.file_empty(self.ref_gff_file)
         base.file_empty(self.query_gff_file)
+        self.blast_path(self.blast_file)
         base.output_file_parentdir_exist(self.output_file, self.overwrite)
 
         self.output_blast_result = self.blast_file
@@ -243,3 +255,4 @@ class Prepare:
                                                           self.output_file, self.bitscore, self.align_length, self.query_length, self.ref_length)
         base.file_empty(self.output_file)
         logger.info(f'Generate {self.output_file} finished!')
+

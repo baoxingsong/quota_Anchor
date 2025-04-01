@@ -473,6 +473,7 @@ parser_sub_dotplot.add_argument('-rm', '--remove_chromosome_prefix', dest='remov
 parser_sub_dotplot.add_argument('-ks', '--ks', dest='ks', help="Collinearity gene pair ks file for collinearity plot(Optional).", metavar="")
 parser_sub_dotplot.add_argument('-a', '--ks_area', dest='ks_area', help="ks area to plot if you specify -ks parameter for collinearity plot(Optional, default: 0,3).", metavar="")
 parser_sub_dotplot.add_argument('-disable', '--disable_axis_text', dest='disable_axis_text', help="Optional, disable_axis_text for dotplot.", action='store_true')
+parser_sub_dotplot.add_argument('-italic', '--italic', dest='italic', help="Optional, x, y label(italic) in the figure.", action='store_true')
 parser_sub_dotplot.add_argument('-use_identity', '--use_identity', dest='use_identity', help="Optional, use identity as legend rather strand direction for table(blast) dotplot.", action='store_true')
 parser_sub_dotplot.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 
@@ -543,6 +544,12 @@ parser_sub_line.add_argument('-n', '--species_name', dest='species_name', help="
 parser_sub_line.add_argument('-rm', '--remove_chromosome_prefix', dest='remove_chromosome_prefix', help="Remove chromosome prefix to plot(e.g. chr,Chr,CHR)(Separator: ',').", metavar="")
 parser_sub_line.add_argument('-cf', '--chr_font_size', dest='chr_font_size', help="Chromosome name font size(defaults: 7).", type=int, metavar="")
 parser_sub_line.add_argument('-sf', '--species_name_font_size', dest='species_name_font_size', help="Species name font size(defaults: 7).", type=int, metavar="")
+parser_sub_line.add_argument('-hc', '--hide_chr', dest='hide_chr', help="Hide chromosome name in the figure.", action='store_true')
+parser_sub_line.add_argument('-al', '--actual_len', dest='actual_len', help="Optional, use actual chromosome length in the figure.", action='store_true')
+parser_sub_line.add_argument('-gs', '--gap_style', dest='gap_style', help="Typing compact or loose(default: loose).", type=str, choices=["loose", "compact"],  metavar="")
+parser_sub_line.add_argument('-sc', '--species_color', dest='sp_chr_color_comma_sep', help="Optional, species chromosome color(comma separated)", metavar="")
+parser_sub_line.add_argument('-cs', '--color_style', dest='color_style', help="Optional, block color style(rainbow, husl, four_colors, two_colors).", type=str, choices=["rainbow", "husl", "four_colors", "two_colors"], metavar="")
+parser_sub_line.add_argument('-it', '--italic', dest='italic', help="Species name italic in the figure.", action='store_true')
 parser_sub_line.add_argument('-fs', '--figsize', dest='figsize', help="Figure size(defaults: 14,14).", metavar="")
 parser_sub_line.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 

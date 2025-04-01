@@ -45,7 +45,7 @@ class ClsVis:
         plt.xticks(rotation=300)
         plt.tight_layout()
         plt.savefig(name,  bbox_inches='tight')
-        plt.show()
+#        plt.show()
 
     def run(self):
         output_list = self.output
@@ -70,6 +70,7 @@ def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_sta
     gene_pos_dict = {}
     block_index = 0
     block = []
+    direction_list = []
     # print(qry_prefix)
     # print(ref_prefix)
     # print(collinearity)
@@ -93,6 +94,8 @@ def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_sta
                     ref_chr_list.append(ref_chr)
                     query_chr = qry_prefix + chr_pair[1]
                     query_chr_list.append(query_chr)
+                    direction = line.split()[5]
+                    direction_list.append(direction)
                     block_index += 1
             else:
                 if flag:
@@ -104,7 +107,7 @@ def read_collinearity(qry_prefix, ref_prefix, collinearity, chr_list, chr_to_sta
                     continue
         if block:
             data.append([block[0][0], block[0][1], block[-1][0], block[-1][1]])
-    return data, gene_pos_dict, ref_chr_list, query_chr_list
+    return data, gene_pos_dict, ref_chr_list, query_chr_list, direction_list
 
      
 def bezier3(a, b, c, d, t):
@@ -176,3 +179,4 @@ def output_info(info):
             if i:
                 logger.info(f'{i}')
     return
+
