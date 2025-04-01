@@ -58,7 +58,10 @@ class Line:
         return y
 
     def determine_fig_par(self, len_number):
-        x = 0.7 / (6 * len_number - 5)
+        if len_number == 2:
+            x = 0.4 / (6 * len_number - 5)
+        else:
+            x = 0.7 / (6 * len_number - 5)
         self.height_gap = 5 * x
         self.query_height = 0.3 + 5 * x
         global CAP_DIAMETER
