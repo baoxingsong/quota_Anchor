@@ -421,7 +421,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     注:
     1. `./scripts/ks_pipeline.py` 这个脚本在共线性过程使用`species_pairs.csv`的`Species_1`列的值作为查询物种,使用Species_2`列的值作为参考物种。
     2. `./scripts/ks_pipeline.py` 脚本会根据`species_pairs.csv`物种对文件的`q_value`,`r_value`和`get_all_collinear_pairs`调整共线性过程的参数。
-    3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义或者参考[文档](./quota_anchor/doc/longestPathAlogorithm_zh.md)。
+    3. 你可能需要根据`quota_Anchor col`来了解这三个参数的含义或者参考[文档](./quota_anchor/doc/longestPathAlgorithm_zh.md)。
     4. 假如你的计算资源紧张且你的`species_pairs.csv`中有20个物种对，你可以分多次运行，比如分五次，一个运行四个物种对（仅仅删除其他十六行的物种对即可）。
 
     ```command
