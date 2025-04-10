@@ -428,7 +428,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     Note:
     1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column of `species_pairs.csv` as the query and the `Species_2` column of `species_pairs.csv` as the reference in the collinearity procedure.
     2. The `./scripts/ks_pipeline.py` script adjusts the parameters of the collinearity procedure based on the `r_value` `q_value` and `get_all_collinear_pairs` columns of the species pairs file.
-    3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command or refer to [document](./quota_anchor/doc/longestPathAlogorithm.md).
+    3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command or refer to [document](./quota_anchor/doc/longestPathAlgorithm.md).
     4. If your computing resources are limited and there are 20 species pairs in your `species_pairs.csv`, you can run it multiple times, for example, five times, each running four species pairs (just delete the other 16 rows of species pairs).
 
     ```command
