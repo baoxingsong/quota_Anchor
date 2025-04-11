@@ -507,6 +507,7 @@ parser_sub_circle.add_argument('-rn', '--ref_name', dest='ref_name', help="Refer
 parser_sub_circle.add_argument('-qn', '--query_name', dest='query_name', help="Query species name which will as legend label.", metavar="")
 parser_sub_circle.add_argument('-rm', '--remove_chromosome_prefix', dest='remove_chromosome_prefix', help="Remove chromosome prefix to plot(e.g. chr,Chr,CHR)(Separator: ',').", metavar="")
 parser_sub_circle.add_argument('-cf', '--chr_font_size', dest='chr_font_size', help="Chromosome name font size(defaults: 12).", metavar="", type=int)
+parser_sub_circle.add_argument('-it', '--italic', dest='italic', help="Species name italic in the figure.", action='store_true')
 parser_sub_circle.add_argument('-sf', '--species_name_font_size', dest='species_name_font_size', help="Species name font size(defaults: 12).", metavar="", type=int)
 parser_sub_circle.add_argument('-fs', '--figsize', dest='figsize', help="Figure size(defaults: 14,14).", metavar="")
 parser_sub_circle.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
