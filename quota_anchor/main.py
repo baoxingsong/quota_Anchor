@@ -473,7 +473,7 @@ parser_sub_dotplot.add_argument('-rm', '--remove_chromosome_prefix', dest='remov
 parser_sub_dotplot.add_argument('-ks', '--ks', dest='ks', help="Collinearity gene pair ks file for collinearity plot(Optional).", metavar="")
 parser_sub_dotplot.add_argument('-a', '--ks_area', dest='ks_area', help="ks area to plot if you specify -ks parameter for collinearity plot(Optional, default: 0,3).", metavar="")
 parser_sub_dotplot.add_argument('-disable', '--disable_axis_text', dest='disable_axis_text', help="Optional, disable_axis_text for dotplot.", action='store_true')
-parser_sub_dotplot.add_argument('-italic', '--italic', dest='italic', help="Optional, x, y label(italic) in the figure.", action='store_true')
+parser_sub_dotplot.add_argument('-it', '--italic', dest='italic', help="Optional, x, y label(italic) in the figure.", action='store_true')
 parser_sub_dotplot.add_argument('-use_identity', '--use_identity', dest='use_identity', help="Optional, use identity as legend rather strand direction for table(blast) dotplot.", action='store_true')
 parser_sub_dotplot.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 

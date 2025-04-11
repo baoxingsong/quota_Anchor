@@ -28,6 +28,7 @@ class Circle:
         self.chr_font_size = 12
         self.figsize = "14,14"
         self.species_name_font_size = 12
+        self.italic = False
         self.input_file = ""
         self.ref_length = ""
         self.query_length = ""
@@ -362,18 +363,26 @@ class Circle:
         # First
         legend_x, legend_y = self.plot_legend_first()
         plt.fill(legend_x, legend_y, facecolor='red', alpha=0.5)
-        plt.text(INNER_RADIUS + 0.5 * CAP_DIAMETER, INNER_RADIUS - 0.5 * CAP_DIAMETER, 
-                 self.ref_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black')
+        if self.italic:
+            plt.text(INNER_RADIUS + 0.5 * CAP_DIAMETER, INNER_RADIUS - 0.5 * CAP_DIAMETER,
+                     self.ref_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black', fontstyle='italic')
+        else:
+            plt.text(INNER_RADIUS + 0.5 * CAP_DIAMETER, INNER_RADIUS - 0.5 * CAP_DIAMETER,
+                     self.ref_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black')
         
         # Second
         if self.ref_name != self.query_name:
             legend_x, legend_y = self.plot_legend_second()
             plt.fill(legend_x, legend_y, facecolor='blue', alpha=0.5)
-            plt.text(INNER_RADIUS + 0.5 * CAP_DIAMETER, INNER_RADIUS - 2.5 * CAP_DIAMETER, 
-                     self.query_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black')
+            if self.italic:
+                plt.text(INNER_RADIUS + 0.5 * CAP_DIAMETER, INNER_RADIUS - 2.5 * CAP_DIAMETER,
+                         self.query_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black', fontstyle='italic')
+            else:
+                plt.text(INNER_RADIUS + 0.5 * CAP_DIAMETER, INNER_RADIUS - 2.5 * CAP_DIAMETER,
+                         self.query_name, ha="left", va="center", fontsize=self.species_name_font_size, color='black')
         plt.axis('off')
         # plt.subplots_adjust(0.1, 0.1, 0.9, 0.9)
-        plt.savefig(self.output_file_name, dpi=DPI, bbox_inches='tight', transparent=True)
+        plt.savefig(self.output_file_name, dpi=DPI, bbox_inches='tight', transparent=False)
         logger.info(f"Plot {self.output_file_name} finished!")
         sys.exit(0)
 
