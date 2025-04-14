@@ -10,12 +10,17 @@ class FileEmptyError(Exception):
 
 
 class ClsVis:
-    def __init__(self, stats_file, figure):
+    def __init__(self, stats_file, figure, flag):
         self.stats_file = stats_file
         self.output = figure
         self.ylab = "Number"
-        self.title1 = "Different gene types of focal species"
-        self.title2 = "Different duplicate pair types of focal species"
+        self.flag = flag
+        if not self.flag:
+            self.title1 = "Different gene types of focal species"
+            self.title2 = "Different duplicate pair types of focal species"
+        else:
+            self.title1 = "Different gene types of focal species(Unique)"
+            self.title2 = "Different duplicate pair types of focal species(Unique)"
 
     @staticmethod
     def get_data(stats_file):

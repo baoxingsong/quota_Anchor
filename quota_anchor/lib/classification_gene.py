@@ -128,6 +128,7 @@ def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query
     return pre_df
 
 def transposed_pre_df_unique(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line_bitscore, line_identity, anc, homo_gn_md):
+    # TODO:
     if not anc[ref_gene] and anc[query_gene] and homo_gn_md[ref_gene] not in [1, 2, 3] and homo_gn_md[query_gene] not in [2, 3]:
         try:
             avg_bs = (float(bitscore_dict[query_gene + '\t' + ref_gene]) + float(
@@ -155,8 +156,8 @@ def transposed_pre_df_unique(ref_gene, ref_chr, ref_order, ref_start, query_gene
                 pre_df.append([query_gene, query_chr, query_order, query_start, ref_gene, ref_chr, ref_order, ref_start, float(line_bitscore), float(line_identity)])
     return pre_df
 
-def get_used_dict(wgd_pair_set, tandem_pair_set, proximal_pair_set, transposed_pair_set, used_gp_dict):
-    used_gp_set = wgd_pair_set.union(tandem_pair_set, proximal_pair_set, transposed_pair_set)
+def get_used_dict(wgd_pair_set, tandem_pair_set, fake_proximal_pair_set, transposed_pair_set, used_gp_dict):
+    used_gp_set = wgd_pair_set.union(tandem_pair_set, fake_proximal_pair_set, transposed_pair_set)
     for pair in used_gp_set:
         used_gp_dict[pair] = True
     return used_gp_dict
@@ -295,6 +296,7 @@ class ClassGene:
             for line in data:
                 # refGene refChr refId refStart refEnd refStrand// queryGene queryChr queryId queryStart queryEnd  queryStrand// bitscore identity
                 ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start = read_data_line(line)
+                # Remove the constraint that the gene pair cannot have been used by previous process
                 tandem_condition, homo_gn_md, anc, used_gp_dict = tandem_init(ref_gene, ref_chr, ref_order, query_gene, query_chr, query_order, homo_gn_md, anc, used_gp_dict)
 
                 if tandem_condition:
@@ -316,6 +318,7 @@ class ClassGene:
                             tandem_pair_file.write(query_gene + "\t" + output_prefix + "-" + query_chr + "-" + query_order + "-" + query_start + "\t" +
                                                    ref_gene + "\t" + output_prefix + "-" + ref_chr + "-" + ref_order + "-" + ref_start + "\n")
                             tandem_pair_number += 1
+                            # Remove the constraint that the gene cannot be the wgd gene
                             tandem_gene_set, tandem_gene_number, homo_gn_md = write_gene_to_file(ref_gene, ref_chr, ref_order, ref_start, homo_gn_md,
                                                                                                 tandem_gene_file, tandem_gene_set, output_prefix, tandem_gene_number, mode)
                             tandem_gene_set, tandem_gene_number, homo_gn_md = write_gene_to_file(query_gene, query_chr, query_order, query_start, homo_gn_md,
@@ -323,13 +326,14 @@ class ClassGene:
                 bar()
         tandem_gene_file.close()
         tandem_pair_file.close()
+
         return homo_gn_md, tandem_pair_set, tandem_pair_number, tandem_gene_number, anc, used_gp_dict
 
     @staticmethod
     def proximal_process(data, proximal_pair_file, proximal_gene_file, output_prefix, proximal_threshold, homo_gn_md):
         logger.info('Identify proximal genes/pairs start.')
         mode = 3
-        proximal_gene_set, proximal_pair_set = set(), set()
+        proximal_gene_set, fake_proximal_pair_set = set(), set()
         proximal_gene_number, proximal_pair_number = 0, 0
         proximal_pre_df = []
         
@@ -346,6 +350,7 @@ class ClassGene:
                 ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start = read_data_line(line)
                 proximal_condition1 = ref_chr == query_chr
                 proximal_condition2 = 1 < abs(int(ref_order) - int(query_order)) <= proximal_threshold
+                # Remove the constraint that the gene pair cannot have been used by previous process
                 if proximal_condition2 and proximal_condition1:
                     if int(ref_order) - int(query_order) < 0:
                         proximal_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start ,int(query_order) - int(ref_order)])
@@ -355,6 +360,12 @@ class ClassGene:
 
         df = pd.DataFrame(proximal_pre_df, columns=['Duplicate1', 'chr1', 'order1', 'start1', 'Duplicate2', 'chr2', 'order2' ,'start2', 'Distance'])
         df = df.drop_duplicates(subset=['Duplicate1', 'Duplicate2'])
+
+        df['pair'] = df['Duplicate1'] + '\t' + df['Duplicate2']
+        df['pair_r'] = df['Duplicate2'] + '\t' + df['Duplicate1']
+        fake_proximal_pair_set.update(df['pair'])
+        fake_proximal_pair_set.update(df['pair_r'])
+
         min_values = df.groupby('Duplicate1')['Distance'].transform('min')
         df_filtered = df[df['Distance'] == min_values]
         df_filtered.reset_index(drop=True, inplace=True)
@@ -363,11 +374,10 @@ class ClassGene:
         time_now = dt.strftime('%Y/%m/%d %H:%M:%S')
         with alive_bar(len(df_filtered), title=f"[{time_now} INFO Step two]", bar="bubbles", spinner="waves") as bar:
             for index, line in df_filtered.iterrows():
-                dup_gene1, chr1, order1, start1, dup_gene2, chr2, order2, start2, distance = list(line)
-                proximal_pair_set.add(dup_gene1 + "\t" + dup_gene2)
-                proximal_pair_set.add(dup_gene2 + "\t" + dup_gene1)
+                dup_gene1, chr1, order1, start1, dup_gene2, chr2, order2, start2, distance, _, _ = list(line)
                 proximal_pair_file.write(dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" + start1
                                     + "\t" + dup_gene2 + "\t" + output_prefix + "-" + chr2 + "-" + order2 + "-" + start2 + "\n")
+                # Remove the constraint that the gene cannot be the wgd gene
                 proximal_gene_set, proximal_gene_number, homo_gn_md = write_gene_to_file(dup_gene1, chr1, order1, start1, homo_gn_md,
                                                                                             proximal_gene_file, proximal_gene_set, output_prefix, proximal_gene_number, mode)
                 proximal_gene_set, proximal_gene_number, homo_gn_md = write_gene_to_file(dup_gene2, chr2, order2 ,start2, homo_gn_md,
@@ -381,7 +391,7 @@ class ClassGene:
         else:
             proximal_pair_number = index + 1
 
-        return homo_gn_md, proximal_pair_set, proximal_pair_number, proximal_gene_number
+        return homo_gn_md, fake_proximal_pair_set, proximal_pair_number, proximal_gene_number
 
     @staticmethod
     def transposed_process(wgd_gene_set, query_ref_collinearity, data, transposed_pair_file, transposed_gene_file, output_prefix, seg_anc, proximal_threshold, homo_gn_md, anc):
@@ -422,6 +432,7 @@ class ClassGene:
                     if abs(int(ref_order) - int(query_order)) > proximal_threshold:
                         pre_df = transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line[12], line[13], anc, homo_gn_md)
                 bar()
+
             df = pd.DataFrame(pre_df, columns=['Duplicate', 'chr1', 'order1' ,'start1', 'Parental', 'chr2', 'order2' ,'start2', 'bitscore', 'identity'])
             df = df.drop_duplicates(subset=['Duplicate', 'Parental'])
             max_values = df.groupby('Duplicate')['bitscore'].transform('max')
@@ -496,10 +507,13 @@ class ClassGene:
         with alive_bar(len(df_filtered), title=f"[{time_now} INFO] Step two", bar="bubbles", spinner="waves") as bar:
             for index, line in df_filtered.iterrows():
                 dup_gene1, chr1, order1 ,start1, dup_gene2, chr2, order2 ,start2, bitscore, identity = list(line)
-                dispersed_pair_set.add(dup_gene1 + '\t' + dup_gene2)
-                dispersed_pair_set.add(dup_gene2 + '\t' + dup_gene1)
-                dispersed_pair_file.write(dup_gene2 + "\t" + output_prefix + "-" + chr2 + "-" + order2 + "-" + start2 + "\t" +
-                                          dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" + start1 + "\n")
+                if dup_gene2 + '\t' + dup_gene1 not in dispersed_pair_set:
+                    # rm ab ba
+                    dispersed_pair_number += 1
+                    dispersed_pair_file.write(dup_gene2 + "\t" + output_prefix + "-" + chr2 + "-" + order2 + "-" + start2 + "\t" +
+                                              dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" + start1 + "\n")
+                    dispersed_pair_set.add(dup_gene1 + '\t' + dup_gene2)
+                    dispersed_pair_set.add(dup_gene2 + '\t' + dup_gene1)
                 if homo_gn_md[dup_gene1] not in [1, 2, 3, 4] and dup_gene1 not in dispersed_gene_set:
                     dispersed_gene_set.add(dup_gene1)
                     dispersed_gene_file.write(dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" + start1 + "\n")
@@ -514,8 +528,6 @@ class ClassGene:
 
         if len(df_filtered) == 0:
             dispersed_pair_number = 0
-        else:
-            dispersed_pair_number = index + 1
         return dispersed_gene_set, dispersed_pair_number, dispersed_gene_number
 
     @staticmethod
@@ -592,8 +604,9 @@ class ClassGene:
         homo_gn_md, tandem_pair_set, tandem_pair_number, tandem_gene_number, anc, used_gp_dict  = self.tandem_process(data, self.tandem_pair_file, self.tandem_gene_file, self.output_prefix)
         logger.info("Identify tandem genes/pairs finished!")
         #fourth
+
         homo_gn_md = self.merge_mode(homo_gn_md, wgd_md)
-        homo_gn_md, proximal_pair_set, proximal_pair_number, proximal_gene_number = self.proximal_process(data, self.proximal_pair_file, self.proximal_gene_file, self.output_prefix,
+        homo_gn_md, fake_proximal_pair_set, proximal_pair_number, proximal_gene_number = self.proximal_process(data, self.proximal_pair_file, self.proximal_gene_file, self.output_prefix,
                                                                             self.proximal_max_distance, homo_gn_md)
         logger.info("Identify proximal genes/pairs finished!")
         #fifth
@@ -602,7 +615,7 @@ class ClassGene:
               self.seg_anc, self.proximal_max_distance, homo_gn_md, anc)
         logger.info("Identify transposed genes/pairs finished!")
         #sixth
-        used_gp_dict = get_used_dict(wgd_pair_set, tandem_pair_set, proximal_pair_set, transposed_pair_set, used_gp_dict)
+        used_gp_dict = get_used_dict(wgd_pair_set, tandem_pair_set, fake_proximal_pair_set, transposed_pair_set, used_gp_dict)
         _, dispersed_pair_number, dispersed_gene_number = self.dispersed_process(data, self.dispersed_pair_file, self.dispersed_gene_file, self.output_prefix, homo_gn_md, used_gp_dict, bitscore_dict, identity_dict)
         logger.info("Identify dispersed genes/pairs finished!")
         #seventh
@@ -627,7 +640,7 @@ class ClassGene:
                        [self.wgd_pair_file, self.tandem_pair_file, self.proximal_pair_file, self.transposed_pair_file, self.dispersed_pair_file])
         logger.info("Count and visualize the number of genes and gene pairs!")
         #plot
-        base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"]).run()
+        base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"], False).run()
         logger.info("Gene and gene pair classification finished!")
 
 
@@ -732,8 +745,9 @@ class ClassGeneUnique:
                 ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start = read_data_line(line)
                 tandem_condition, homo_gn_md, anc, used_gp_dict = tandem_init(ref_gene, ref_chr, ref_order, query_gene, query_chr, query_order, homo_gn_md, anc, used_gp_dict)
                 if tandem_condition:
+                    homo_gn_md[ref_gene] = mode
+                    homo_gn_md[query_gene] = mode
                     if int(ref_order) - int(query_order) < 0:
-                        # unique is stricter
                         if ref_gene not in wgd_gene_set and query_gene not in wgd_gene_set and \
                                ref_gene + "\t" + query_gene not in tandem_pair_set:
                             tandem_pair_set.add(ref_gene + "\t" + query_gene)
@@ -742,6 +756,7 @@ class ClassGeneUnique:
                                              + "\t" + query_gene + "\t" + output_prefix + "-" + query_chr + "-" + query_order + "-"
                                              + query_start + "\n")
                             tandem_pair_number += 1
+                            # The tandem gene needs to be in a tandem pair
                             tandem_gene_set, tandem_gene_number, homo_gn_md = write_gene_to_file(ref_gene, ref_chr, ref_order, ref_start, homo_gn_md,
                                                                                                 tandem_gene_file, tandem_gene_set, output_prefix, tandem_gene_number, mode)
                             tandem_gene_set, tandem_gene_number, homo_gn_md = write_gene_to_file(query_gene, query_chr, query_order, query_start, homo_gn_md,
@@ -755,11 +770,13 @@ class ClassGeneUnique:
                                              + query_start + "\t" + ref_gene + "\t" + output_prefix
                                              + "-" + ref_chr + "-" + ref_order + "-" + ref_start + "\n")
                             tandem_pair_number += 1
+                            # The tandem gene needs to be in a tandem pair
                             tandem_gene_set, tandem_gene_number, homo_gn_md = write_gene_to_file(ref_gene, ref_chr, ref_order, ref_start, homo_gn_md,
                                                                                                 tandem_gene_file, tandem_gene_set, output_prefix, tandem_gene_number, mode)
                             tandem_gene_set, tandem_gene_number, homo_gn_md = write_gene_to_file(query_gene, query_chr, query_order, query_start, homo_gn_md,
                                                                                                 tandem_gene_file, tandem_gene_set, output_prefix, tandem_gene_number, mode)
                 bar()
+
         tandem_gene_file.close()
         tandem_pair_file.close()
         return homo_gn_md, tandem_pair_set, tandem_pair_number, tandem_gene_number, anc, used_gp_dict
@@ -786,6 +803,10 @@ class ClassGeneUnique:
                 proximal_condition1 = ref_chr == query_chr
                 proximal_condition2 = 1 < abs(int(ref_order) - int(query_order)) <= proximal_threshold
                 if proximal_condition2 and proximal_condition1:
+                    if homo_gn_md[ref_gene] == 0:
+                        homo_gn_md[ref_gene] = mode
+                    if homo_gn_md[query_gene] == 0:
+                        homo_gn_md[query_gene] = mode
                     if int(ref_order) - int(query_order) < 0:
                         if homo_gn_md[ref_gene] not in [1, 2] and homo_gn_md[query_gene] not in [1, 2]:
                             proximal_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start ,int(query_order) - int(ref_order)])
@@ -808,7 +829,7 @@ class ClassGeneUnique:
                 proximal_pair_set.add(dup_gene2 + "\t" + dup_gene1)
                 proximal_pair_file.write(dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" +start1
                                     + "\t" + dup_gene2 + "\t" + output_prefix + "-" + chr2 + "-" + order2 + "-" + start2 + "\n")
-
+                # The proximal gene needs to be in a proximal pair
                 proximal_gene_set, proximal_gene_number, homo_gn_md = write_gene_to_file(dup_gene1, chr1, order1 ,start1, homo_gn_md,
                                                                                             proximal_gene_file, proximal_gene_set, output_prefix, proximal_gene_number, mode)
                 proximal_gene_set, proximal_gene_number, homo_gn_md = write_gene_to_file(dup_gene2, chr2, order2 ,start2, homo_gn_md,
@@ -861,6 +882,7 @@ class ClassGeneUnique:
                     if abs(int(ref_order) - int(query_order)) > proximal_threshold:
                         pre_df = transposed_pre_df_unique(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line[12], line[13], anc, homo_gn_md)
                 bar()
+
         df = pd.DataFrame(pre_df, columns=['Duplicate', 'chr1', 'order1' ,'start1', 'Parental', 'chr2', 'order2' ,'start2', 'bitscore', 'identity'])
         df = df.drop_duplicates(subset=['Duplicate', 'Parental'])
     
@@ -924,6 +946,7 @@ class ClassGeneUnique:
                             dispersed_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(line[12]), float(line[13])])
                 bar()
         df = pd.DataFrame(dispersed_pre_df, columns=['Duplicate1', 'chr1', 'order1', 'start1', 'Duplicate2', 'chr2', 'order2', 'start2', 'bitscore', 'identity'])
+        # DupGen_finder-unique don't have this procedure
         max_values = df.groupby('Duplicate2')['bitscore'].transform('max')
         df_filtered_sub = df[df['bitscore'] == max_values]
         max_values_identity = df_filtered_sub.groupby('Duplicate2')['identity'].transform('max')
@@ -935,10 +958,13 @@ class ClassGeneUnique:
         with alive_bar(len(df_filtered), title=f"[{time_now} INFO] Step one", bar="bubbles", spinner="waves") as bar:
             for index, line in df_filtered.iterrows():
                 dup_gene1, chr1, order1, start1, dup_gene2, chr2, order2, start2, bitscore, identity = list(line)
-                dispersed_pair_set.add(dup_gene1 + '\t' + dup_gene2)
-                dispersed_pair_set.add(dup_gene2 + '\t' + dup_gene1)
-                dispersed_pair_file.write(dup_gene2 + "\t" + output_prefix + "-" + chr2 + "-" + order2 + "-" + start2 + "\t" +
-                                          dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" + start1 + "\n")
+                if dup_gene2 + '\t' + dup_gene1 not in dispersed_pair_set:
+                    # rm ab ba
+                    dispersed_pair_number += 1
+                    dispersed_pair_file.write(dup_gene2 + "\t" + output_prefix + "-" + chr2 + "-" + order2 + "-" + start2 + "\t" +
+                                              dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" + start1 + "\n")
+                    dispersed_pair_set.add(dup_gene1 + '\t' + dup_gene2)
+                    dispersed_pair_set.add(dup_gene2 + '\t' + dup_gene1)
 
                 dispersed_gene_set, dispersed_gene_number, homo_gn_md = write_gene_to_file(dup_gene1, chr1, order1, start1, homo_gn_md,
                                                                                             dispersed_gene_file, dispersed_gene_set, output_prefix, dispersed_gene_number, mode)
@@ -949,8 +975,6 @@ class ClassGeneUnique:
         dispersed_gene_file.close()
         if len(df_filtered) == 0:
             dispersed_pair_number = 0
-        else:
-            dispersed_pair_number = index + 1
         return dispersed_gene_set, dispersed_pair_number, dispersed_gene_number
 
     @staticmethod
@@ -1059,5 +1083,5 @@ class ClassGeneUnique:
                        [self.wgd_pair_file, self.tandem_pair_file, self.proximal_pair_file, self.transposed_pair_file, self.dispersed_pair_file])
         logger.info("Count and plot the number of gene pairs and genes!")
         #plot
-        base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"]).run()
+        base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"], True).run()
         logger.info("Gene and gene pairs classification finished!")
