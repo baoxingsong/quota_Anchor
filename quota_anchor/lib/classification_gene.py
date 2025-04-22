@@ -1,6 +1,5 @@
 # This script refers to https://github.com/qiao-xin/DupGen_finder.
-# We use AnchorWave based-gene syntenic algorithm rather than MCScanX to identify wgd gene pairs/wgd genes.
-# When you specify type=0, duplicates are permitted between different classes of genes to some extent.
+# We use quota_Anchor based-gene syntenic algorithm rather than MCScanX to identify wgd gene pairs/wgd genes.
 import os, sys
 import datetime
 from alive_progress import alive_bar
@@ -98,8 +97,7 @@ def tandem_init(ref_gene, ref_chr, ref_order, query_gene, query_chr, query_order
     condition = tandem_condition1 and tandem_condition2
     return condition, homo_gn_md, anc, used_gp_dict
 
-# redundant code
-def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order ,query_start, bitscore_dict, identity_dict, pre_df, line_bitscore, line_identity, anc, homo_gn_md):
+def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line_bitscore, line_identity, anc, homo_gn_md):
     if not anc[ref_gene] and anc[query_gene] and homo_gn_md[ref_gene] not in [1, 2, 3]:
         try:
             avg_bs = (float(bitscore_dict[query_gene + '\t' + ref_gene]) + float(
@@ -111,38 +109,9 @@ def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query
             if query_gene + '\t' + ref_gene in bitscore_dict:
                 pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
             else:
-                pre_df.append([ref_gene, ref_chr, ref_order ,ref_start, query_gene, query_chr, query_order ,query_start, float(line_bitscore), float(line_identity)])
-        return pre_df
-    if not anc[query_gene] and anc[ref_gene] and homo_gn_md[query_gene] not in [1, 2, 3]:
-        try:
-            avg_bs = (float(bitscore_dict[query_gene + '\t' + ref_gene]) + float(
-                bitscore_dict[ref_gene + '\t' + query_gene])) / 2
-            avg_id = (float(identity_dict[query_gene + '\t' + ref_gene]) + float(
-                identity_dict[ref_gene + '\t' + query_gene])) / 2
-            pre_df.append([query_gene, query_chr, query_order ,query_start, ref_gene, ref_chr, ref_order ,ref_start, avg_bs, avg_id])
-        except KeyError:
-            if query_gene + '\t' + ref_gene in bitscore_dict:
-                pre_df.append([query_gene, query_chr, query_order ,query_start, ref_gene, ref_chr, ref_order ,ref_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
-            else:
-                pre_df.append([query_gene, query_chr, query_order, query_start, ref_gene, ref_chr, ref_order ,ref_start, float(line_bitscore), float(line_identity)])
-    return pre_df
-
-def transposed_pre_df_unique(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line_bitscore, line_identity, anc, homo_gn_md):
-    # TODO:
-    if not anc[ref_gene] and anc[query_gene] and homo_gn_md[ref_gene] not in [1, 2, 3] and homo_gn_md[query_gene] not in [2, 3]:
-        try:
-            avg_bs = (float(bitscore_dict[query_gene + '\t' + ref_gene]) + float(
-                bitscore_dict[ref_gene + '\t' + query_gene])) / 2
-            avg_id = (float(identity_dict[query_gene + '\t' + ref_gene]) + float(
-                identity_dict[ref_gene + '\t' + query_gene])) / 2
-            pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, avg_bs, avg_id])
-        except KeyError:
-            if query_gene + '\t' + ref_gene in bitscore_dict:
-                pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
-            else: 
                 pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(line_bitscore), float(line_identity)])
         return pre_df
-    if not anc[query_gene] and anc[ref_gene] and homo_gn_md[query_gene] not in [1, 2, 3] and homo_gn_md[ref_gene] not in [2, 3]:
+    if not anc[query_gene] and anc[ref_gene] and homo_gn_md[query_gene] not in [1, 2, 3]:
         try:
             avg_bs = (float(bitscore_dict[query_gene + '\t' + ref_gene]) + float(
                 bitscore_dict[ref_gene + '\t' + query_gene])) / 2
@@ -363,6 +332,7 @@ class ClassGene:
 
         df['pair'] = df['Duplicate1'] + '\t' + df['Duplicate2']
         df['pair_r'] = df['Duplicate2'] + '\t' + df['Duplicate1']
+        # TODO: 1-20 and 1-10   15-25
         fake_proximal_pair_set.update(df['pair'])
         fake_proximal_pair_set.update(df['pair_r'])
 
@@ -483,6 +453,7 @@ class ClassGene:
             for line in data:
                 # refGene refChr refId refStart refEnd refStrand// queryGene queryChr queryId queryStart queryEnd  queryStrand// bitscore identity
                 ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start = read_data_line(line)
+                # TODO: local dups ??
                 if not used_gp_dict[ref_gene + '\t' + query_gene]:
                     try:
                         avg_bs = (float(bitscore_dict[query_gene + '\t' + ref_gene]) + float(bitscore_dict[ref_gene + '\t' + query_gene])) / 2
@@ -877,10 +848,10 @@ class ClassGeneUnique:
                 # refGene refChr refId refStart refEnd refStrand// queryGene queryChr queryId queryStart queryEnd  queryStrand// bitscore identity
                 ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start = read_data_line(line)
                 if ref_chr != query_chr:
-                    pre_df = transposed_pre_df_unique(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line[12], line[13], anc, homo_gn_md)
+                    pre_df = transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line[12], line[13], anc, homo_gn_md)
                 else:
                     if abs(int(ref_order) - int(query_order)) > proximal_threshold:
-                        pre_df = transposed_pre_df_unique(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line[12], line[13], anc, homo_gn_md)
+                        pre_df = transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, bitscore_dict, identity_dict, pre_df, line[12], line[13], anc, homo_gn_md)
                 bar()
 
         df = pd.DataFrame(pre_df, columns=['Duplicate', 'chr1', 'order1' ,'start1', 'Parental', 'chr2', 'order2' ,'start2', 'bitscore', 'identity'])
