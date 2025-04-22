@@ -54,7 +54,7 @@ class Dotplot:
 
                     strip_text=element_text(size=50),
                     # strip_background=element_blank()
-                    strip_background = element_rect(fill="silver", color="black")
+                    strip_background = element_rect(fill="white", color="black")
                 ) 
         else:
             self.my_theme = theme(
@@ -70,7 +70,7 @@ class Dotplot:
 
                     strip_text=element_text(size=50),
                     # strip_background=element_blank()
-                    strip_background = element_rect(fill="silver", color="black")
+                    strip_background = element_rect(fill="white", color="black")
                 )
     @staticmethod
     def major_formatter(breaks):

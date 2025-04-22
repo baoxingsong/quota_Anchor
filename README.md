@@ -266,7 +266,11 @@ This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finde
 2. Download Musa balbisiana data and rename the filename
 
     ```bash
-    wget https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCA_004837865.1/download\?include_annotation_type\=GENOME_FASTA\&include_annotation_type\=GENOME_GFF
+    wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/004/837/865/GCA_004837865.1_BananaB_V1/GCA_004837865.1_BananaB_V1_genomic.gff.gz
+    wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/004/837/865/GCA_004837865.1_BananaB_V1/GCA_004837865.1_BananaB_V1_genomic.fna.gz
+    gunzip *gz
+    mv GCA_004837865.1_BananaB_V1_genomic.fna banana.B.fa
+    mv GCA_004837865.1_BananaB_V1_genomic.gff banana.B.gff
     ```
 
     ```text
