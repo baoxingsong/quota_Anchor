@@ -106,10 +106,7 @@ def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query
                 identity_dict[ref_gene + '\t' + query_gene])) / 2
             pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, avg_bs, avg_id])
         except KeyError:
-            if query_gene + '\t' + ref_gene in bitscore_dict:
-                pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
-            else:
-                pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(line_bitscore), float(line_identity)])
+            pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(line_bitscore), float(line_identity)])
         return pre_df
     if not anc[query_gene] and anc[ref_gene] and homo_gn_md[query_gene] not in [1, 2, 3]:
         try:
@@ -119,10 +116,7 @@ def transposed_pre_df(ref_gene, ref_chr, ref_order, ref_start, query_gene, query
                 identity_dict[ref_gene + '\t' + query_gene])) / 2
             pre_df.append([query_gene, query_chr, query_order, query_start, ref_gene, ref_chr, ref_order, ref_start, avg_bs, avg_id])
         except KeyError:
-            if query_gene + '\t' + ref_gene in bitscore_dict:
-                pre_df.append([query_gene, query_chr, query_order, query_start, ref_gene, ref_chr, ref_order, ref_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
-            else:
-                pre_df.append([query_gene, query_chr, query_order, query_start, ref_gene, ref_chr, ref_order, ref_start, float(line_bitscore), float(line_identity)])
+            pre_df.append([query_gene, query_chr, query_order, query_start, ref_gene, ref_chr, ref_order, ref_start, float(line_bitscore), float(line_identity)])
     return pre_df
 
 def get_used_dict(wgd_pair_set, tandem_pair_set, fake_proximal_pair_set, transposed_pair_set, used_gp_dict):
@@ -460,10 +454,7 @@ class ClassGene:
                         avg_id = (float(identity_dict[query_gene + '\t' + ref_gene]) + float(identity_dict[ref_gene + '\t' + query_gene])) / 2
                         dispersed_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, avg_bs, avg_id])
                     except KeyError:
-                        if query_gene + '\t' + ref_gene in bitscore_dict:
-                            dispersed_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order ,query_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
-                        else:
-                            dispersed_pre_df.append([ref_gene, ref_chr, ref_start, query_gene, query_chr, query_start, float(line[12]), float(line[13])])
+                        dispersed_pre_df.append([ref_gene, ref_chr, ref_start, query_gene, query_chr, query_start, float(line[12]), float(line[13])])
                 bar()
         df = pd.DataFrame(dispersed_pre_df, columns=['Duplicate1', 'chr1', 'order1', 'start1', 'Duplicate2', 'chr2', 'order2', 'start2', 'bitscore', 'identity'])
         
@@ -480,6 +471,7 @@ class ClassGene:
                 dup_gene1, chr1, order1 ,start1, dup_gene2, chr2, order2 ,start2, bitscore, identity = list(line)
                 if dup_gene2 + '\t' + dup_gene1 not in dispersed_pair_set:
                     # rm ab ba
+                    # TODO: homo_gn_md[dup_gene1] in [1, 2, 3, 4] and homo_gn_md[dup_gene2] in [1, 2, 3, 4] --> continue
                     dispersed_pair_number += 1
                     dispersed_pair_file.write(dup_gene2 + "\t" + output_prefix + "-" + chr2 + "-" + order2 + "-" + start2 + "\t" +
                                               dup_gene1 + "\t" + output_prefix + "-" + chr1 + "-" + order1 + "-" + start1 + "\n")
@@ -911,10 +903,7 @@ class ClassGeneUnique:
                         avg_id = (float(identity_dict[query_gene + '\t' + ref_gene]) + float(identity_dict[ref_gene + '\t' + query_gene])) / 2
                         dispersed_pre_df.append([ref_gene, ref_chr, ref_start, query_gene, query_chr, query_start, avg_bs, avg_id])
                     except KeyError:
-                        if query_gene + '\t' + ref_gene in bitscore_dict:
-                            dispersed_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(bitscore_dict[query_gene + '\t' + ref_gene]), float(identity_dict[query_gene + '\t' + ref_gene])])
-                        else:
-                            dispersed_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(line[12]), float(line[13])])
+                        dispersed_pre_df.append([ref_gene, ref_chr, ref_order, ref_start, query_gene, query_chr, query_order, query_start, float(line[12]), float(line[13])])
                 bar()
         df = pd.DataFrame(dispersed_pre_df, columns=['Duplicate1', 'chr1', 'order1', 'start1', 'Duplicate2', 'chr2', 'order2', 'start2', 'bitscore', 'identity'])
         # DupGen_finder-unique don't have this procedure
