@@ -145,7 +145,7 @@ def run_correct(parameter):
     correct.Correct(config_par, parameter).run()
 
 parser = argparse.ArgumentParser(description='Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.', prog="quota_Anchor")
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0rc')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
 
 
 subparsers = parser.add_subparsers(title='Gene collinearity analysis', dest='analysis')
