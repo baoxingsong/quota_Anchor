@@ -38,7 +38,7 @@ For more information about the algorithm, refer to the [document](./quota_anchor
 
 ## Installation
 
-You can simply install the software via conda（AnchorWave has not yet released a new version v1.2.6, so you may need to manually download the development version of AnchorWave from GitHub and copy the binary file to the bin directory of your conda environment）:
+You can simply install the software via conda:
 
 ```command
 conda create -n quota_Anchor bioconda::quota_anchor

@@ -36,7 +36,7 @@
 
 ## 安装
 
-你可以简单地通过conda安装这个软件（AnchorWave还未发布新的版本v1.2.6,因此你可能需要手动从github下载开发版本的AnchorWave，并将二进制文件复制到你的conda环境的bin目录下）:
+你可以简单地通过conda安装这个软件:
 
 ```command
 conda create -n quota_Anchor bioconda::quota_anchor
