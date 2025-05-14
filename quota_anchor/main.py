@@ -433,6 +433,7 @@ parser_sub_ks.add_argument('-t', '--process', dest='process', help="Number of pa
                            type=int)
 parser_sub_ks.add_argument('-add_ks', '--add_ks', dest='add_ks', help="Add extra syntenic pairs rather than overwrite it",
                            action='store_true')
+parser_sub_ks.add_argument('-debug', '--debug', dest='debug', help="Record gene pairs for which calculation failed", metavar="")
 parser_sub_ks.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.",
                            action='store_true')
 
