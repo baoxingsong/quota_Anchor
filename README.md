@@ -318,34 +318,33 @@ This pipeline refers to [DupGen_finder](https://github.com/qiao-xin/DupGen_finde
 
 ## Positioning wgd events relative to species divergent events based on ks
 
-This pipeline refers to [ksrates](https://github.com/VIB-PSB/ksrates), with some differences between two methods. In short, this pipeline uses the collinear gene pair ks value fitting results obtained based on the `-r_value -q_value` parameters as the species divergent peak, while ksrates uses the RBH gene pair ks value fitting results as the species divergent peak. And there are also some slight differences in the fitting methods.
-The following is the current directory tree and oryza sativa and setaria viridis data soucre.
-
-```bash
-wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/oryza_sativa/dna/Oryza_sativa.IRGSP-1.0.dna_rm.toplevel.fa.gz
-wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/oryza_sativa/Oryza_sativa.IRGSP-1.0.59.gff3.gz
-wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/setaria_viridis/dna/Setaria_viridis.Setaria_viridis_v2.0.dna.toplevel.fa.gz
-wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_viridis/Setaria_viridis.Setaria_viridis_v2.0.59.gff3.gz
-```
+This pipeline refers to [ksrates](https://github.com/VIB-PSB/ksrates), with some differences between two methods. In short, this pipeline uses the collinear gene pair ks value fitting results obtained based on the `-r_value -q_value` parameters as the species divergent peak, while ksrates uses the RBH gene pair ks value fitting results as the species divergent peak. And there are also some differences in the fitting methods.
+The following is the current directory tree.
 
 ```text
-├── raw_data
-│   ├── maize.fa
-│   ├── maize.gff3
-│   ├── oryza.fa
-│   ├── oryza.gff3
-│   ├── setaria.fa
-│   ├── setaria.gff3
-│   ├── sorghum.fa
-│   └── sorghum.gff3
-└── scripts
-    ├── ks_pipeline.py
-    └── longest_pipeline.py
+├── Aegilops.searsii.fa
+├── Aegilops.searsii.gff3
+├── Hordeum.marinum.fa
+├── Hordeum.marinum.gff3
+├── Joinvillea.ascendens.fa
+├── Joinvillea.ascendens.gff3
+├── Leersia.perrieri.fa
+├── Leersia.perrieri.gff3
+├── Oryza.sativa.fa
+├── Oryza.sativa.gff3
+├── Setaria.italica.fa
+├── Setaria.italica.gff3
+├── Setaria.viridis.fa
+├── Setaria.viridis.gff3
+├── Zea.mays.fa
+└── Zea.mays.gff3
 ```
 
 1. Generate longest protein and longest cds for each species in the input directory.
 
     ```command
+    git clone https://github.com/baoxingsong/quota_Anchor.git
+    cp -r  quota_Anchor/scripts .
     python ./scripts/longest_pipeline.py -i raw_data -o output_dir --overwrite
     ```
 
@@ -361,19 +360,19 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     ```
 
     ```command
-    quota_Anchor get_chr_length -f ./raw_data/maize.fa.fai,./raw_data/oryza.fa.fai,./raw_data/setaria.fa.fai,./raw_data/sorghum.fa.fai -g ./raw_data/maize.gff3,./raw_data/oryza.gff3,./raw_data/setaria.gff3,./raw_data/sorghum.gff3 -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o ./raw_data/maize.length.txt,./raw_data/oryza.length.txt,./raw_data/setaria.length.txt,./raw_data/sorghum.length.txt --overwrite
+    quota_Anchor get_chr_length -f ./raw_data/Aegilops.searsii.fa.fai,./raw_data/Hordeum.marinum.fa.fai,./raw_data/Joinvillea.ascendens.fa.fai,./raw_data/Leersia.perrieri.fa.fai,./raw_data/Oryza.sativa.fa.fai,./raw_data/Setaria.italica.fa.fai,./raw_data/Setaria.viridis.fa.fai,./raw_data/Zea.mays.fa.fai -g ./raw_data/Aegilops.searsii.gff3,./raw_data/Hordeum.marinum.gff3,./raw_data/Joinvillea.ascendens.gff3,./raw_data/Leersia.perrieri.gff3,./raw_data/Oryza.sativa.gff3,./raw_data/Setaria.italica.gff3,./raw_data/Setaria.viridis.gff3,./raw_data/Zea.mays.gff3 -s GWHBFXU00000007,GWHBFXU00000006,GWHBFXU00000005,GWHBFXU00000004,GWHBFXU00000003,GWHBFXU00000002,GWHBFXU00000001:GWHBJBH00000007,GWHBJBH00000006,GWHBJBH00000005,GWHBJBH00000004,GWHBJBH00000003,GWHBJBH00000002,GWHBJBH00000001:Chr:0-9:0-9:I,V:0-9:0-9 -o ./raw_data/Aegilops.searsii.length.txt,./raw_data/Hordeum.marinum.length.txt,./raw_data/Joinvillea.ascendens.length.txt,./raw_data/Leersia.perrieri.length.txt,./raw_data/Oryza.sativa.length.txt,./raw_data/Setaria.italica.length.txt,./raw_data/Setaria.viridis.length.txt,./raw_data/Zea.mays.length.txt --overwrite
     ```
 
     b)
 
     ```command
-    quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s 0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr:0-9,CHR,chr,Chr -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g)" --overwrite
+    quota_Anchor get_chr_length -f "$(find ./raw_data/*fai |awk '{printf "%s,", $1}')" -g "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}')" -s GWHBFXU00000007,GWHBFXU00000006,GWHBFXU00000005,GWHBFXU00000004,GWHBFXU00000003,GWHBFXU00000002,GWHBFXU00000001:GWHBJBH00000007,GWHBJBH00000006,GWHBJBH00000005,GWHBJBH00000004,GWHBJBH00000003,GWHBJBH00000002,GWHBJBH00000001:Chr:0-9:0-9:I,V:0-9:0-9 -o "$(find ./raw_data/*gff3 |awk '{printf "%s,", $1}'|sed s/gff3/length\.txt/g)" --overwrite
     ```
 
 3. Generate trios files and species pair files based on the binary tree in newick format.
 
     ```command
-    quota_Anchor trios -n "(((maize, sorghum), setaria), oryza);" -k "maize" -ot ortholog_trios_maize.csv -op species_pairs.csv -t tree.txt --overwrite
+    quota_Anchor trios -n "((((Zea.mays, (Setaria.viridis, Setaria.italica)), (Hordeum.marinum, Aegilops.searsii)), (Oryza.sativa, Leersia.perrieri)), Joinvillea.ascendens);" -k "Zea.mays" -ot ortholog_trios_maize.csv -op species_pairs.csv -t tree.txt --overwrite
     ```
 
     <table>
@@ -385,47 +384,166 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
             <td width="20%" align =center>get_all_collinear_pairs</td>
         </tr>
     <tr>
-            <td width="15%" align =center>maize</td>
-            <td width="15%" align =center>setaria</td>
+            <td width="15%" align =center>Zea.mays</td>
+            <td width="15%" align =center>Setaria.viridis</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>2</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Zea.mays</td>
+            <td width="15%" align =center>Hordeum.marinum</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>2</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Setaria.viridis</td>
+            <td width="15%" align =center>Hordeum.marinum</td>
             <td width="10%" align =center>1</td>
             <td width="10%" align =center>1</td>
             <td width="20%" align =center>0</td>
         </tr>
     <tr>
-            <td width="15%" align =center>maize</td>
-            <td width="15%" align =center>setaria</td>
+            <td width="15%" align =center>Zea.mays</td>
+            <td width="15%" align =center>Aegilops.searsii</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>2</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Setaria.viridis</td>
+            <td width="15%" align =center>Aegilops.searsii</td>
             <td width="10%" align =center>1</td>
             <td width="10%" align =center>1</td>
             <td width="20%" align =center>0</td>
         </tr>
     <tr>
-            <td width="15%" align =center>sorghum</td>
-            <td width="15%" align =center>setaria</td>
+            <td width="15%" align =center>Zea.mays</td>
+            <td width="15%" align =center>Oryza.sativa</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>2</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Setaria.viridis</td>
+            <td width="15%" align =center>Oryza.sativa</td>
             <td width="10%" align =center>1</td>
             <td width="10%" align =center>1</td>
             <td width="20%" align =center>0</td>
         </tr>
     <tr>
-            <td width="15%" align =center>maize</td>
-            <td width="15%" align =center>oryza</td>
+            <td width="15%" align =center>Zea.mays</td>
+            <td width="15%" align =center>Leersia.perrieri</td>
+            <td width="10%" align =center>2</td>
+            <td width="10%" align =center>2</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Setaria.viridis</td>
+            <td width="15%" align =center>Leersia.perrieri</td>
+            <td width="10%" align =center>2</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Zea.mays</td>
+            <td width="15%" align =center>Setaria.italica</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>2</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Setaria.italica</td>
+            <td width="15%" align =center>Hordeum.marinum</td>
             <td width="10%" align =center>1</td>
             <td width="10%" align =center>1</td>
             <td width="20%" align =center>0</td>
         </tr>
     <tr>
-            <td width="15%" align =center>sorghum</td>
-            <td width="15%" align =center>oryza</td>
+            <td width="15%" align =center>Setaria.italica</td>
+            <td width="15%" align =center>Aegilops.searsii</td>
             <td width="10%" align =center>1</td>
             <td width="10%" align =center>1</td>
             <td width="20%" align =center>0</td>
         </tr>
     <tr>
-            <td width="15%" align =center>setaria</td>
-            <td width="15%" align =center>oryza</td>
+            <td width="15%" align =center>Setaria.italica</td>
+            <td width="15%" align =center>Oryza.sativa</td>
             <td width="10%" align =center>1</td>
             <td width="10%" align =center>1</td>
             <td width="20%" align =center>0</td>
         </tr>
+    <tr>
+            <td width="15%" align =center>Setaria.italica</td>
+            <td width="15%" align =center>Leersia.perrieri</td>
+            <td width="10%" align =center>2</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Hordeum.marinum</td>
+            <td width="15%" align =center>Oryza.sativa</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Hordeum.marinum</td>
+            <td width="15%" align =center>Leersia.perrieri</td>
+            <td width="10%" align =center>2</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Zea.mays</td>
+            <td width="15%" align =center>Joinvillea.ascendens</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>2</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Hordeum.marinum</td>
+            <td width="15%" align =center>Joinvillea.ascendens</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Aegilops.searsii</td>
+            <td width="15%" align =center>Oryza.sativa</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Aegilops.searsii</td>
+            <td width="15%" align =center>Leersia.perrieri</td>
+            <td width="10%" align =center>2</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Aegilops.searsii</td>
+            <td width="15%" align =center>Joinvillea.ascendens</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Oryza.sativa</td>
+            <td width="15%" align =center>Joinvillea.ascendens</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>
+    <tr>
+            <td width="15%" align =center>Leersia.perrieri</td>
+            <td width="15%" align =center>Joinvillea.ascendens</td>
+            <td width="10%" align =center>1</td>
+            <td width="10%" align =center>1</td>
+            <td width="20%" align =center>0</td>
+        </tr>   
     </table>
 
 4. Get synteny file and ks file for each species pair.
@@ -433,7 +551,6 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     1. The `./scripts/ks_pipeline.py` script uses the `Species_1` column of `species_pairs.csv` as the query and the `Species_2` column of `species_pairs.csv` as the reference in the collinearity procedure.
     2. The `./scripts/ks_pipeline.py` script adjusts the parameters of the collinearity procedure based on the `r_value` `q_value` and `get_all_collinear_pairs` columns of the species pairs file.
     3. You may need to understand the meaning of the `r_value`, `q_value` and `get_all_collinear_pairs` parameter via `quota_Anchor col` command or refer to [document](./quota_anchor/doc/longestPathAlgorithm.md).
-    4. If your computing resources are limited and there are 20 species pairs in your `species_pairs.csv`, you can run it multiple times, for example, five times, each running four species pairs (just delete the other 16 rows of species pairs).
 
     ```command
     python ./scripts/ks_pipeline.py -i raw_data -o output_dir -s species_pairs.csv -a diamond -l raw_data --overwrite -plot_table
@@ -445,28 +562,28 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     2. The order of species pairs in the species pair file(specify by -s parameter, species_pairs.csv) must be consistent with the order of the ks and collinearity file(specify by -k/-col parameter)
 
     ```bash
-    find ./output_dir/02synteny/*0.ks |awk '{printf "%s,", $1}'
+    python ./scripts/get_parameter.py species_pairs.csv
     ```
 
    ```command
-   quota_Anchor correct -k "./output_dir/02synteny/maize_sorghum0.ks,./output_dir/02synteny/maize_setaria0.ks,./output_dir/02synteny/sorghum_setaria0.ks,./output_dir/02synteny/maize_oryza0.ks,./output_dir/02synteny/sorghum_oryza0.ks,./output_dir/02synteny/setaria_oryza0.ks" -col "./output_dir/02synteny/maize_sorghum0.collinearity,./output_dir/02synteny/maize_setaria0.collinearity,./output_dir/02synteny/sorghum_setaria0.collinearity,./output_dir/02synteny/maize_oryza0.collinearity,./output_dir/02synteny/sorghum_oryza0.collinearity,./output_dir/02synteny/setaria_oryza0.collinearity" -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,3 -ot outfile_divergent_peaks.csv --overwrite
+   quota_Anchor correct -k "./output_dir/02synteny/Zea.mays_Setaria.viridis0.ks,./output_dir/02synteny/Zea.mays_Hordeum.marinum0.ks,./output_dir/02synteny/Setaria.viridis_Hordeum.marinum0.ks,./output_dir/02synteny/Zea.mays_Aegilops.searsii0.ks,./output_dir/02synteny/Setaria.viridis_Aegilops.searsii0.ks,./output_dir/02synteny/Zea.mays_Oryza.sativa0.ks,./output_dir/02synteny/Setaria.viridis_Oryza.sativa0.ks,./output_dir/02synteny/Zea.mays_Leersia.perrieri0.ks,./output_dir/02synteny/Setaria.viridis_Leersia.perrieri0.ks,./output_dir/02synteny/Zea.mays_Setaria.italica0.ks,./output_dir/02synteny/Setaria.italica_Hordeum.marinum0.ks,./output_dir/02synteny/Setaria.italica_Aegilops.searsii0.ks,./output_dir/02synteny/Setaria.italica_Oryza.sativa0.ks,./output_dir/02synteny/Setaria.italica_Leersia.perrieri0.ks,./output_dir/02synteny/Hordeum.marinum_Oryza.sativa0.ks,./output_dir/02synteny/Hordeum.marinum_Leersia.perrieri0.ks,./output_dir/02synteny/Zea.mays_Joinvillea.ascendens0.ks,./output_dir/02synteny/Hordeum.marinum_Joinvillea.ascendens0.ks,./output_dir/02synteny/Aegilops.searsii_Oryza.sativa0.ks,./output_dir/02synteny/Aegilops.searsii_Leersia.perrieri0.ks,./output_dir/02synteny/Aegilops.searsii_Joinvillea.ascendens0.ks,./output_dir/02synteny/Oryza.sativa_Joinvillea.ascendens0.ks,./output_dir/02synteny/Leersia.perrieri_Joinvillea.ascendens0.ks" -col "./output_dir/02synteny/Zea.mays_Setaria.viridis0.collinearity,./output_dir/02synteny/Zea.mays_Hordeum.marinum0.collinearity,./output_dir/02synteny/Setaria.viridis_Hordeum.marinum0.collinearity,./output_dir/02synteny/Zea.mays_Aegilops.searsii0.collinearity,./output_dir/02synteny/Setaria.viridis_Aegilops.searsii0.collinearity,./output_dir/02synteny/Zea.mays_Oryza.sativa0.collinearity,./output_dir/02synteny/Setaria.viridis_Oryza.sativa0.collinearity,./output_dir/02synteny/Zea.mays_Leersia.perrieri0.collinearity,./output_dir/02synteny/Setaria.viridis_Leersia.perrieri0.collinearity,./output_dir/02synteny/Zea.mays_Setaria.italica0.collinearity,./output_dir/02synteny/Setaria.italica_Hordeum.marinum0.collinearity,./output_dir/02synteny/Setaria.italica_Aegilops.searsii0.collinearity,./output_dir/02synteny/Setaria.italica_Oryza.sativa0.collinearity,./output_dir/02synteny/Setaria.italica_Leersia.perrieri0.collinearity,./output_dir/02synteny/Hordeum.marinum_Oryza.sativa0.collinearity,./output_dir/02synteny/Hordeum.marinum_Leersia.perrieri0.collinearity,./output_dir/02synteny/Zea.mays_Joinvillea.ascendens0.collinearity,./output_dir/02synteny/Hordeum.marinum_Joinvillea.ascendens0.collinearity,./output_dir/02synteny/Aegilops.searsii_Oryza.sativa0.collinearity,./output_dir/02synteny/Aegilops.searsii_Leersia.perrieri0.collinearity,./output_dir/02synteny/Aegilops.searsii_Joinvillea.ascendens0.collinearity,./output_dir/02synteny/Oryza.sativa_Joinvillea.ascendens0.collinearity,./output_dir/02synteny/Leersia.perrieri_Joinvillea.ascendens0.collinearity," -s species_pairs.csv -t ortholog_trios_maize.csv -kr 0,3 -ot outfile_divergent_peaks.csv --overwrite
    ```
 
 6. Maize wgd ks peaks fitting
 
     ```command
-    quota_Anchor pre_col -a diamond -rs ./output_dir/01longest/maize.longest.pep -qs ./output_dir/01longest/maize.longest.pep -db ./maize/maize.database.diamond -mts 20 -e 1e-10 -b ./maize/maize.maize.diamond -rg ./raw_data/maize.gff3 -qg ./raw_data/maize.gff3 -o ./maize/zm_zm.table -bs 100 -al 0 --overwrite
-    quota_Anchor dotplot -i ./maize/zm_zm.table -o ./maize/zm.zm.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
-    quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -r 3 -q 3 -m 500 -W 1 -D 25 -I 5 -E -0.005 -f 0 --overwrite
-    quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize -use_identity --overwrite
-    quota_Anchor ks -i ./maize/zm_zm.collinearity -a mafft -p ./output_dir/01longest/maize.longest.pep -d ./output_dir/01longest/maize.longest.cds -o ./maize/zm.zm.ks -t 16  --overwrite
-    quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.ks.png -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -r_label maize -q_label maize --overwrite -ks ./maize/zm.zm.ks
+   quota_Anchor pre_col -a diamond -rs ./output_dir/01longest/Zea.mays.longest.pep -qs ./output_dir/01longest/Zea.mays.longest.pep -db ./maize/maize.database.diamond -mts 20 -e 1e-10 -b ./maize/maize.maize.diamond -rg ./raw_data/Zea.mays.gff3 -qg ./raw_data/Zea.mays.gff3 -o ./maize/zm_zm.table -bs 100 -al 0 --overwrite
+   quota_Anchor dotplot -i ./maize/zm_zm.table -o ./maize/zm.zm.png -r ./raw_data/Zea.mays.length.txt -q ./raw_data/Zea.mays.length.txt -r_label maize -q_label maize -use_identity --overwrite
+   quota_Anchor col -i ./maize/zm_zm.table -o ./maize/zm_zm.collinearity -r 3 -q 3 -m 500 -W 1 -D 25 -I 5 -E -0.005 -f 0 --overwrite
+   quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.png -r ./raw_data/Zea.mays.length.txt -q ./raw_data/Zea.mays.length.txt -r_label maize -q_label maize -use_identity --overwrite
+   quota_Anchor ks -i ./maize/zm_zm.collinearity -a mafft -p ./output_dir/01longest/Zea.mays.longest.pep -d ./output_dir/01longest/Zea.mays.longest.cds -o ./maize/zm.zm.ks -t 16  --add_ks --debug debug.txt
+    quota_Anchor dotplot -i ./maize/zm_zm.collinearity -o ./maize/zm.zm.collinearity.ks.png -r ./raw_data/Zea.mays.length.txt -q ./raw_data/Zea.mays.length.txt -r_label maize -q_label maize --overwrite -ks ./maize/zm.zm.ks
     ```
 
     You need to provide the number of components according to `zm.zm.table.png` or other methods
 
     ```command
-    quota_Anchor kde -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kde.png -k ./maize/zm.zm.ks --overwrite
+    quota_Anchor kde -i ./maize/zm_zm.collinearity -r./raw_data/Zea.mays.length.txt -q ./raw_data/Zea.mays.length.txt -o ./maize/zm.zm.kde.png -k ./maize/zm.zm.ks --overwrite
     ```
 
     <p align="center">
@@ -474,7 +591,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
     </p>
 
     ```command
-    quota_Anchor kf -i ./maize/zm_zm.collinearity -r./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.kf.png -k ./maize/zm.zm.ks -f maize -components 2 -kr 0,3 --overwrite
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r./raw_data/Zea.mays.length.txt -q ./raw_data/Zea.mays.length.txt -o ./maize/zm.zm.kf.png -k ./maize/zm.zm.ks -f maize -components 2 -kr 0,3 --overwrite
     ```
 
     <p align="center">
@@ -483,7 +600,7 @@ wget https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gff3/setaria_vir
 7. The Gaussian mixture model was used to group wgd gene pairs ks, and kernel density estimation and Gaussian approximation fitting were performed on each component. The initial species divergent peak was obtained by taking the mode of 382 kernel density estimates, and the rate was corrected to the focal species level based on trios.
 
     ```command
-    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/maize.length.txt -q ./raw_data/maize.length.txt -o ./maize/zm.zm.png -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,3 --overwrite
+    quota_Anchor kf -i ./maize/zm_zm.collinearity -r ./raw_data/Zea.mays.length.txt -q ./raw_data/Zea.mays.length.txt -o ./maize/zm.zm.png -k ./maize/zm.zm.ks -components 2 -f maize -correct_file outfile_divergent_peaks.csv -kr 0,3 --overwrite
     ```
 
     <p align="center">
