@@ -160,25 +160,6 @@ def read_blast_gff(blast, gff):
                                   chromosome_gene_dict[gene_name_chr_dict[qseqid]][qseqid].strand, bitscore, pident])
     return data_info
 
-def read_gff_get_gene(gff):
-    gene_to_chr = dict()
-    gene_to_start = dict()
-    gene_lt = set()
-    with open(gff) as f:
-        for line in f:
-            m = re.search('^#', line)
-            if m is None:
-                m = re.search(r'^(\S+)\t(\S+)\tgene\t(\d+)\t+(\d+)\t+(\S+)\t+(\S+)\t+(\S+)\t+.*ID=([\s\S]+?);(\S+)', line)
-                if m is not None:
-                    chr_ = str(m.group(1))
-                    start = int(m.group(4))
-                    gn_name = str(m.group(8))
-                    gene_lt.add(gn_name)
-                    gene_to_chr[gn_name] = str(chr_)
-                    gene_to_start[gn_name] = int(start)
-    return gene_to_chr, gene_to_start, gene_lt
-
-
 def sort_key(col):
     return col.str.split("-").map(lambda x: (x[1], int(x[2])))
 
@@ -521,20 +502,23 @@ class ClassGene:
     @staticmethod
     def singleton(gff, homo_gn_md, out_file, output_prefix):
         logger.info('Identify singleton genes start.')
-        gene_to_chr, gene_to_start, gene_set = read_gff_get_gene(gff)
+        chr_gene_dict, chr_gene_list, _, _ = GffFile.readGff(gff)
 
         ot_file = open(out_file, 'w')
         ot_file.write("GeneId" + "\t" + "Location" + "\n")
-        loop_times = len(gene_set)
+        loop_times = sum(map(lambda ary: ary.shape[0], chr_gene_list.values()))
         singleton_number = 0
         dt = datetime.datetime.now()
         time_now = dt.strftime('%Y/%m/%d %H:%M:%S')
         with alive_bar(loop_times, title=f"[{time_now} INFO]", bar="bubbles", spinner="waves") as bar:
-            for gn_name in gene_set:
-                if gn_name not in homo_gn_md:
-                    ot_file.write(str(gn_name) + "\t" + output_prefix + "-" + str(gene_to_chr[gn_name]) + "-" + str(gene_to_start[gn_name]) + "\n")
-                    singleton_number += 1
-                bar()
+            for ch in chr_gene_list:
+                order = 1
+                for gn in chr_gene_list[ch]:
+                    if gn.name not in homo_gn_md:
+                        ot_file.write(str(gn.name) + "\t" + output_prefix + "-" + str(ch) + "-"  + str(order) + "-" + str(chr_gene_dict[ch][gn.name].start) + "\n")
+                        singleton_number += 1
+                    order += 1
+                    bar()
         ot_file.close()
         return singleton_number
 
@@ -962,20 +946,23 @@ class ClassGeneUnique:
     @staticmethod
     def singleton(gff, homo_gn_md, out_file, output_prefix):
         logger.info('Identify singleton genes start.')
-        gene_to_chr, gene_to_start, gene_set = read_gff_get_gene(gff)
+        chr_gene_dict, chr_gene_list, _, _ = GffFile.readGff(gff)
 
         ot_file = open(out_file, 'w')
         ot_file.write("GeneId" + "\t" + "Location" + "\n")
-        loop_times = len(gene_set)
+        loop_times = sum(map(lambda ary: ary.shape[0], chr_gene_list.values()))
         singleton_number = 0
         dt = datetime.datetime.now()
         time_now = dt.strftime('%Y/%m/%d %H:%M:%S')
         with alive_bar(loop_times, title=f"[{time_now} INFO]", bar="bubbles", spinner="waves") as bar:
-            for gn_name in gene_set:
-                if gn_name not in homo_gn_md:
-                    ot_file.write(str(gn_name) + "\t" + output_prefix + "-" + str(gene_to_chr[gn_name]) + "-" + str(gene_to_start[gn_name]) + "\n")
-                    singleton_number += 1
-                bar()
+            for ch in chr_gene_list:
+                order = 1
+                for gn in chr_gene_list[ch]:
+                    if gn.name not in homo_gn_md:
+                        ot_file.write(str(gn.name) + "\t" + output_prefix + "-" + str(ch) + "-"  + str(order) + "-" + str(chr_gene_dict[ch][gn.name].start) + "\n")
+                        singleton_number += 1
+                    order += 1
+                    bar()
         ot_file.close()
         return singleton_number
 
