@@ -130,6 +130,7 @@ class Collinearity:
                                 self.strict_strand,
                                 self.get_all_collinearity,
                                 self.minimum_chain_score,
+                                self.gap_open_penalty,
                                 self.gap_extend_penalty,
                                 self.strict_remove_overlap
                                 )
