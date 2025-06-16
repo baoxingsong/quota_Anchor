@@ -145,7 +145,7 @@ def run_correct(parameter):
     correct.Correct(config_par, parameter).run()
 
 parser = argparse.ArgumentParser(description='Conduct strand and WGD aware syntenic gene identification for a pair of genomes using the longest path algorithm implemented in AnchorWave.', prog="quota_Anchor")
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.3')
 
 
 subparsers = parser.add_subparsers(title='Gene collinearity analysis', dest='analysis')
@@ -392,6 +392,7 @@ parser_sub_col.add_argument('-m', '--tandem_length', dest='tandem_length',metava
 parser_sub_col.add_argument('-I', '--minimum_chain_score', dest='minimum_chain_score', type=float, help="minimum chain score (default: 3).", metavar="")
 parser_sub_col.add_argument('-W', '--overlap_window', dest='overlap_window', type=int, help="Collapse BLAST matches. Specify the maximum distance allowed, and only retain best homology pair to synteny analysis under this distance condition(default: 1).", metavar="")
 parser_sub_col.add_argument('-D', '--maximum_gap_size', dest='maximum_gap_size', type=int, help="Maximum gap size for chain (default: 25).", metavar="")
+parser_sub_col.add_argument('-O', '--gap_open_penalty', dest='gap_open_penalty', type=float, help="Chain gap open penalty (default: -0.02).", metavar="")
 parser_sub_col.add_argument('-E', '--gap_extend_penalty', dest='gap_extend_penalty', type=float, help="Chain gap extend penalty (default: -0.005).", metavar="")
 parser_sub_col.add_argument('-f', '--strict_remove_overlap', dest='strict_remove_overlap', type=int, help="Specify whether to strictly remove square region gene pairs for a block to avoid overlap. (1:yes;0:no. default:  0).", metavar="")
 parser_sub_col.add_argument('-t', '--count_style', dest='count_style', type=int, help="-r -q parameter's count style for a block, 0: count only the syntenic genes within a block; 1 or other integer: count all genes within a block(default: 0).", metavar="")

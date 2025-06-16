@@ -12,7 +12,7 @@ required = ['pandas', 'numpy', 'biopython', 'matplotlib', 'scipy', 'seaborn', 'p
 
 setup(
     name="quota_anchor",
-    version="1.0.0",
+    version="1.0.3",
     author="XiaoDong Li",
     author_email="xiaodongli2405@gmail.com",
     description="Conduct strand and WGD aware syntenic identification",

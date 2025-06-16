@@ -18,6 +18,7 @@ class Collinearity:
         self.strict_strand = 1
         self.get_all_collinearity = 0
         self.minimum_chain_score = 3
+        self.gap_open_penalty = -0.02
         self.gap_extend_penalty = -0.005
         self.strict_remove_overlap = 0
         self.AnchorWave = config_soft['software']['AnchorWave']
@@ -37,7 +38,7 @@ class Collinearity:
 
     def convert_attr_type(self):
         attr = ['r_value', 'q_value', 'maximum_gap_size', 'tandem_length', 'overlap_window', 'count_style',
-                'strict_strand', 'get_all_collinearity',  'minimum_chain_score', 'gap_extend_penalty', 'strict_remove_overlap']
+                'strict_strand', 'get_all_collinearity',  'minimum_chain_score', 'gap_open_penalty', 'gap_extend_penalty', 'strict_remove_overlap']
         for i in attr:
             setattr(self, i, str(getattr(self, i)))
 
@@ -53,6 +54,7 @@ class Collinearity:
                         strict_strand,
                         get_all_collinearity,
                         minimum_chain_score,
+                        gap_open_penalty,
                         gap_extend_penalty,
                         strict_remove_overlap
                         ):
@@ -69,6 +71,7 @@ class Collinearity:
                         '-s', strict_strand,
                         '-a', get_all_collinearity,
                         '-I', minimum_chain_score,
+                        '-O', gap_open_penalty,
                         '-E', gap_extend_penalty,
                         '-f', strict_remove_overlap
                         ]
