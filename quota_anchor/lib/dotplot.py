@@ -114,6 +114,7 @@ class Dotplot:
 
     def run_coll_dotplot(self, query_length, ref_length):
         dict2 = {"color": "strand"}
+
         coll_df = pd.read_csv(self.input_file, header=0, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
@@ -157,6 +158,7 @@ class Dotplot:
 
         plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
         plot1 = plot1 + guides(**{'color': guide_legend(override_aes={'size': 12, 'alpha': 1})})
+        
         plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
         logger.info(f"Saving {self.plotnine_figure_width} x {self.plotnine_figure_height} mm image.")
         logger.info(f"Filename: {self.output_file_name}.")
@@ -164,6 +166,7 @@ class Dotplot:
     def run_coll_ks_dotplot(self, query_length, ref_length):
         dict2 = {"color": "ks"}
         ks_df = self.read_ks(self.ks, self.col)
+
         coll_df = pd.read_csv(self.input_file, header=0, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
@@ -206,25 +209,30 @@ class Dotplot:
                     scale_y_continuous(labels=self.major_formatter, expand=(0, 0)))
 
         plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
-        plot1 = plot1 + theme(legend_position='none')
-        plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
-        img = Image.open(self.output_file_name)
-        fig, ax = plt.subplots(figsize=(float(self.plotnine_figure_width) / 25.4, float(self.plotnine_figure_height) / 25.4))
-        ax.imshow(img)
-        ax.axis('off')
+        if not self.output_file_name.endswith(".pdf"):
+            plot1 = plot1 + theme(legend_position='none')
+            plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
+            img = Image.open(self.output_file_name)
+            fig, ax = plt.subplots(figsize=(float(self.plotnine_figure_width) / 25.4, float(self.plotnine_figure_height) / 25.4))
+            ax.imshow(img)
+            ax.axis('off')
 
-        norm = plt.Normalize(vmin=coll_df['ks'].min(), vmax=coll_df['ks'].max())
-        sm = plt.cm.ScalarMappable(cmap='gist_rainbow', norm=norm)
-        sm.set_array(coll_df['ks'])
-        cbar = fig.colorbar(sm, ax=ax, shrink=0.5, pad=0, fraction=0.1)
-        cbar.ax.tick_params(labelsize=40, length=5)
-        cbar.set_label(r'${K_s}$', labelpad=30, fontsize=50, ha='center', va='center')
-        fig.savefig(self.output_file_name, bbox_inches='tight')
+            norm = plt.Normalize(vmin=coll_df['ks'].min(), vmax=coll_df['ks'].max())
+            sm = plt.cm.ScalarMappable(cmap='gist_rainbow', norm=norm)
+            sm.set_array(coll_df['ks'])
+            cbar = fig.colorbar(sm, ax=ax, shrink=0.5, pad=0, fraction=0.1)
+            cbar.ax.tick_params(labelsize=40, length=5)
+            cbar.set_label(r'${K_s}$', labelpad=30, fontsize=50, ha='center', va='center')
+            fig.savefig(self.output_file_name, bbox_inches='tight')
+        else:
+            plot1.save(self.output_file_name, width=int(self.plotnine_figure_width),
+                       height=int(self.plotnine_figure_height), units="mm", limitsize=False)
         logger.info(f"Saving {(float(self.plotnine_figure_width) / 25.4):.2f} x {(float(self.plotnine_figure_height) / 25.4):.2f} inch image.")
         logger.info(f"Filename: {self.output_file_name}.")
 
     def run_blast_dotplot(self, query_length, ref_length):
         dict2 = {"color": "strand"}
+
         coll_df = pd.read_csv(self.input_file, header=None, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df.columns = ["refGene", "refChr", "refId", "referenceStart", "referenceEnd", "refStrand",
                            "queryGene",	"queryChr", "queryId", "queryStart", "queryEnd", "queryStrand", "identity"]
@@ -276,6 +284,7 @@ class Dotplot:
 
     def run_blast_identity_dotplot(self, query_length, ref_length):
         dict2 = {"color": "identity"}
+
         table_df = pd.read_csv(self.input_file, header=None, index_col=None, sep="\t", comment="#", low_memory=False)
         table_df.columns = ["refGene", "refChr", "refId", "referenceStart", "referenceEnd", "refStrand",
                            "queryGene",	"queryChr", "queryId", "queryStart", "queryEnd", "queryStrand", "identity"]
@@ -319,26 +328,32 @@ class Dotplot:
                     scale_y_continuous(labels=self.major_formatter, expand=(0, 0)))
 
         plot1 = plot + theme_grey(base_size=50) + self.my_theme + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
-        plot1 = plot1 + theme(legend_position='none')
-        plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
+        if not self.output_file_name.endswith(".pdf"):
+            plot1 = plot1 + theme(legend_position='none')
+            plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
 
-        img = Image.open(self.output_file_name)
-        fig, ax = plt.subplots(figsize=(float(self.plotnine_figure_width) / 25.4, float(self.plotnine_figure_height) / 25.4))
-        ax.imshow(img)
-        ax.axis('off')
+            img = Image.open(self.output_file_name)
+            fig, ax = plt.subplots(figsize=(float(self.plotnine_figure_width) / 25.4, float(self.plotnine_figure_height) / 25.4))
+            ax.imshow(img)
+            ax.axis('off')
 
-        norm = plt.Normalize(vmin=table_df['identity'].min(), vmax=table_df['identity'].max())
-        sm = plt.cm.ScalarMappable(cmap='gist_rainbow', norm=norm)
-        sm.set_array(table_df['identity'])
-        cbar = fig.colorbar(sm, ax=ax, shrink=0.5, pad=0, fraction=0.1)
-        cbar.ax.tick_params(labelsize=40, length=5)
-        cbar.set_label('identity', labelpad=30, fontsize=50, ha='center', va='center')
-        fig.savefig(self.output_file_name, bbox_inches='tight')
+            norm = plt.Normalize(vmin=table_df['identity'].min(), vmax=table_df['identity'].max())
+            sm = plt.cm.ScalarMappable(cmap='gist_rainbow', norm=norm)
+            sm.set_array(table_df['identity'])
+            cbar = fig.colorbar(sm, ax=ax, shrink=0.5, pad=0, fraction=0.1)
+            cbar.ax.tick_params(labelsize=40, length=5)
+            cbar.set_label('identity', labelpad=30, fontsize=50, ha='center', va='center')
+            fig.savefig(self.output_file_name, bbox_inches='tight')
+            logger.info(f"Saving {(float(self.plotnine_figure_width) / 25.4):.2f} x {(float(self.plotnine_figure_height) / 25.4):.2f} inch image.")
+            logger.info(f"Filename: {self.output_file_name}.")
+        else:
+            plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
         logger.info(f"Saving {(float(self.plotnine_figure_width) / 25.4):.2f} x {(float(self.plotnine_figure_height) / 25.4):.2f} inch image.")
         logger.info(f"Filename: {self.output_file_name}.")
 
     def run_coll_identity_dotplot(self, query_length, ref_length):
         dict2 = {"color": "score"}
+
         coll_df = pd.read_csv(self.input_file, header=0, index_col=None, sep="\t", comment="#", low_memory=False)
         coll_df["queryChr"] = coll_df["queryChr"].astype(str)
         coll_df["refChr"] = coll_df["refChr"].astype(str)
@@ -379,20 +394,27 @@ class Dotplot:
                     scale_y_continuous(labels=self.major_formatter, expand=(0, 0)))
 
         plot1 = plot + theme_grey(base_size=50) + labs(x=f'{self.query_name}', y=f'{self.ref_name}')
-        plot1 = plot1 +self.my_theme + theme(legend_position='none')
-        plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
-        img = Image.open(self.output_file_name)
-        fig, ax = plt.subplots(figsize=(float(self.plotnine_figure_width) / 25.4, float(self.plotnine_figure_height) / 25.4))
-        ax.imshow(img)
-        ax.axis('off')  
+        if not self.output_file_name.endswith(".pdf"):
+            plot1 = plot1 +self.my_theme + theme(legend_position='none')
+            plot1.save(self.output_file_name, width=int(self.plotnine_figure_width), height=int(self.plotnine_figure_height), units="mm", limitsize=False)
+            img = Image.open(self.output_file_name)
+            fig, ax = plt.subplots(figsize=(float(self.plotnine_figure_width) / 25.4, float(self.plotnine_figure_height) / 25.4))
+            ax.imshow(img)
+            ax.axis('off')
 
-        norm = plt.Normalize(vmin=coll_df['score'].min(), vmax=coll_df['score'].max())
-        sm = plt.cm.ScalarMappable(cmap='gist_rainbow', norm=norm)
-        sm.set_array(coll_df['score']) 
-        cbar = fig.colorbar(sm, ax=ax, shrink=0.5, pad=0, fraction=0.1)  
-        cbar.ax.tick_params(labelsize=40, length=5)  
-        cbar.set_label(r'identity', labelpad=30, fontsize=50, ha='center', va='center')
-        fig.savefig(self.output_file_name, bbox_inches='tight')
+            norm = plt.Normalize(vmin=coll_df['score'].min(), vmax=coll_df['score'].max())
+            sm = plt.cm.ScalarMappable(cmap='gist_rainbow', norm=norm)
+            sm.set_array(coll_df['score'])
+            cbar = fig.colorbar(sm, ax=ax, shrink=0.5, pad=0, fraction=0.1)
+            cbar.ax.tick_params(labelsize=40, length=5)
+            cbar.set_label(r'identity', labelpad=30, fontsize=50, ha='center', va='center')
+            fig.savefig(self.output_file_name, bbox_inches='tight')
+            logger.info(f"Saving {(float(self.plotnine_figure_width) / 25.4):.2f} x {(float(self.plotnine_figure_height) / 25.4):.2f} inch image.")
+            logger.info(f"Filename: {self.output_file_name}.")
+        else:
+            plot1 = plot1 + self.my_theme
+            plot1.save(self.output_file_name, width=int(self.plotnine_figure_width),
+                       height=int(self.plotnine_figure_height), units="mm", limitsize=False)
         logger.info(f"Saving {(float(self.plotnine_figure_width) / 25.4):.2f} x {(float(self.plotnine_figure_height) / 25.4):.2f} inch image.")
         logger.info(f"Filename: {self.output_file_name}.")
 
