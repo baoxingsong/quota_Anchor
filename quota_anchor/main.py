@@ -589,6 +589,7 @@ parser_sub_class_gene.add_argument('-p', '--output_prefix', dest='output_prefix'
 parser_sub_class_gene.add_argument('-s', '--seg_anc', dest='seg_anc', help="Wgd/segmental genes are ancestral gene. (default: 1)[1:yes; 0: no].",choices=[0, 1], metavar="", type=int)
 
 parser_sub_class_gene.add_argument('-u', '--unique', dest='unique', help="There is no intersection between different classifications.", action='store_true')
+parser_sub_class_gene.add_argument('-t', '--file_type', dest='file_type', help="Stats figure type.", metavar="")
 parser_sub_class_gene.add_argument('-d', '--proximal_max_distance', dest='proximal_max_distance', help="The maximum distance allowed for proximal genes(default: 10).", type=int, metavar="")
 parser_sub_class_gene.add_argument('-overwrite', '--overwrite', dest='overwrite', help="Overwrite the output file.", action='store_true')
 

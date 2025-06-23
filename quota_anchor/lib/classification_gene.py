@@ -173,6 +173,7 @@ class ClassGene:
         self.out_directory = ""
         self.output_prefix = ""
         self.seg_anc = 1
+        self.file_type = "png"
         self.proximal_max_distance = 10
         self.overwrite = False
 
@@ -604,7 +605,7 @@ class ClassGene:
                        [self.wgd_pair_file, self.tandem_pair_file, self.proximal_pair_file, self.transposed_pair_file, self.dispersed_pair_file])
         logger.info("Count and visualize the number of genes and gene pairs!")
         #plot
-        base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"], False).run()
+        base.ClsVis(self.stats_file, [self.stats_file + ".gene." + self.file_type, self.stats_file + ".pair." + self.file_type], False).run()
         logger.info("Gene and gene pair classification finished!")
 
 
@@ -617,6 +618,7 @@ class ClassGeneUnique:
         self.out_directory = ""
         self.output_prefix = ""
         self.seg_anc = 1
+        self.file_type = "png"
         self.proximal_max_distance = 10
         self.overwrite = False
 
@@ -1044,5 +1046,5 @@ class ClassGeneUnique:
                        [self.wgd_pair_file, self.tandem_pair_file, self.proximal_pair_file, self.transposed_pair_file, self.dispersed_pair_file])
         logger.info("Count and plot the number of gene pairs and genes!")
         #plot
-        base.ClsVis(self.stats_file, [self.stats_file + ".gene.png", self.stats_file + ".pair.png"], True).run()
+        base.ClsVis(self.stats_file, [self.stats_file + ".gene." + self.file_type, self.stats_file + ".pair." + self.file_type], True).run()
         logger.info("Gene and gene pairs classification finished!")
