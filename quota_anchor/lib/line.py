@@ -363,8 +363,12 @@ class Line:
     def get_block_corr_color(self, color, direction, block, gn_to_pos, chr_plus_gap_length):
         if self.color_style == "two_colors" and direction == "POSITIVE":
             color = "#F0F0F0"
-        if self.color_style == "two_colors" and direction == "NEGATIVE":
+            zorder_val = 1.5
+        elif self.color_style == "two_colors" and direction == "NEGATIVE":
             color = "#66AD56"
+            zorder_val = 1.8
+        else:
+            zorder_val = 1.8
 
         id1, id2, id3, id4 = block[0], block[1], block[2], block[3]
         pos1, pos2, pos3, pos4 = gn_to_pos[id1], gn_to_pos[id2], gn_to_pos[id3], gn_to_pos[id4]
@@ -372,7 +376,7 @@ class Line:
         pos2_coord_x = pos2 / chr_plus_gap_length
         pos3_coord_x = pos3 / chr_plus_gap_length
         pos4_coord_x = pos4 / chr_plus_gap_length
-        return pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, color
+        return pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, color, zorder_val
 
     @staticmethod
     def get_judge_se(cap_judge_chr, ch):
@@ -381,11 +385,11 @@ class Line:
         return judge_fake_start_x, judge_fake_end_x
 
     def plot_block(self, cap_judge_query_chr, cap_judge_ref_chr, query_chr, ref_chr, pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height,
-                                             ref_height, color, i):
+                                             ref_height, color, i, zorder_val):
         judge_fake_query_start_x, judge_fake_query_end_x = self.get_judge_se(cap_judge_query_chr, query_chr)
         judge_fake_ref_start_x, judge_fake_ref_end_x = self.get_judge_se(cap_judge_ref_chr, ref_chr)
         x, y = self.plot_collinearity_region(pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height, judge_fake_query_start_x, judge_fake_query_end_x, judge_fake_ref_start_x, judge_fake_ref_end_x)
-        plt.fill(x, y, facecolor=color, alpha=0.5, zorder=1.5)
+        plt.fill(x, y, facecolor=color, alpha=0.5, zorder=zorder_val)
         i += 1
         return i
 
@@ -436,12 +440,12 @@ class Line:
                     i += 1
                 else:
                     color = chr_color_dict[rf_blk_chr[i]]['chr']
-                    pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, color = self.get_block_corr_color(color, direction_list[i], block, gn_to_pos, chr_plus_gap_length)
+                    pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, color, zorder_val = self.get_block_corr_color(color, direction_list[i], block, gn_to_pos, chr_plus_gap_length)
 
                     # 20240818 only_for_chr_margin_collinearity_plot
                     query_chr = qry_blk_chr[i]
                     ref_chr = rf_blk_chr[i]
-                    i = self.plot_block(cap_judge_query_chr, cap_judge_ref_chr, query_chr, ref_chr, pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height, color, i)
+                    i = self.plot_block(cap_judge_query_chr, cap_judge_ref_chr, query_chr, ref_chr, pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height, color, i, zorder_val)
                 bar()
         if intra:
             i = 0
@@ -450,11 +454,11 @@ class Line:
             with alive_bar(len(intra), title=f"[{time_now} INFO]", bar="bubbles", spinner="waves") as bar:
                 for block in intra:
                     color = chr_color_dict[intra_chr_list[i]]['chr']
-                    pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, color = self.get_block_corr_color(color, intra_direction[i], block, gn_to_pos, chr_plus_gap_length)
+                    pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, color, zorder_val = self.get_block_corr_color(color, intra_direction[i], block, gn_to_pos, chr_plus_gap_length)
 
                     # 20240818 only_for_chr_margin_collinearity_plot
                     query_chr = ref_chr = intra_chr_list[i]
-                    i = self.plot_block(cap_judge_query_chr, cap_judge_ref_chr, query_chr, ref_chr, pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height, color, i)
+                    i = self.plot_block(cap_judge_query_chr, cap_judge_ref_chr, query_chr, ref_chr, pos1_coord_x, pos2_coord_x, pos3_coord_x, pos4_coord_x, query_height, ref_height, color, i, zorder_val)
                     bar()
         logger.info(f"Plot {collinearity} finished!")
 
