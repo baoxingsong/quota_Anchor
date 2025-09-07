@@ -93,7 +93,8 @@ class Ks:
             output_file = open(self.ks_file, 'w')
             output_file.write('\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'omega_NG86', 'ka_YN00', 'ks_YN00', 'omega_YN00', 't'])+'\n')
         for i in range(int(self.process)):
-            path = os.path.join(self.work_dir, '_tmp_' + self.collinearity, 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i))
+
+            path = os.path.join(self.work_dir, 'tmp_' + os.path.basename(self.collinearity), 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i))
             file_handler = open(path, 'r')
             content = file_handler.read()
             output_file.write(content)
@@ -103,7 +104,7 @@ class Ks:
     def merge_debug_file(self):
         debug_file = open(self.debug, 'w')
         for i in range(int(self.process)):
-            path = os.path.join(self.work_dir, '_tmp_' + self.collinearity, 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i) + "_debug.txt")
+            path = os.path.join(self.work_dir, 'tmp_' + os.path.basename(self.collinearity), 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i) + "_debug.txt")
             file_handler = open(path, 'r')
             content = file_handler.read()
             debug_file.write(content)
@@ -117,13 +118,13 @@ class Ks:
         else:
             debug_sub_handle = open(debug_sub_file, 'w')
         if hasattr(error, 'stderr') and hasattr(error, 'stdout'):
-            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error.stderr}{error.stdout}\n")
+            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error.stderr}{error.stdout}\n\n\n\n")
         elif hasattr(error, 'stderr'):
-            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error.stderr}\n")
+            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error.stderr}\n\n\n\n")
         elif hasattr(error, 'stdout'):
-            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error.stdout}\n")
+            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error.stdout}\n\n\n\n")
         else:
-            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error}\n")
+            debug_sub_handle.write(f"An error occurred when processing {pair}, exception: {error}\n\n\n\n")
         debug_sub_handle.close()
 
     @staticmethod
@@ -168,8 +169,17 @@ class Ks:
         return ng86, ng86_flag
 
     def write_to_pair_file(self, pep, cds, k):
+        # avoid len(gene_name) > 30 (yn00 error)
+        gene_name_map = dict()
+        gene_name_map["gene1"] = cds[k[0]].id
+        gene_name_map["gene2"] = cds[k[1]].id
+        cds[k[0]].id = "gene1"
+        cds[k[1]].id = "gene2"
+        pep[k[0]].id = "gene1"
+        pep[k[1]].id = "gene2"
         SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
         SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
+        return gene_name_map
 
     @staticmethod
     def write_to_sub_ks_file(ka_ks, process_sub_file, k):
@@ -324,9 +334,9 @@ class Ks:
 
         self.get_thread()
 
-        if os.path.exists('_tmp_' + self.collinearity):
-            shutil.rmtree('_tmp_' + self.collinearity)
-        os.mkdir('_tmp_' + self.collinearity)
+        if os.path.exists('tmp_' + os.path.basename(self.collinearity)):
+            shutil.rmtree('tmp_' + os.path.basename(self.collinearity))
+        os.mkdir('tmp_' + os.path.basename(self.collinearity))
 
         return pep_file_list, cds_file_list
 
@@ -346,7 +356,7 @@ class Ks:
         return allpairs
 
     def secondary_layer_run(self, pairs, i, cds, pep):
-        os.chdir(os.path.join(self.work_dir, '_tmp_' + self.collinearity, 'process_' + str(i)))
+        os.chdir(os.path.join(self.work_dir, 'tmp_' + os.path.basename(self.collinearity), 'process_' + str(i)))
         debug_sub_file = os.path.basename(self.ks_file) + "_" + str(i) + "_debug.txt"
         process_sub_file = os.path.basename(self.ks_file) + "_" + str(i)
 
@@ -363,7 +373,7 @@ class Ks:
             with alive_bar(len(pairs), title=f"[{time_now} INFO]", bar="bubbles", spinner="waves") as bar:
                 for k in pairs:
                     try:
-                        self.write_to_pair_file(pep, cds, k)
+                        gene_name_map = self.write_to_pair_file(pep, cds, k)
                         ka_ks = self.pair_kaks(debug_sub_file, k)
                         if not ka_ks:
                             bar()
@@ -379,7 +389,7 @@ class Ks:
         else:
             for k in pairs:
                 try:
-                    self.write_to_pair_file(pep, cds, k)
+                    gene_name_map = self.write_to_pair_file(pep, cds, k)
                     ka_ks = self.pair_kaks(debug_sub_file, k)
                     if not ka_ks:
                         continue
@@ -423,7 +433,7 @@ class Ks:
         if len(pairs) < self.process:
             self.process = len(pairs)
         n = int(np.ceil(len(pairs) / self.process))
-        os.chdir(os.path.join(self.work_dir, '_tmp_' + self.collinearity))
+        os.chdir(os.path.join(self.work_dir, 'tmp_' + os.path.basename(self.collinearity)))
         pool = Pool(self.process)
         for i in range(self.process):
             os.mkdir('process_' + str(i))
@@ -439,5 +449,5 @@ class Ks:
         self.merge_ks_file()
         if self.debug:
             self.merge_debug_file()
-        shutil.rmtree(os.path.join(self.work_dir, '_tmp_' + self.collinearity))
+        shutil.rmtree(os.path.join(self.work_dir, 'tmp_' + os.path.basename(self.collinearity)))
         logger.info(f"Generate {self.ks_file} done!")
