@@ -224,8 +224,6 @@ class Ks:
         subprocess.run(command_line, stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=True, text=True)
 
     def read_yn00_result(self, debug_sub_file, pair):
-        gene1 = pair[0]
-        gene2 = pair[1]
         ng86 = dict()
         yn00 = dict()
         if os.path.exists(debug_sub_file):
@@ -247,7 +245,7 @@ class Ks:
 
             ng86_flag = False
             for line in sub_content_ng86:
-                if line.startswith(f"{gene1}") or line.startswith(f"{gene2}"):
+                if line.startswith("gene1") or line.startswith("gene2"):
                     matrix_row_res = re.match(r"^(\S+?)(\s+-?\d+\.\d+.*$|\s*$|-1.0000\s*\(.*$)", line)
                     if matrix_row_res is not None:
                         line_floats_res = re.findall(r"-*\d+\.\d+", matrix_row_res.group(2))
@@ -263,7 +261,7 @@ class Ks:
                             break
 
             if not ng86_flag:
-                ng86, ng86_flag = self.process_ng86(sub_content_ng86, gene1, gene2, ng86, ng86_flag)
+                ng86, ng86_flag = self.process_ng86(sub_content_ng86, "gene1", "gene2", ng86, ng86_flag)
 
             for line in sub_content_yn00:
                 row_res = re.match(r"\s+(\d+)\s+(\d+)", line)
