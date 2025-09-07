@@ -93,7 +93,7 @@ class Ks:
             output_file = open(self.ks_file, 'w')
             output_file.write('\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'omega_NG86', 'ka_YN00', 'ks_YN00', 'omega_YN00', 't'])+'\n')
         for i in range(int(self.process)):
-            path = os.path.join(self.work_dir, 'tmp', 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i))
+            path = os.path.join(self.work_dir, '_tmp_' + self.collinearity, 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i))
             file_handler = open(path, 'r')
             content = file_handler.read()
             output_file.write(content)
@@ -103,7 +103,7 @@ class Ks:
     def merge_debug_file(self):
         debug_file = open(self.debug, 'w')
         for i in range(int(self.process)):
-            path = os.path.join(self.work_dir, 'tmp', 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i) + "_debug.txt")
+            path = os.path.join(self.work_dir, '_tmp_' + self.collinearity, 'process_' + str(i), os.path.basename(self.ks_file) + '_' + str(i) + "_debug.txt")
             file_handler = open(path, 'r')
             content = file_handler.read()
             debug_file.write(content)
@@ -324,9 +324,9 @@ class Ks:
 
         self.get_thread()
 
-        if os.path.exists("tmp"):
-            shutil.rmtree('tmp')
-        os.mkdir("tmp")
+        if os.path.exists('_tmp_' + self.collinearity):
+            shutil.rmtree('_tmp_' + self.collinearity)
+        os.mkdir('_tmp_' + self.collinearity)
 
         return pep_file_list, cds_file_list
 
@@ -346,7 +346,7 @@ class Ks:
         return allpairs
 
     def secondary_layer_run(self, pairs, i, cds, pep):
-        os.chdir(os.path.join(self.work_dir, 'tmp', 'process_' + str(i)))
+        os.chdir(os.path.join(self.work_dir, '_tmp_' + self.collinearity, 'process_' + str(i)))
         debug_sub_file = os.path.basename(self.ks_file) + "_" + str(i) + "_debug.txt"
         process_sub_file = os.path.basename(self.ks_file) + "_" + str(i)
 
@@ -423,7 +423,7 @@ class Ks:
         if len(pairs) < self.process:
             self.process = len(pairs)
         n = int(np.ceil(len(pairs) / self.process))
-        os.chdir(os.path.join(self.work_dir, 'tmp'))
+        os.chdir(os.path.join(self.work_dir, '_tmp_' + self.collinearity))
         pool = Pool(self.process)
         for i in range(self.process):
             os.mkdir('process_' + str(i))
@@ -439,5 +439,5 @@ class Ks:
         self.merge_ks_file()
         if self.debug:
             self.merge_debug_file()
-        shutil.rmtree(os.path.join(self.work_dir, 'tmp'))
+        shutil.rmtree(os.path.join(self.work_dir, '_tmp_' + self.collinearity))
         logger.info(f"Generate {self.ks_file} done!")
