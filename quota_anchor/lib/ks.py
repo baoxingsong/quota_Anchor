@@ -430,7 +430,7 @@ class Ks:
                 sys.exit(0)
         if len(pairs) < self.process:
             self.process = len(pairs)
-        n = int(np.ceil(len(pairs) / self.process))
+        n = int(np.floor(len(pairs) / self.process))
         os.chdir(os.path.join(self.work_dir, 'tmp_' + os.path.basename(self.collinearity)))
         pool = Pool(self.process)
         for i in range(self.process):
