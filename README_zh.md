@@ -336,7 +336,7 @@ quota_Anchor circle -i sb_sb.collinearity -o sb_sb.circle.png --overwrite -r ../
 1. 对于`raw_data`目录的每一个物种生成其最长转录本和最长编码序列。
 
     ```command
-    git clone https://github.com/baoxingsong/quota_Anchor.git
+    git clone https://github.com/baoxingsong/quota_Anchor.git --depth 1
     cp -r  quota_Anchor/scripts .
     python ./scripts/longest_pipeline.py -i raw_data -o output_dir --overwrite
     ```

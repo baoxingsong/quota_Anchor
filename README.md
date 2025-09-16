@@ -343,7 +343,7 @@ The following is the current directory tree.
 1. Generate longest protein and longest cds for each species in the input directory.
 
     ```command
-    git clone https://github.com/baoxingsong/quota_Anchor.git
+    git clone https://github.com/baoxingsong/quota_Anchor.git --depth 1
     cp -r  quota_Anchor/scripts .
     python ./scripts/longest_pipeline.py -i raw_data -o output_dir --overwrite
     ```
