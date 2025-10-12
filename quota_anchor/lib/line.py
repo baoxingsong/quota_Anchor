@@ -58,8 +58,10 @@ class Line:
         return y
 
     def determine_fig_par(self, len_number):
-        if len_number == 2:
+        if len_number <= 3:
             x = 0.4 / (6 * len_number - 5)
+        elif len_number <= 5:
+            x = 0.55 / (6 * len_number - 5)
         else:
             x = 0.7 / (6 * len_number - 5)
         self.height_gap = 5 * x
@@ -641,4 +643,3 @@ class Line:
         plt.savefig(self.output_file_name, dpi=DPI, bbox_inches='tight')
         logger.info(f"Generate {self.output_file_name} finished!")
         sys.exit(0)
-
