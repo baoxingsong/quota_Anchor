@@ -39,15 +39,16 @@ class ClsVis:
         bars = ax.bar(tp, counts, color=color_list[:length])
         for bar in bars:
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height}', ha='center', va='bottom')
+            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height}', ha='center', va='bottom', fontsize=12)
 
-        ax.set_ylabel(str(self.ylab))
+        ax.set_ylabel(str(self.ylab), fontsize=14)
 
         if len(df) == 6:
-            ax.set_title(str(self.title1))
+            ax.set_title(str(self.title1), fontsize=14)
         if len(df) == 5:
-            ax.set_title(str(self.title2))
-        plt.xticks(rotation=300)
+            ax.set_title(str(self.title2), fontsize=14)
+        plt.xticks(rotation=300, fontsize=11)
+        plt.yticks(fontsize=11)
         plt.tight_layout()
         plt.savefig(name,  bbox_inches='tight')
 #        plt.show()
@@ -184,4 +185,3 @@ def output_info(info):
             if i:
                 logger.info(f'{i}')
     return
-
